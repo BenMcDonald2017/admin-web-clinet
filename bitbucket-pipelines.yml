@@ -1,3 +1,12 @@
+# Additional Available ENV Variables:
+# ————————————————————————————————————
+# $BITBUCKET_BRANCH
+# $BITBUCKET_CLONE_DIR
+# $BITBUCKET_COMMIT
+# $BITBUCKET_REPO_OWNER
+# $BITBUCKET_REPO_SLUG
+# $BITBUCKET_TAG
+
 image: node:8.6.0
 
 definitions:
@@ -58,14 +67,7 @@ pipelines:
             - npm run deploy:prod
 
   branches:
-    master: *prod
-    develop: *int
-
-# Additional Available ENV Variables:
-# ————————————————————————————————————
-# $BITBUCKET_BRANCH
-# $BITBUCKET_CLONE_DIR
-# $BITBUCKET_COMMIT
-# $BITBUCKET_REPO_OWNER
-# $BITBUCKET_REPO_SLUG
-# $BITBUCKET_TAG
+    master:
+      <<: *prod
+    develop:
+      <<: *int
