@@ -3,23 +3,8 @@
   description: Standard Error Response
   contentType: application/json
   schema: ${file(schemas/error.json)}
--
-  name: ExampleGetRequest
-  description: Schema for an example GET request.
-  contentType: application/json
-  schema: ${file(build/routes/examples/get/request.json)}
--
-  name: ExampleGetResponse
-  description: Schema for an example GET response.
-  contentType: application/json
-  schema: ${file(build/routes/examples/get/response.json)}
--
-  name: ExamplePostRequest
-  description: Schema for an example POST request.
-  contentType: application/json
-  schema: ${file(build/routes/examples/get/request.json)}
--
-  name: ExamplePostResponse
-  description: Schema for an example POST response.
-  contentType: application/json
-  schema: ${file(build/routes/examples/get/response.json)}
+# -
+#   name: ExampleGetRequest
+#   description: Schema for an example GET request.
+#   contentType: application/json
+#   schema: ${file(build/routes/examples/get/request.json)}

@@ -90,6 +90,18 @@ custom:
     createRoute53Record: false
     domainName: '${file(./env.js):getDomainName}'
     stage: '${self:custom.service.STAGE}'
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - 'dynamodb:DescribeTable'
+        - 'dynamodb:Query'
+        - 'dynamodb:Scan'
+        - 'dynamodb:GetItem'
+        - 'dynamodb:PutItem'
+        - 'dynamodb:UpdateItem'
+      Resource:
+        - >-
+          arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-application-service*
 provider:
   name: aws
   memorySize: 1024
@@ -113,7 +125,15 @@ provider:
 functions:
   ping:
     description: Ping / Ping
-    handler: build/lib/ping/index.pong
+    handler: build/routes/ping/index.pong
+    events:
+      - http:
+          path: ping
+          method: get
+          cors: true
+          documentation:
+            summary: Ping / Pong
+            description: Is service up and running?
 resources:
   Resources: null
   Outputs: null

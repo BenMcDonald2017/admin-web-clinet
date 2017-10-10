@@ -1,35 +1,16 @@
 # the values below will override those set within `02-boilerplate.yml`
-# provider:
-#
-# custom:
-#
-#   iamRoleStatements:
-#     - Effect: Allow
-#       Action:
-#         - dynamodb:DescribeTable
-#         - dynamodb:Query
-#         - dynamodb:Scan
-#         - dynamodb:GetItem
-#         - dynamodb:PutItem
-#         - dynamodb:UpdateItem
-#         # - dynamodb:DeleteItem
-#       Resource:
-#         - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-platform-configuration*
-#         - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-platform-login*
-#         - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-persons*
-#     - Effect: Allow
-#       Action:
-#         - cognito-idp:AdminGetUser
-#         - cognito-idp:AdminConfirmSignUp
-#         - cognito-idp:AdminDeleteUser
-#         - cognito-idp:AdminDisableUser
-#         - cognito-idp:AdminEnableUser
-#       Resource:
-#           # NOTE: The line below will be set to the appropriate cognito pool ARN,
-#           # (from the three listed below), using the Lambda's environment name.
-#         - ${self:custom.cognitoPools.${self:custom.service.STAGE}}
-#
-#   cognitoPools:
-#     dev:  arn:aws:cognito-idp:us-west-2:409076796536:userpool/us-west-2_AXPnJkIR9
-#     int:  arn:aws:cognito-idp:us-west-2:409076796536:userpool/us-west-2_aZ2JNiTZp
-#     prod: arn:aws:cowgnito-idp:us-west-2:409076796536:userpool/us-west-2_Guj3GDdPC
+
+custom:
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        # - dynamodb:DeleteItem
+      Resource:
+        - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-application-service*

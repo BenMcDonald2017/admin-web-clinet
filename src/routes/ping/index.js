@@ -1,7 +1,7 @@
 import ware from 'warewolf';
 import { before, after, queryStringIsTrue } from '../../utils';
 
-export const get = ware(
+export const pong = ware(
   before,
 
   async (event) => {

@@ -6,7 +6,15 @@ functions:
 
   ping:
     description: Ping / Ping
-    handler: build/lib/ping/index.pong
+    handler: build/routes/ping/index.pong
+    events:
+      - http:
+          path: ping
+          method: get
+          cors: true
+          documentation:
+            summary: Ping / Pong
+            description: Is service up and running?
 
   # get:
   #   handler: build/routes/examples/get/index.get
