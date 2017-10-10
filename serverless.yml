@@ -60,8 +60,56 @@ package:
   excludeDevDependencies: false
   exclude:
     - node_modules/**/aws-sdk/**
-custom: null
-provider: null
+custom:
+  service:
+    NAME: '${file(package.json):name}'
+    STAGE: '${opt:stage, env:NODE_ENV, file(package.json):config.stage}'
+    REGION: '${opt:region, file(package.json):config.region}'
+    RUNTIME: '${file(package.json):config.runtime}'
+    VERSION: '${file(package.json):version}'
+    DESCRIPTION: '${file(package.json):description}'
+    GW_URL:
+      'Fn::Join':
+        - ''
+        - - 'https://'
+          - Ref: ApiGatewayRestApi
+          - >-
+            .execute-api.${self:custom.service.REGION}.amazonaws.com/${self:custom.service.STAGE}
+  documentation:
+    description: 'Hixme API | ${self:custom.service.DESCRIPTION}'
+    summary: '${self:custom.service.DESCRIPTION}'
+    version: '${self:custom.service.VERSION}'
+    models: '${file(schemas/models.yml)}'
+  environment:
+    REGION: '${self:custom.service.REGION}'
+    SERVICE: '${self:custom.service.NAME}'
+    STAGE: '${self:custom.service.STAGE}'
+  customDomain:
+    basePath: '${file(./env.js):getAPIBasePath}'
+    certificateName: '*.hixme.com'
+    createRoute53Record: false
+    domainName: '${file(./env.js):getDomainName}'
+    stage: '${self:custom.service.STAGE}'
+provider:
+  name: aws
+  memorySize: 1024
+  timeout: 30
+  deploymentBucket:
+    serverSideEncryption: AES256
+  runtime: '${self:custom.service.RUNTIME}'
+  stage: '${self:custom.service.STAGE}'
+  region: '${self:custom.service.REGION}'
+  stackTags:
+    REGION: '${self:custom.service.REGION}'
+    SERVICE: '${self:custom.service.NAME}'
+    STAGE: '${self:custom.service.STAGE}'
+  environment:
+    REGION: '${self:custom.service.REGION}'
+    SERVICE: '${self:custom.service.NAME}'
+    STAGE: '${self:custom.service.STAGE}'
+    GW_URL: '${self:custom.service.GW_URL}'
+    NODE_ENV: '${env:NODE_ENV, self:custom.service.STAGE}'
+  iamRoleStatements: '${self:custom.iamRoleStatements}'
 functions:
   ping:
     description: Ping / Ping
