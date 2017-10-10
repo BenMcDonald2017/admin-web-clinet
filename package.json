@@ -1,0 +1,177 @@
+{
+  "name": "application-service",
+  "version": "0.0.1",
+  "description": "Application Service",
+  "author": "Hixme.com",
+  "contributors": [
+    "Greg Cardoni <greg@cardoni.net> (https://cardoni.net)"
+  ],
+  "homepage": "https://hixme.com",
+  "license": "MIT",
+  "main": "build/index",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@bitbucket.org/hixme/application-service.git"
+  },
+  "config": {
+    "NOTE": "THE FOLLOWING VALUES ARE USED BY SERVERLESS!",
+    "log_fetch_refresh_interval": 5000,
+    "log_fetch_start_time": "30m",
+    "region": "us-west-2",
+    "runtime": "nodejs6.10",
+    "stage": "dev"
+  },
+  "scripts": {
+    "build:merge": "npm run clean && npm run merge:yaml && cross-env BABEL_ENV=commonjs babel src --ignore='**/*/*.test.js' --out-dir=build --source-maps --copy-files --no-comments",
+    "build:min": "npm run build -- --compact --minified --source-maps=false",
+    "build:watch": "cross-env BABEL_ENV=commonjs babel src --ignore='**/*/*.test.js' --out-dir=build --source-maps --copy-files --no-comments --watch",
+    "build": "npm run clean && npm run merge:yaml && cross-env BABEL_ENV=commonjs babel src --ignore='**/*/*.test.js' --out-dir=build --source-maps --copy-files --no-comments",
+    "clean": "rimraf build coverage .webpack .serverless",
+    "coverage": "npm run test -- --coverage",
+    "deploy:custom": "npm run build && cross-env SLS_DEBUG=* sls deploy --verbose --region $npm_package_config_region --stage",
+    "deploy:dev": "npm run build && cross-env SLS_DEBUG=* sls deploy --verbose --stage dev --region $npm_package_config_region",
+    "deploy:function:dev": "npm run build && cross-env SLS_DEBUG=* sls deploy --verbose --stage dev --region $npm_package_config_region function --function",
+    "deploy:function:int": "npm run build:min && sls deploy --stage int --region $npm_package_config_region function --function",
+    "deploy:function:prod": "npm run build:min && sls deploy --stage prod --region $npm_package_config_region function --function",
+    "deploy:function": "npm run deploy:function:dev",
+    "deploy:int": "npm run build:min && sls deploy --stage int --region $npm_package_config_region",
+    "deploy:prod": "npm run build:min && sls deploy --stage prod --region $npm_package_config_region",
+    "deploy": "npm run deploy:dev --",
+    "info:stage": "sls info --verbose --region $npm_package_config_region --stage",
+    "info": "sls info --verbose --region $npm_package_config_region",
+    "invoke:local": "DEBUG_SLS=* sls invoke local --function",
+    "lint": "eslint src __tests__",
+    "logs:custom": "sls logs --verbose --tail --interval $npm_package_config_log_fetch_refresh_interval --region $npm_package_config_region --startTime $npm_package_config_log_fetch_start_time --function",
+    "logs:dev": "sls logs --verbose --tail --interval $npm_package_config_log_fetch_refresh_interval --stage dev --region $npm_package_config_region --startTime $npm_package_config_log_fetch_start_time --function",
+    "logs:int": "sls logs --tail --interval $npm_package_config_log_fetch_refresh_interval --stage int --region $npm_package_config_region --startTime $npm_package_config_log_fetch_start_time --function",
+    "logs:prod": "sls logs --tail --interval $npm_package_config_log_fetch_refresh_interval --stage prod --region $npm_package_config_region --startTime $npm_package_config_log_fetch_start_time --function",
+    "logs": "npm run logs:dev --",
+    "merge:yaml": "merge-yaml -i ./src/config/**/*.yml -o serverless.yml",
+    "offline": "sls offline",
+    "package": "npm run build && cross-env SLS_DEBUG=* sls package",
+    "start": "npm run build && concurrently --kill-others --prefix={name}-{time} --names=BUILD-,SERVER --timestamp-format=HH:mm:ss.SSS -c bgBlue,bgMagenta \"npm run build:watch\" \"npm run offline\"",
+    "tag": "git tag -am $npm_package_version $npm_package_version && git push --tags",
+    "test:wip": "jest -t wip",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@hixme/error-middleware": "1.4.6",
+    "@hixme/error-response": "0.3.0",
+    "@hixme/model-middleware": "1.4.5",
+    "@hixme/moosify": "5.4.6",
+    "@hixme/stage-middleware": "5.10.0",
+    "ajv": "5.2.3",
+    "aws-sdk": "2.126.0",
+    "babel-runtime": "6.26.0",
+    "circular-json": "0.3.3",
+    "dynamoose": "0.8.5",
+    "lodash": "4.17.4",
+    "node-fetch": "1.7.3",
+    "warewolf": "2.0.6"
+  },
+  "devDependencies": {
+    "babel-cli": "6.26.0",
+    "babel-core": "6.26.0",
+    "babel-eslint": "8.0.1",
+    "babel-jest": "21.2.0",
+    "babel-loader": "7.1.2",
+    "babel-plugin-add-module-exports": "0.2.1",
+    "babel-plugin-transform-class-properties": "6.24.1",
+    "babel-plugin-transform-export-extensions": "6.22.0",
+    "babel-plugin-transform-object-rest-spread": "6.26.0",
+    "babel-plugin-transform-runtime": "6.23.0",
+    "babel-preset-es2015-node6": "0.4.0",
+    "babel-preset-es2016": "6.24.1",
+    "babel-preset-es2017": "6.24.1",
+    "concurrently": "3.5.0",
+    "cross-env": "5.0.5",
+    "eslint": "4.8.0",
+    "eslint-config-airbnb-base": "12.0.1",
+    "eslint-plugin-import": "2.7.0",
+    "jest-cli": "21.2.1",
+    "merge-yaml-cli": "1.1.1",
+    "rimraf": "2.6.2",
+    "serverless": "1.23.0",
+    "serverless-aws-documentation": "0.8.0",
+    "serverless-domain-manager": "1.1.13",
+    "serverless-offline": "3.16.0",
+    "serverless-plugin-webpack": "1.3.0",
+    "source-map-loader": "0.2.2",
+    "webpack": "3.6.0",
+    "yargs": "9.0.1"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/build/",
+      "/dist/"
+    ],
+    "verbose": true
+  },
+  "eslintConfig": {
+    "parser": "babel-eslint",
+    "extends": "airbnb-base",
+    "env": {
+      "node": true,
+      "jest": true
+    },
+    "plugins": [
+      "import"
+    ],
+    "root": true,
+    "rules": {
+      "import/no-extraneous-dependencies": [
+        2,
+        {
+          "devDependencies": [
+            "__tests__/**"
+          ]
+        }
+      ],
+      "global-require": 0,
+      "import/prefer-default-export": 0,
+      "no-console": [
+        2,
+        {
+          "allow": [
+            "warn",
+            "error"
+          ]
+        }
+      ],
+      "no-param-reassign": 0,
+      "no-use-before-define": 0
+    }
+  },
+  "directories": {
+    "dist": "./dist",
+    "doc": "./docs",
+    "lib": "./src",
+    "schemas": "./schemas",
+    "scripts": "./scripts",
+    "tests": "./__tests__"
+  },
+  "bugs": {
+    "email": "tech@hixme.com",
+    "url": "https://bitbucket.com/hixme/application-service/issues"
+  },
+  "keywords": [
+    "hixme",
+    "application",
+    "application-service",
+    "application service",
+    "serverless",
+    "lambda"
+  ],
+  "engines": {
+    "node": ">=6 <9.0",
+    "npm": ">=4.0 <6.0"
+  },
+  "os": [
+    "darwin",
+    "linux"
+  ],
+  "readmeFilename": "README.md"
+}

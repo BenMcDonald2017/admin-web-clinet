@@ -1,0 +1,210 @@
+Warning_001: 'this file is auto-generated ... instead, edit the files in `src/config/`'
+Warning_002: ''
+Warning_003: 'this file is auto-generated ... instead, edit the files in `src/config/`'
+Warning_004: ''
+Warning_005: 'this file is auto-generated ... instead, edit the files in `src/config/`'
+Warning_006: ''
+Warning_007: 'this file is auto-generated ... instead, edit the files in `src/config/`'
+Warning_008: ''
+Warning_009: 'this file is auto-generated ... instead, edit the files in `src/config/`'
+Warning_010: ''
+Warning_011: 'this file is auto-generated ... instead, edit the files in `src/config/`'
+Warning_012: ''
+Warning_013: 'this file is auto-generated ... instead, edit the files in `src/config/`'
+Warning_014: ''
+Warning_015: 'this file is auto-generated ... instead, edit the files in `src/config/`'
+Warning_016: ''
+Warning_017: 'this file is auto-generated ... instead, edit the files in `src/config/`'
+Warning_018: ''
+Warning_019: 'this file is auto-generated ... instead, edit the files in `src/config/`'
+Warning_020: ''
+Warning_021: 'this file is auto-generated ... instead, edit the files in `src/config/`'
+Warning_022: ''
+Warning_023: 'this file is auto-generated ... instead, edit the files in `src/config/`'
+Warning_024: ''
+Warning_025: 'this file is auto-generated ... instead, edit the files in `src/config/`'
+Warning_026: ''
+Warning_027: 'this file is auto-generated ... instead, edit the files in `src/config/`'
+Warning_028: ''
+Warning_029: 'this file is auto-generated ... instead, edit the files in `src/config/`'
+Warning_030: ''
+Warning_031: 'this file is auto-generated ... instead, edit the files in `src/config/`'
+Warning_032: ''
+Warning_033: 'this file is auto-generated ... instead, edit the files in `src/config/`'
+Warning_034: ''
+Warning_035: 'this file is auto-generated ... instead, edit the files in `src/config/`'
+Warning_036: ''
+Warning_037: 'this file is auto-generated ... instead, edit the files in `src/config/`'
+Warning_038: ''
+Warning_039: 'this file is auto-generated ... instead, edit the files in `src/config/`'
+Warning_040: ''
+Warning_041: ''
+Warning_042: ''
+Warning_044: 'NOTE: the warning messages above will be removed in a future release'
+Warning_045: 'NOTE: the warning messages above will be removed in a future release'
+Warning_046: 'NOTE: the warning messages above will be removed in a future release'
+Warning_047: 'NOTE: the warning messages above will be removed in a future release'
+Warning_048: 'NOTE: the warning messages above will be removed in a future release'
+Warning_049: ''
+Warning_050: ''
+Warning_051: ''
+service: '${self:custom.service.NAME}'
+frameworkVersion: '>=1.23.0 <2.0.0'
+plugins:
+  - serverless-offline
+  - serverless-plugin-webpack
+  - serverless-aws-documentation
+  - serverless-domain-manager
+package:
+  individually: true
+  excludeDevDependencies: false
+  exclude:
+    - node_modules/**/aws-sdk/**
+custom:
+  service:
+    NAME: '${file(package.json):name}'
+    STAGE: '${opt:stage, env:NODE_ENV, file(package.json):config.stage}'
+    REGION: '${opt:region, file(package.json):config.region}'
+    RUNTIME: '${file(package.json):config.runtime}'
+    VERSION: '${file(package.json):version}'
+    DESCRIPTION: '${file(package.json):description}'
+    GW_URL:
+      'Fn::Join':
+        - ''
+        - - 'https://'
+          - Ref: ApiGatewayRestApi
+          - >-
+            .execute-api.${self:custom.service.REGION}.amazonaws.com/${self:custom.service.STAGE}
+  documentation:
+    description: 'Hixme API | ${self:custom.service.DESCRIPTION}'
+    summary: '${self:custom.service.DESCRIPTION}'
+    version: '${self:custom.service.VERSION}'
+    models: '${file(schemas/models.yml)}'
+  environment:
+    REGION: '${self:custom.service.REGION}'
+    SERVICE: '${self:custom.service.NAME}'
+    STAGE: '${self:custom.service.STAGE}'
+  customDomain:
+    basePath: '${file(./env.js):getAPIBasePath}'
+    certificateName: '*.hixme.com'
+    createRoute53Record: false
+    domainName: '${file(./env.js):getDomainName}'
+    stage: '${self:custom.service.STAGE}'
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - 'dynamodb:DescribeTable'
+        - 'dynamodb:Query'
+        - 'dynamodb:Scan'
+        - 'dynamodb:GetItem'
+        - 'dynamodb:PutItem'
+        - 'dynamodb:UpdateItem'
+      Resource:
+        - >-
+          arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-platform-configuration*
+        - >-
+          arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-platform-login*
+        - >-
+          arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-persons*
+    - Effect: Allow
+      Action:
+        - 'cognito-idp:AdminGetUser'
+        - 'cognito-idp:AdminConfirmSignUp'
+        - 'cognito-idp:AdminDeleteUser'
+        - 'cognito-idp:AdminDisableUser'
+        - 'cognito-idp:AdminEnableUser'
+      Resource:
+        - '${self:custom.cognitoPools.${self:custom.service.STAGE}}'
+  cognitoPools:
+    dev: 'arn:aws:cognito-idp:us-west-2:409076796536:userpool/us-west-2_AXPnJkIR9'
+    int: 'arn:aws:cognito-idp:us-west-2:409076796536:userpool/us-west-2_aZ2JNiTZp'
+    prod: 'arn:aws:cowgnito-idp:us-west-2:409076796536:userpool/us-west-2_Guj3GDdPC'
+provider:
+  name: aws
+  memorySize: 512
+  timeout: 6
+  deploymentBucket:
+    serverSideEncryption: AES256
+  runtime: '${self:custom.service.RUNTIME}'
+  stage: '${self:custom.service.STAGE}'
+  region: '${self:custom.service.REGION}'
+  stackTags:
+    REGION: '${self:custom.service.REGION}'
+    SERVICE: '${self:custom.service.NAME}'
+    STAGE: '${self:custom.service.STAGE}'
+  environment:
+    REGION: '${self:custom.service.REGION}'
+    SERVICE: '${self:custom.service.NAME}'
+    STAGE: '${self:custom.service.STAGE}'
+    GW_URL: '${self:custom.service.GW_URL}'
+    NODE_ENV: '${env:NODE_ENV, self:custom.service.STAGE}'
+  iamRoleStatements: '${self:custom.iamRoleStatements}'
+functions:
+  example-custom-authorizer:
+    handler: build/lib/authorizers/index.authorizer
+  get:
+    handler: build/routes/examples/get/index.get
+    description: '${self:custom.documentation.summary} | Example GET'
+    events:
+      - http:
+          path: examples/get
+          method: get
+          cors: true
+          documentation:
+            summary: Example GET
+            description: Example of a GET request/response.
+  post:
+    handler: build/routes/examples/post/index.post
+    description: '${self:custom.documentation.summary} | Example POST'
+    events:
+      - http:
+          path: examples/post
+          method: post
+          cors: true
+          authorization: example-custom-authorizer
+          documentation:
+            summary: Example POST
+            description: Example of a POST request/response.
+            queryParams: ''
+            pathParams: ''
+            requestHeaders: ''
+            requestModels:
+              application/json: ExamplePostRequest
+            requestBody: Request body description
+            methodResponses:
+              - statusCode: '200'
+                responseBody:
+                  description: Response body description
+                responseHeaders: ''
+                responseModels:
+                  application/json: ExamplePostResponse
+              - statusCode: '400'
+                responseModels:
+                  application/json: ErrorResponse
+  proxy-request:
+    handler: build/routes/examples/proxy-request/index.proxy
+    description: '${self:custom.documentation.summary} | Example Request Proxy'
+    events:
+      - http:
+          path: 'examples/proxy/{acronym}'
+          method: get
+          cors: true
+          documentation:
+            summary: Example Proxying of an Incoming Request to Another API
+            description: >-
+              Example of how to proxy a request to another api and return that
+              API's response as our own.
+  example-schedule:
+    handler: build/routes/examples/schedule/index.schedule
+    description: '${self:custom.documentation.summary} | Scheduled Func Example'
+    events:
+      - schedule:
+          enabled: false
+          description: Example of How to Schedule Your Functions' Execution(s)
+          rate: rate(2 minutes)
+          documentation:
+            summary: Example Scheduled Function
+            description: Example of How to Schedule Your Functions' Execution(s).
+resources:
+  Resources: null
+  Outputs: null

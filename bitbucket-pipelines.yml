@@ -1,0 +1,71 @@
+image: node:8.6.0
+
+definitions:
+  default: &default
+    caches: [ node ]
+    script: &script
+      - node --version
+      - npm --version
+      - printf "//`node -p \"require('url').parse(process.env.NPM_REGISTRY_URL || 'https://registry.npmjs.org').host\"`/:_authToken=${NPM_TOKEN}\nregistry=${NPM_REGISTRY_URL:-https://registry.npmjs.org}\n" >> ~/.npmrc
+      - npm install
+      - npm test
+      # - env | sort # debugging
+  warning: &warning [ 'echo "To deploy to "dev", "int", or "prod", push to branch of same name."' ]
+
+pipelines:
+  default:
+    - step:
+        caches: [ node ]
+        script: &script
+          - node --version
+          - npm --version
+          - printf "//`node -p \"require('url').parse(process.env.NPM_REGISTRY_URL || 'https://registry.npmjs.org').host\"`/:_authToken=${NPM_TOKEN}\nregistry=${NPM_REGISTRY_URL:-https://registry.npmjs.org}\n" >> ~/.npmrc
+          - npm install
+          - npm test
+
+  custom:
+    deploy-to-dev: &dev
+      - step:
+          caches: [ node ]
+          script: &script
+            - node --version
+            - npm --version
+            - printf "//`node -p \"require('url').parse(process.env.NPM_REGISTRY_URL || 'https://registry.npmjs.org').host\"`/:_authToken=${NPM_TOKEN}\nregistry=${NPM_REGISTRY_URL:-https://registry.npmjs.org}\n" >> ~/.npmrc
+            - npm install
+            - npm test
+            - npm run deploy:dev
+
+    deploy-to-int: &int
+      - step:
+          caches: [ node ]
+          script: &script
+            - node --version
+            - npm --version
+            - printf "//`node -p \"require('url').parse(process.env.NPM_REGISTRY_URL || 'https://registry.npmjs.org').host\"`/:_authToken=${NPM_TOKEN}\nregistry=${NPM_REGISTRY_URL:-https://registry.npmjs.org}\n" >> ~/.npmrc
+            - npm install
+            - npm test
+            - npm run deploy:int
+
+    deploy-to-prod: &prod
+      - step:
+          caches: [ node ]
+          script: &script
+            - node --version
+            - npm --version
+            - printf "//`node -p \"require('url').parse(process.env.NPM_REGISTRY_URL || 'https://registry.npmjs.org').host\"`/:_authToken=${NPM_TOKEN}\nregistry=${NPM_REGISTRY_URL:-https://registry.npmjs.org}\n" >> ~/.npmrc
+            - npm install
+            - npm test
+            - npm run deploy:prod
+
+  branches:
+    master: *prod
+    develop: *int
+
+# Additional Available ENV Variables:
+# ————————————————————————————————————
+# $BITBUCKET_BRANCH
+# $BITBUCKET_CLONE_DIR
+# $BITBUCKET_COMMIT
+# $BITBUCKET_REPO_OWNER
+# $BITBUCKET_REPO_SLUG
+# $BITBUCKET_TAG
