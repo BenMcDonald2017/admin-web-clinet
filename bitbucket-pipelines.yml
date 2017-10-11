@@ -67,7 +67,5 @@ pipelines:
             - npm run deploy:prod
 
   branches:
-    master:
-      <<: *prod
-    develop:
-      <<: *int
+    master: *prod
+    develop: *int
