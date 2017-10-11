@@ -1,6 +1,6 @@
 {
   "name": "application-service",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Application Service",
   "author": "Hixme.com",
   "contributors": [
@@ -52,7 +52,7 @@
     "offline": "sls offline",
     "package": "npm run build && cross-env SLS_DEBUG=* sls package",
     "start": "npm run build && concurrently --kill-others --prefix={name}-{time} --names=BUILD-,SERVER --timestamp-format=HH:mm:ss.SSS -c bgBlue,bgMagenta \"npm run build:watch\" \"npm run offline\"",
-    "tag": "git tag -am $npm_package_version $npm_package_version && git push --tags",
+    "tag": "git tag -ams $npm_package_version $npm_package_version && git push --tags",
     "test:wip": "jest -t wip",
     "test": "jest"
   },
