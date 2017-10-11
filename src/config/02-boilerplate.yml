@@ -1,18 +1,17 @@
-service: ${self:custom.service.NAME}
+service:          ${self:custom.service.NAME}
 
 frameworkVersion: ">=1.23.0 <2.0.0"
 
 plugins:
-  - serverless-offline
   - serverless-plugin-webpack
   - serverless-aws-documentation
   - serverless-domain-manager
+  - serverless-offline
 
 package:
-  individually: true # package each lambda function individually
+  individually:           true # package each lambda function individually
   excludeDevDependencies: false # we lean on webpack do the tree-shaking
-  exclude:
-    - node_modules/**/aws-sdk/**
+  exclude:                ['node_modules/**/aws-sdk/**']
 
 custom:
   service:
@@ -30,7 +29,7 @@ custom:
           - .execute-api.${self:custom.service.REGION}.amazonaws.com/${self:custom.service.STAGE}
 
   documentation:
-    description:  Hixme API | ${self:custom.service.DESCRIPTION}
+    description:  "Hixme API | ${self:custom.service.DESCRIPTION}"
     summary:      ${self:custom.service.DESCRIPTION}
     version:      ${self:custom.service.VERSION}
     models:       ${file(schemas/models.yml)}

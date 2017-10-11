@@ -2,6 +2,9 @@ import ware from 'warewolf';
 import { before, after, queryStringIsTrue } from '../../utils';
 
 export const pong = ware(
+
+// debugger;
+
   before,
 
   async (event) => {

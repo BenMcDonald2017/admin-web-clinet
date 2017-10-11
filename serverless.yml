@@ -51,10 +51,10 @@ Warning_051: ''
 service: '${self:custom.service.NAME}'
 frameworkVersion: '>=1.23.0 <2.0.0'
 plugins:
-  - serverless-offline
   - serverless-plugin-webpack
   - serverless-aws-documentation
   - serverless-domain-manager
+  - serverless-offline
 package:
   individually: true
   excludeDevDependencies: false
@@ -134,6 +134,16 @@ functions:
           documentation:
             summary: Ping / Pong
             description: Is service up and running?
+  createEnvelope:
+    handler: build/routes/envelope/create.get
+    events:
+      - http:
+          path: envelope
+          method: post
+          cors: true
+          documentation:
+            summary: Create New Envelope
+            description: 'Create New Envelope [POST]'
 resources:
   Resources: null
   Outputs: null

@@ -1,6 +1,6 @@
 {
   "name": "application-service",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Application Service",
   "author": "Hixme.com",
   "contributors": [
@@ -15,7 +15,7 @@
     "url": "git+ssh://git@bitbucket.org/hixme/application-service.git"
   },
   "config": {
-    "NOTE": "THE FOLLOWING VALUES ARE USED BY SERVERLESS!",
+    "// NOTE": "THE FOLLOWING VALUES ARE USED BY THIS SERVICE!",
     "log_fetch_refresh_interval": 5000,
     "log_fetch_start_time": "30m",
     "region": "us-west-2",
@@ -26,7 +26,7 @@
     "build:merge": "npm run clean && npm run merge:yaml && cross-env BABEL_ENV=commonjs babel src --ignore='**/*/*.test.js' --out-dir=build --source-maps --copy-files --no-comments",
     "build:min": "npm run build -- --compact --minified --source-maps=false",
     "build:watch": "cross-env BABEL_ENV=commonjs babel src --ignore='**/*/*.test.js' --out-dir=build --source-maps --copy-files --no-comments --watch",
-    "build": "npm run clean && npm run merge:yaml && cross-env BABEL_ENV=commonjs babel src --ignore='**/*/*.test.js' --out-dir=build --source-maps --copy-files --no-comments",
+    "build": "npm run clean && npm run merge:yaml && cross-env SLS_DEBUG=* BABEL_ENV=commonjs babel src --ignore='**/*/*.test.js' --out-dir=build --source-maps --copy-files --no-comments",
     "clean": "rimraf build coverage .webpack .serverless",
     "coverage": "npm run test -- --coverage",
     "deploy:custom": "npm run build && cross-env SLS_DEBUG=* sls deploy --verbose --region $npm_package_config_region --stage",
@@ -49,7 +49,7 @@
     "logs": "npm run logs:dev --",
     "merge:yaml": "merge-yaml -i ./src/config/**/*.yml -o serverless.yml",
     "bitbucket:debug": "mkdir -p .serverless && merge-yaml -i bitbucket-pipelines.yml -o .serverless/bitbucket-pipelines.yml && ccat .serverless/bitbucket-pipelines.yml",
-    "offline": "sls offline",
+    "offline": "node --inspect --inspect-port=localhost:9229 ./node_modules/.bin/serverless offline --port 8000 --prefix \"$(echo $npm_package_name | sed 's/-.*//')\"",
     "package": "npm run build && cross-env SLS_DEBUG=* sls package",
     "start": "npm run build && concurrently --kill-others --prefix={name}-{time} --names=BUILD-,SERVER --timestamp-format=HH:mm:ss.SSS -c bgBlue,bgMagenta \"npm run build:watch\" \"npm run offline\"",
     "tag": "git tag -ams $npm_package_version $npm_package_version && git push --tags",
@@ -62,7 +62,6 @@
     "@hixme/model-middleware": "1.4.5",
     "@hixme/moosify": "5.4.6",
     "@hixme/stage-middleware": "5.10.0",
-    "ajv": "5.2.3",
     "aws-sdk": "2.131.0",
     "babel-runtime": "6.26.0",
     "circular-json": "0.3.3",

@@ -12,21 +12,19 @@ functions:
           path: ping
           method: get
           cors: true
-          documentation:
-            summary: Ping / Pong
-            description: Is service up and running?
+          documentation: { summary: 'Ping / Pong', description: 'Is service up and running?' }
 
-  # get:
-  #   handler: build/routes/examples/get/index.get
-  #   events:
-  #     - http:
-  #         path: examples/get
-  #         method: get
-  #         cors: true
-  #         documentation:
-  #           summary: Example GET
-  #           description: Example of a GET request/response.
-  #
+  createEnvelope:
+    handler: build/routes/envelope/create.get
+    events:
+      - http:
+          path: envelope
+          method: post
+          cors: true
+          documentation:
+            summary: Create New Envelope
+            description: Create New Envelope [POST]
+
   # post:
   #   handler: build/routes/examples/post/index.post
   #   description: ${self:custom.documentation.summary} | Example POST
