@@ -1,6 +1,6 @@
 {
   "name": "application-service",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Application Service",
   "author": "Hixme.com",
   "contributors": [
@@ -48,6 +48,7 @@
     "logs:prod": "sls logs --tail --interval $npm_package_config_log_fetch_refresh_interval --stage prod --region $npm_package_config_region --startTime $npm_package_config_log_fetch_start_time --function",
     "logs": "npm run logs:dev --",
     "merge:yaml": "merge-yaml -i ./src/config/**/*.yml -o serverless.yml",
+    "bitbucket:debug": "mkdir -p .serverless && merge-yaml -i bitbucket-pipelines.yml -o .serverless/bitbucket-pipelines.yml && ccat .serverless/bitbucket-pipelines.yml",
     "offline": "sls offline",
     "package": "npm run build && cross-env SLS_DEBUG=* sls package",
     "start": "npm run build && concurrently --kill-others --prefix={name}-{time} --names=BUILD-,SERVER --timestamp-format=HH:mm:ss.SSS -c bgBlue,bgMagenta \"npm run build:watch\" \"npm run offline\"",
