@@ -1,18 +1,17 @@
-service: ${self:custom.service.NAME}
+service:          ${self:custom.service.NAME}
 
 frameworkVersion: ">=1.23.0 <2.0.0"
 
 plugins:
-  - serverless-offline
   - serverless-plugin-webpack
   - serverless-aws-documentation
   - serverless-domain-manager
+  - serverless-offline
 
 package:
-  individually: true # package each lambda function individually
+  individually:           true # package each lambda function individually
   excludeDevDependencies: false # we lean on webpack do the tree-shaking
-  exclude:
-    - node_modules/**/aws-sdk/**
+  exclude:                ['node_modules/**/aws-sdk/**']
 
 custom:
   service:
@@ -38,16 +37,19 @@ custom:
     # resources:    ${file(schemas/resources.yml)}
 
   environment:    &environment
+    DOMAIN:       ${file(./env.js):getDomainName}
     REGION:       ${self:custom.service.REGION}
     SERVICE:      ${self:custom.service.NAME}
     STAGE:        ${self:custom.service.STAGE}
+    URL_PATH:     ${file(./env.js):getAPIBasePath}
+    VERSION:      ${self:custom.service.VERSION}
 
   customDomain:
-    basePath: ${file(./env.js):getAPIBasePath}
-    certificateName: "*.hixme.com"
-    createRoute53Record: false
-    domainName: ${file(./env.js):getDomainName}
-    stage: ${self:custom.service.STAGE}
+    basePath:             ${file(./env.js):getAPIBasePath} # 'application'
+    certificateName:      "*.hixme.com"
+    createRoute53Record:  false # has already been done
+    domainName:           ${file(./env.js):getDomainName}
+    stage:                ${file(./env.js):packageStageName}
 
 provider:
   name:       aws
