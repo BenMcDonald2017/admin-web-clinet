@@ -1,19 +1,13 @@
 import ware from 'warewolf';
 import { before, after, queryStringIsTrue } from '../../utils';
 
-export const pong = ware(
-
-// debugger;
-
+export const ping = ware(
   before,
 
   async (event) => {
-    const message = 'pong!';
-    const nodeVersion = process.versions.node;
-
     event.result = {
-      message,
-      'node version': nodeVersion,
+      message: 'pong!',
+      version: process.versions.node,
     };
 
     // if `showEvent` qs-param is true...

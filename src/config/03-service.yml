@@ -1,4 +1,7 @@
-# the values below will override those set within `02-boilerplate.yml`
+# provider:
+#   # if set, the values below will override those set within `02-boilerplate.yml`
+#   memorySize: 512
+#   timeout:    6
 
 custom:
 

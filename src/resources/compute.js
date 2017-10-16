@@ -1,12 +1,12 @@
 import aws from 'aws-sdk';
 
-const DEFAULT_STAGE = process.env.npm_package_config_stage;
 const DEFAULT_REGION = process.env.npm_package_config_region;
+const DEFAULT_STAGE = process.env.npm_package_config_stage;
 
 const { STAGE = DEFAULT_STAGE } = process.env;
 const lambda = new aws.Lambda({ region: DEFAULT_REGION });
 
-export /* REMOVE EXPORT! */ const invokeLambda = async (nameArg, payload = {}, setStage = true) => {
+const invokeLambda = async (nameArg = '', payload = {}, setStage = true) => {
   const name = nameArg.indexOf(':') === -1 && setStage ? [nameArg, process.env.STAGE].join(':') : nameArg;
   payload.Stage = payload.Stage || STAGE;
   const params = {

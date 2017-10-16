@@ -1,7 +1,24 @@
+// NOTE: This file was intentionally written in ES5
+
 // eslint-disable-next-line import/no-extraneous-dependencies
 const { argv } = require('yargs');
 
 let { stage = 'dev' } = argv;
+
+// eslint-disable-next-line import/no-extraneous-dependencies
+const dotenv = require('dotenv');
+const fs = require('fs');
+const PATH = require('path');
+
+module.exports.default = () => new Promise((resolve, reject) => {
+  fs.readFile(PATH.join(__dirname, '.env'), (err, data) => {
+    if (err) return reject(err);
+    const envVars = dotenv.parse(data);
+    return resolve(Object.assign({}, envVars, {
+      STAGE: stage,
+    }));
+  });
+});
 
 module.exports.getDomainName = () => new Promise((resolve, reject) => {
   stage = `${stage}`.toLowerCase();
@@ -22,7 +39,6 @@ module.exports.getDomainName = () => new Promise((resolve, reject) => {
 });
 
 module.exports.getAPIBasePath = () => new Promise((resolve, reject) => {
-  // eslint-disable-next-line global-require
   const existingServiceName = require('./package.json').name;
   const apiServiceName = existingServiceName.replace(/-service/, '').trim();
 

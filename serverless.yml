@@ -124,26 +124,36 @@ provider:
   iamRoleStatements: '${self:custom.iamRoleStatements}'
 functions:
   ping:
-    description: Ping / Ping
-    handler: build/routes/ping/index.pong
+    description: Ping / Pong
+    handler: build/routes/ping/index.ping
     events:
       - http:
           path: ping
           method: get
           cors: true
           documentation:
-            summary: Ping / Pong
-            description: Is service up and running?
+            summary: ping
+            description: Service Up? Check w/ Ping / Pong!
   createEnvelope:
-    handler: build/routes/envelope/create.get
+    handler: build/routes/envelope/index.create
     events:
       - http:
           path: envelope
           method: post
           cors: true
           documentation:
-            summary: Create New Envelope
-            description: 'Create New Envelope [POST]'
+            summary: Create Envelope
+            description: 'Create Envelope [POST]'
+  fetchCart:
+    handler: build/routes/cart/index.fetchCart
+    events:
+      - http:
+          path: cart
+          method: post
+          cors: true
+          documentation:
+            summary: Fetch Cart
+            description: 'Fetch Cart (& Application / Status) [POST]'
 resources:
   Resources: null
   Outputs: null

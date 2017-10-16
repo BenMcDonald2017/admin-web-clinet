@@ -1,8 +1,8 @@
+import { isError, isObject, isString } from 'lodash';
+
 import circular from 'circular-json';
 import http from 'http';
 import ware from 'warewolf';
-
-import { isError, isObject, isString } from 'lodash';
 
 const defaultResponseConfig = {
   headers: {
