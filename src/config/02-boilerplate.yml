@@ -41,15 +41,15 @@ custom:
     REGION:       ${self:custom.service.REGION}
     SERVICE:      ${self:custom.service.NAME}
     STAGE:        ${self:custom.service.STAGE}
-    URL_PATH:    ${file(./env.js):getAPIBasePath}
+    URL_PATH:     ${file(./env.js):getAPIBasePath}
     VERSION:      ${self:custom.service.VERSION}
 
   customDomain:
-    basePath: ${file(./env.js):getAPIBasePath}
-    certificateName: "*.hixme.com"
-    createRoute53Record: false # has already been done
-    domainName: ${file(./env.js):getDomainName}
-    stage: ${self:custom.service.STAGE}
+    basePath:             ${file(./env.js):getAPIBasePath} # 'application'
+    certificateName:      "*.hixme.com"
+    createRoute53Record:  false # has already been done
+    domainName:           ${file(./env.js):getDomainName}
+    stage:                ${file(./env.js):packageStageName}
 
 provider:
   name:       aws
