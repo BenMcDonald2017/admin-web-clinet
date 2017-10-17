@@ -1,0 +1,334 @@
+{
+  "Cart": [
+    {
+      "Benefits": [
+        {
+          "ApplicationStatus": "Not Started",
+          "BenefitPublicKey": "5e4c40ac-7347-401d-ad61-192f2de8b45d",
+          "Description": "United Healthcare PPO 600 Element",
+          "Name": "Bundle 3",
+          "Persons": [
+            {
+              "BenefitStatus": "Included",
+              "BundleMembership": "Subscriber",
+              "FirstName": "Marcello",
+              "Id": "0f5a3877-c593-405f-811e-0076cfddcdd6",
+              "LastName": "Silva",
+              "PostalCode": "91301",
+              "RatingArea": 16,
+              "StateProvince": "CA"
+            }
+          ],
+          "Math": {
+            "WorkerPrice": 210
+          }
+        },
+        {
+          "ApplicationStatus": "Not Started",
+          "BenefitPublicKey": "fd1e99aa-f228-4662-a98c-076637815d72",
+          "Description": "Anthem HMO 540 Standard Bronze",
+          "Name": "Bundle 1",
+          "Persons": [
+            {
+              "BenefitStatus": "Included",
+              "BundleMembership": "Subscriber",
+              "FirstName": "Bobby",
+              "Id": "e4ab9ce3-59d7-48dc-8884-46ce86fe35b8",
+              "LastName": "Silva",
+              "PostalCode": "80202",
+              "RatingArea": 3,
+              "StateProvince": "CO"
+            },
+            {
+              "BenefitStatus": "Included",
+              "BundleMembership": "Dependent",
+              "FirstName": "Errol",
+              "Id": "c2c10428-e8c4-4690-8871-b47e48d19454",
+              "LastName": "Silva",
+              "PostalCode": "80202",
+              "RatingArea": 3,
+              "StateProvince": "CO"
+            }
+          ],
+          "Math": {
+            "WorkerPrice": 60
+          }
+        }
+      ],
+      "BenefitType": "HealthBundle",
+      "EmployeePublicKey": "0f5a3877-c593-405f-811e-0076cfddcdd6",
+      "Name": "My Health Bundle",
+      "NotIncluded": [
+        {
+          "BenefitStatus": "Declined",
+          "DeclineReason": "AlreadyInsured",
+          "FirstName": "Abbie",
+          "Id": "d869457e-4ff7-4244-9ef3-14fd346702be",
+          "LastName": "Silva",
+          "PostalCode": "91301",
+          "RatingArea": 16,
+          "StateProvince": "CA"
+        },
+        {
+          "BenefitStatus": "Declined",
+          "DeclineReason": "AlreadyInsured",
+          "FirstName": "Tyler",
+          "Id": "b30570ce-ca3a-4ebb-8e6d-ea4d11ac31d0",
+          "LastName": "Silva",
+          "PostalCode": "91301",
+          "RatingArea": 16,
+          "StateProvince": "CA"
+        }
+      ]
+    },
+    {
+      "Benefits": [
+        {
+          "ApplicationStatus": "Not Started",
+          "BenefitPublicKey": "14c03283-9627-4144-aa83-208e00245fa6",
+          "Description": "EyeMed Basic Vision Plan",
+          "Name": "My Vision plan",
+          "Persons": [
+            {
+              "BenefitStatus": "Included",
+              "FirstName": "Marcello",
+              "Id": "025c09cd-c4ec-4cc6-8f1b-f3c778f13cee",
+              "LastName": "Silva",
+              "PostalCode": "91301",
+              "RatingArea": 16,
+              "StateProvince": "CA"
+            }
+          ],
+          "Math": {
+            "WorkerPrice": 10
+          }
+        }
+      ],
+      "BenefitType": "VisionInsurance",
+      "EmployeePublicKey": "0f5a3877-c593-405f-811e-0076cfddcdd6",
+      "Name": "My Vision plan",
+      "NotIncluded": [
+        {
+          "BenefitStatus": "Declined",
+          "FirstName": "Abbie",
+          "Id": "d869457e-4ff7-4244-9ef3-14fd346702be",
+          "LastName": "Silva",
+          "PostalCode": "91301",
+          "RatingArea": 16,
+          "StateProvince": "CA"
+        },
+        {
+          "BenefitStatus": "Declined",
+          "FirstName": "Tyler",
+          "Id": "b30570ce-ca3a-4ebb-8e6d-ea4d11ac31d0",
+          "LastName": "Silva",
+          "PostalCode": "91301",
+          "RatingArea": 16,
+          "StateProvince": "CA"
+        },
+        {
+          "BenefitStatus": "Declined",
+          "FirstName": "Bobby",
+          "Id": "e4ab9ce3-59d7-48dc-8884-46ce86fe35b8",
+          "LastName": "Silva",
+          "PostalCode": "80202",
+          "RatingArea": 3,
+          "StateProvince": "CO"
+        },
+        {
+          "BenefitStatus": "Declined",
+          "FirstName": "Errol",
+          "Id": "c2c10428-e8c4-4690-8871-b47e48d19454",
+          "LastName": "Silva",
+          "PostalCode": "80202",
+          "RatingArea": 3,
+          "StateProvince": "CO"
+        }
+      ]
+    },
+    {
+      "Benefits": [
+        {
+          "AnnualBenefitMaximum": "$75 copay",
+          "BenefitPublicKey": "a3fc2b94-2b94-4b4a-a51d-fb99c91778ec",
+          "Deductible": "$50 / 3x Individual",
+          "Description": "My Dental Plan",
+          "Name": "My Dental plan",
+          "Orthodontic": "50% coinsuance Adults & dependent children",
+          "Persons": [
+            {
+              "BenefitStatus": "Included",
+              "BundleMembership": "Subscriber",
+              "FirstName": "Marcelo",
+              "Id": "025c09cd-c4ec-4cc6-8f1b-f3c778f13cee",
+              "LastName": "Silva",
+              "PostalCode": "95901",
+              "RatingArea": 16,
+              "StateProvince": "CA"
+            },
+            {
+              "BenefitStatus": "Included",
+              "BundleMembership": "Dependent",
+              "FirstName": "Abbie",
+              "Id": "d869457e-4ff7-4244-9ef3-14fd346702be",
+              "LastName": "Silva",
+              "PostalCode": "91301",
+              "RatingArea": 16,
+              "StateProvince": "CA"
+            }
+          ],
+          "PreventativeServices": "100% coinsurance",
+          "Math": {
+            "WorkerPrice": 10
+          }
+        }
+      ],
+      "BenefitType": "DentalInsurance",
+      "EmployeePublicKey": "0f5a3877-c593-405f-811e-0076cfddcdd6",
+      "Name": "My Dental plan",
+      "NotIncluded": [
+        {
+          "BenefitStatus": "Declined",
+          "BundleMembership": "Dependent",
+          "FirstName": "Bobby",
+          "Id": "e4ab9ce3-59d7-48dc-8884-46ce86fe35b8",
+          "LastName": "Silva",
+          "PostalCode": "80202",
+          "RatingArea": 3,
+          "StateProvince": "CO"
+        },
+        {
+          "BenefitStatus": "Declined",
+          "BundleMembership": "Dependent",
+          "FirstName": "Errol",
+          "Id": "c2c10428-e8c4-4690-8871-b47e48d19454",
+          "LastName": "Silva",
+          "PostalCode": "80202",
+          "RatingArea": 3,
+          "StateProvince": "CO"
+        },
+        {
+          "BenefitStatus": "Declined",
+          "BundleMembership": "Dependent",
+          "FirstName": "Tyler",
+          "Id": "b30570ce-ca3a-4ebb-8e6d-ea4d11ac31d0",
+          "LastName": "Silva",
+          "PostalCode": "91301",
+          "RatingArea": 16,
+          "StateProvince": "CA"
+        }
+      ]
+    },
+    {
+      "Benefits": [],
+      "BenefitType": "SupplementalLifeInsurance",
+      "EmployeePublicKey": "0f5a3877-c593-405f-811e-0076cfddcdd6",
+      "Name": "Supplemental",
+      "NotIncluded": [
+        {
+          "BenefitStatus": "Declined",
+          "FirstName": "Marcello",
+          "Id": "025c09cd-c4ec-4cc6-8f1b-f3c778f13cee",
+          "LastName": "Silva",
+          "PostalCode": "91301",
+          "RatingArea": 16,
+          "StateProvince": "CA"
+        },
+        {
+          "BenefitStatus": "Declined",
+          "FirstName": "Abbie",
+          "Id": "d869457e-4ff7-4244-9ef3-14fd346702be",
+          "LastName": "Silva",
+          "PostalCode": "91301",
+          "RatingArea": 16,
+          "StateProvince": "CA"
+        },
+        {
+          "BenefitStatus": "Declined",
+          "FirstName": "Tyler",
+          "Id": "b30570ce-ca3a-4ebb-8e6d-ea4d11ac31d0",
+          "LastName": "Silva",
+          "PostalCode": "91301",
+          "RatingArea": 16,
+          "StateProvince": "CA"
+        },
+        {
+          "BenefitStatus": "Declined",
+          "FirstName": "Bobby",
+          "Id": "e4ab9ce3-59d7-48dc-8884-46ce86fe35b8",
+          "LastName": "Silva",
+          "PostalCode": "80202",
+          "RatingArea": 3,
+          "StateProvince": "CO"
+        },
+        {
+          "BenefitStatus": "Declined",
+          "FirstName": "Errol",
+          "Id": "c2c10428-e8c4-4690-8871-b47e48d19454",
+          "LastName": "Silva",
+          "PostalCode": "80202",
+          "RatingArea": 3,
+          "StateProvince": "CO"
+        }
+      ]
+    },
+    {
+      "Benefits": [],
+      "BenefitType": "FlexibleSpendingAccount",
+      "EmployeePublicKey": "0f5a3877-c593-405f-811e-0076cfddcdd6",
+      "Name": "FSA Account",
+      "NotIncluded": [
+        {
+          "BenefitStatus": "Declined",
+          "FirstName": "Marcello",
+          "Id": "025c09cd-c4ec-4cc6-8f1b-f3c778f13cee",
+          "LastName": "Silva",
+          "PostalCode": "91301",
+          "RatingArea": 16,
+          "StateProvince": "CA"
+        },
+        {
+          "BenefitStatus": "Declined",
+          "FirstName": "Abbie",
+          "Id": "d869457e-4ff7-4244-9ef3-14fd346702be",
+          "LastName": "Silva",
+          "PostalCode": "91301",
+          "RatingArea": 16,
+          "StateProvince": "CA"
+        },
+        {
+          "BenefitStatus": "Declined",
+          "FirstName": "Tyler",
+          "Id": "b30570ce-ca3a-4ebb-8e6d-ea4d11ac31d0",
+          "LastName": "Silva",
+          "PostalCode": "91301",
+          "RatingArea": 16,
+          "StateProvince": "CA"
+        },
+        {
+          "BenefitStatus": "Declined",
+          "FirstName": "Bobby",
+          "Id": "e4ab9ce3-59d7-48dc-8884-46ce86fe35b8",
+          "LastName": "Silva",
+          "PostalCode": "80202",
+          "RatingArea": 3,
+          "StateProvince": "CO"
+        },
+        {
+          "BenefitStatus": "Declined",
+          "FirstName": "Errol",
+          "Id": "c2c10428-e8c4-4690-8871-b47e48d19454",
+          "LastName": "Silva",
+          "PostalCode": "80202",
+          "RatingArea": 3,
+          "StateProvince": "CO"
+        }
+      ]
+    }
+  ],
+  "CreatedDate": "2016-10-05T16:26:35.149Z",
+  "EmployeePublicKey": "0f5a3877-c593-405f-811e-0076cfddcdd6",
+  "Signature": {
+    "Name": "Marcelo Silva"
+  }
+}

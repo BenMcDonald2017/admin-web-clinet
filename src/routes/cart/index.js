@@ -1,14 +1,13 @@
 // from: 'get-cart-with-application-status-lambda'
+
+import { isObject, noop } from 'lodash';
 import AWS from 'aws-sdk';
-import errorMiddleware from '@hixme/error-middleware';
 import fetch from 'node-fetch';
 import moment from 'moment';
 import ware from 'warewolf';
 
-import { isObject, noop } from 'lodash';
-
-// import getConfig from './config';
-// import responseController from './response-controller';
+import { before, after } from '../../utils';
+import getConfig from './config';
 
 const docClient = new AWS.DynamoDB.DocumentClient({ region: 'us-west-2' });
 const lambda = new AWS.Lambda({ region: 'us-west-2' });
@@ -16,15 +15,19 @@ const s3 = new AWS.S3();
 
 const CHECK_TIME = false;
 
+/* eslint-disable no-console */
 const markTime = CHECK_TIME ? console.time.bind(console) : noop;
 const markTimeEnd = CHECK_TIME ? console.timeEnd.bind(console) : noop;
 
 // POST
 export const fetchCart = ware(
-  async (event, context) => {
-    event.stage = event.stage || getStage(context);
+  before,
+
+  async (event) => {
+    event.stage = event.stage || process.env.STAGE;
     event.config = getConfig(event.stage);
   },
+
   async (event) => {
     const { employeePublicKey, stage, config } = event;
     if (!stage) {
@@ -32,10 +35,8 @@ export const fetchCart = ware(
       err.statusCode = 400;
       throw err;
     }
-    const [
-      family,
-      { Item: cart },
-    ] = await Promise.all([
+
+    const [family, { Item: cart }] = await Promise.all([
       getFamily(employeePublicKey, config),
       getCart(employeePublicKey, config.cartTable),
     ]);
@@ -61,9 +62,8 @@ export const fetchCart = ware(
 
     event.result = cart.Cart;
   },
-  // FIXME:
-  // responseController(),
-  errorMiddleware(),
+
+  after,
 );
 
 async function createEnvelopes(healthIns, primary, family, config) {
@@ -92,6 +92,7 @@ async function createEnvelopes(healthIns, primary, family, config) {
       }
       benefit.DocumentLocation = documents[0].documentLocation;
       markTime(`doc-create-${i}`);
+      /* eslint-disable max-len */
       benefit.DocuSignEnvelopeId = await createEnvelope(applicants, signers, documents, primary, config);
       markTimeEnd(`doc-create-${i}`);
       benefit.PdfSignatures = signers.map(signer => ({
@@ -127,7 +128,8 @@ async function createEnvelope(applicants, signers, documents, primary, config) {
       value: primary.Id,
     }],
   };
-  const res = await fetch(`${config.BASE_URL}/accounts/${config.ACCOUNT_ID}/envelopes`, {
+
+  await fetch(`${config.BASE_URL}/accounts/${config.ACCOUNT_ID}/envelopes`, {
     method: 'POST',
     headers: {
       Accept: 'application/json',
@@ -138,13 +140,10 @@ async function createEnvelope(applicants, signers, documents, primary, config) {
       }),
     },
     body: JSON.stringify(body),
-  });
-
-  const result = await res.json();
-
-  return result.envelopeId;
+  }).then(response => (response.json().envelopeId)).catch(e => new Error(e.statusCode, e.error));
 }
 
+/* eslint-disable no-nested-ternary */
 const forcePlain = arg => (Array.isArray(arg)
   ? arg.map(forcePlain)
   : (isObject(arg) ? Object.assign({}, arg) : arg));
@@ -200,8 +199,10 @@ function getSigners(family, config) {
   }
 
   if (applicants.Children && applicants.Children.length > 0) {
+    /* eslint-disable max-len */
     const kids = applicants.Children.filter(kid => effectiveAge(kid.DateOfBirth, config.EFFECTIVE_DATE) >= 18);
 
+    /* eslint-disable no-plusplus */
     for (let i = 0; i < kids.length; i++) {
       const email = kids[i].HixmeEmailAlias ||
         (`${kids[i].FirstName}.${kids[i].FirstName}@hixmeusers.com`);
@@ -316,8 +317,9 @@ async function getDocument(applicants, hios, config) {
   const getFilledWithRetries = tryFor(4, 500)(getFilledDocument, res => !!res);
   const result = await getFilledWithRetries(applicants, hios, config);
   const components = result.data.split('/');
+  const bucket = components[0];
 
-  document.bucket = components[0];
+  document.bucket = bucket;
   document.key = result.data.substring(result.data.indexOf('/') + 1);
   document.filename = components[components.length - 1];
 
@@ -329,12 +331,15 @@ const waitFor = (time, ...args) => new Promise(resolve => setTimeout(resolve, ti
 const tryFor = (times, delay, dieOffRate = 1) => (fn, isOk) => async (...args) => {
   let timesTried = 0;
 
+  /* eslint-disable no-await-in-loop */
+  /* eslint-disable no-plusplus */
+  // C.f. https://eslint.org/docs/rules/no-await-in-loop
   while (timesTried++ <= times) {
     const result = await fn(...args);
     if (isOk(result)) {
       return result;
     }
-    await waitFor(delay * (1 + Math.log(Math.pow(dieOffRate, timesTried - 1))));
+    await waitFor(delay * (1 + Math.log(dieOffRate ** (timesTried - 1))));
   }
   throw new Error(`Method ${fn.name} was tried too many times.`);
 };
@@ -382,7 +387,7 @@ async function checkApplicationsAvailable(healthIns, config) {
 
 async function applicationAvailable(hiosId, config) {
   const issuerId = hiosId.substring(0, 5);
-  const hiosRegion = hiosId.replace(/[0-9]/g, '');
+  // const hiosRegion = hiosId.replace(/[0-9]/g, '');
 
   const params = {
     TableName: config.applicationTable,
@@ -413,6 +418,7 @@ async function applicationAvailable(hiosId, config) {
     if (app.HIOS_ID) {
       return app.HIOS_ID.indexOf(hiosId) !== -1;
     }
+    return false;
   });
 
   return !(!application || !application.TemplateReviewComplete);
@@ -434,13 +440,6 @@ async function saveCart(item, tableName) {
     TableName: tableName,
     Item: item,
   }).promise();
-}
-
-function getStage(context) {
-  if (!context.invokedFunctionArn || (context.invokedFunctionArn.split(':').pop() === context.functionName)) {
-    return null;
-  }
-  return context.invokedFunctionArn.split(':').pop();
 }
 
 async function getFamily(employeePublicKey, config) {

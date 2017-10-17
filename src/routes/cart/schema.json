@@ -1,0 +1,273 @@
+{
+  "Description": "Cart stores benefit selections",
+  "Gateways": [
+    "enrollme.hixme.com"
+  ],
+  "Schema": {
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "array",
+    "items": {
+      "type": "object",
+      "properties": {
+        "BenefitType": {
+          "type": "string",
+          "enum": [
+            "HealthBundle",
+            "VisionInsurance",
+            "DentalInsurance",
+            "SupplementalLifeInsurance",
+            "FlexibleSpendingAccount",
+            "HealthSavingsAccount",
+            "LimitedPurposeFlexibleSpendingAccount",
+            "FlexibleTransitAccount",
+            "DependentCareAccount",
+            "VoluntaryAddInsurance",
+            "SimpleVoluntaryLifeInsurance",
+            "VoluntaryLifeInsurance",
+            "LongTermDisability",
+            "VoluntaryLongTermDisability",
+            "VoluntaryADD",
+            "LegalShield",
+            "EmployeeIndicatedInterest",
+            "GroupHealth",
+            "Chiropractic"
+          ]
+        },
+        "AllPdfApplicationsAvailable": {
+          "type": "boolean"
+        },
+        "EmployeePublicKey": {
+          "minLength": 36,
+          "type": "string",
+          "maxLength": 36
+        },
+        "Benefits": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "CarrierName": {
+                "type": "string"
+              },
+              "CoveredDoctors": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "PdfApplicationAvailable": {
+                "type": "boolean"
+              },
+              "EnvelopeComplete": {
+                "type": "boolean"
+              },
+              "RecommendedBundle": {
+                "type": "boolean"
+              },
+              "BenefitPublicKey": {
+                "minLength": 36,
+                "type": "string",
+                "maxLength": 36
+              },
+              "PlanName": {
+                "type": "string"
+              },
+              "CoveredHospitals": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "DocuSignEnvelopeId": {
+                "type": "string"
+              },
+              "PrimaryCareProvider": {
+                "type": "string"
+              },
+              "Name": {
+                "type": "string"
+              },
+              "Components": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "BenefitType": {
+                      "type": "string"
+                    },
+                    "BenefitPublicKey": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "BenefitPublicKey",
+                    "BenefitType"
+                  ]
+                }
+              },
+              "PdfSignatures": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "Signed": {
+                      "type": "boolean"
+                    },
+                    "Id": {
+                      "minLength": 36,
+                      "description": "PersonPublicKey",
+                      "type": "string",
+                      "maxLength": 36
+                    }
+                  },
+                  "required": [
+                    "Id",
+                    "Signed"
+                  ]
+                }
+              },
+              "SbcLinks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "BenefitType": {
+                      "type": "string"
+                    },
+                    "Url": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "Url",
+                    "BenefitType"
+                  ]
+                }
+              },
+              "PdfApplicationIsManual": {
+                "type": "boolean"
+              },
+              "Price": {
+                "type": "number"
+              },
+              "IsHsa": {
+                "type": "boolean"
+              },
+              "Persons": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "FirstName": {
+                      "type": "string"
+                    },
+                    "BenefitStatus": {
+                      "type": "string",
+                      "enum": [
+                        "Included"
+                      ]
+                    },
+                    "Id": {
+                      "minLength": 36,
+                      "type": "string",
+                      "maxLength": 36
+                    },
+                    "LastName": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "Id",
+                    "FirstName",
+                    "LastName",
+                    "BenefitStatus"
+                  ]
+                }
+              },
+              "PlanType": {
+                "type": "string"
+              },
+              "StarRatings": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "Description": {
+                      "type": "string"
+                    },
+                    "NumberOfStars": {
+                      "type": "integer"
+                    },
+                    "Frequency": {
+                      "type": "number"
+                    },
+                    "ScenarioValue": {
+                      "type": "number"
+                    },
+                    "Scenario": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "Scenario",
+                    "Description",
+                    "Frequency",
+                    "NumberOfStars",
+                    "ScenarioValue"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "Name",
+              "Persons"
+            ]
+          }
+        },
+        "NotIncluded": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "FirstName": {
+                "type": "string"
+              },
+              "BenefitStatus": {
+                "type": "string",
+                "enum": [
+                  "NotIncluded",
+                  "Declined"
+                ]
+              },
+              "Id": {
+                "minLength": 36,
+                "type": "string",
+                "maxLength": 36
+              },
+              "LastName": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "Id",
+              "FirstName",
+              "LastName",
+              "BenefitStatus"
+            ]
+          }
+        },
+        "Name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "BenefitType",
+        "Name",
+        "EmployeePublicKey",
+        "Benefits",
+        "NotIncluded"
+      ]
+    }
+  },
+  "Name": "Cart"
+}
