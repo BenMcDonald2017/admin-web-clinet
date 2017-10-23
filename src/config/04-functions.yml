@@ -12,16 +12,16 @@ functions:
             description: Service Up? Check w/ Ping / Pong!
 
   createEnvelope:
-    handler: build/routes/docusign/envelope/index.createEnvelope
+    handler: build/routes/sign/envelope/index.createEnvelope
     events:
       - http:
-          path: envelope
+          path: sign/envelope
           method: post
           cors: true
           documentation:
             summary: Create Envelope
             description: Create Envelope [POST]
-            tags: ["docusign", "envelope", "signing session"]
+            tags: ["docusign", "sign", "envelope", "signing session"]
             requestBody:
               description: "Request body description"
             methodResponses:
@@ -41,11 +41,11 @@ functions:
 # **********************************************************
 
   # createSigningSession:
-  #   handler: build/routes/docusign/session/index.createSigningSession
+  #   handler: build/routes/sign/session/index.createSigningSession
   #   events:
   #     - http:
-  #         # path: {applicationId}/session # ?
-  #         path: envelope/{envelopeId}/session
+  #         # path: sign/{applicationId}/session # ?
+  #         path: sign/envelope/{envelopeId}/session
   #         method: post
   #         request:
   #           parameters:
@@ -57,11 +57,11 @@ functions:
   #           description: Create Signing Session [POST]
 
   # getSigningSession:
-  #   handler: build/routes/docusign/session/index.getSigningSession
+  #   handler: build/routes/sign/session/index.getSigningSession
   #   events:
   #     - http:
-  #         # path: {applicationId}/session # ?
-  #         path: envelope/{envelopeId}/session
+  #         # path: sign/{applicationId}/session # ?
+  #         path: sign/envelope/{envelopeId}/session
   #         method: get
   #         request:
   #           parameters:
@@ -73,11 +73,10 @@ functions:
   #           description: Get Signing Session [POST]
 
   # getApplication:
-  #   handler: build/routes/index.get
+  #   handler: build/routes/cart/index.get
   #   events:
   #     - http:
-  #         path: /cart/{cartID}/applications  // fetch all applications from a cart?
-  #         path: /                            // fetch one application ? (remember: service is named 'application')
+  #         path: sign/cart/{cartID}/applications  // fetch all applications from a cart?
   #         method: get
   #         cors: true
   #         documentation:

@@ -189,10 +189,10 @@ functions:
             summary: ping
             description: Service Up? Check w/ Ping / Pong!
   createEnvelope:
-    handler: build/routes/docusign/envelope/index.createEnvelope
+    handler: build/routes/sign/envelope/index.createEnvelope
     events:
       - http:
-          path: envelope
+          path: sign/envelope
           method: post
           cors: true
           documentation:
@@ -200,6 +200,7 @@ functions:
             description: 'Create Envelope [POST]'
             tags:
               - docusign
+              - sign
               - envelope
               - signing session
             requestBody:

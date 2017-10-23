@@ -18,7 +18,14 @@ module.exports.packageStageName = () => new Promise((resolve, reject) => {
 
 module.exports.default = () => new Promise((resolve, reject) => {
   fs.readFile(PATH.join(__dirname, '.env'), (error, data) => {
-    if (error) return reject(error)
+    if (error) {
+      if (error.code === 'ENOENT') {
+        return resolve({
+          STAGE: stage,
+        })
+      }
+      return reject(error)
+    }
     const envVars = dotenv.parse(data)
     return resolve(Object.assign({}, envVars, {
       STAGE: stage,
