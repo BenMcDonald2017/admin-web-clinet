@@ -12,7 +12,7 @@ functions:
             description: Service Up? Check w/ Ping / Pong!
 
   createEnvelope:
-    handler: build/routes/envelope/index.create
+    handler: build/routes/docusign/envelope/index.createEnvelope
     events:
       - http:
           path: envelope
@@ -21,6 +21,56 @@ functions:
           documentation:
             summary: Create Envelope
             description: Create Envelope [POST]
+            tags: ["docusign", "envelope", "signing session"]
+            requestBody:
+              description: "Request body description"
+          methodResponses:
+            -
+              statusCode: "200"
+              responseBody:
+                description: "Response body description"
+            -
+              statusCode: "400"
+              responseModels:
+                "application/json": "ErrorResponse"
+          requestModels:
+            "application/json": "CreateEnvelope"
+
+# **********************************************************
+# DON'T WORRY ABOUT THE BELOW CURRENTLY-DISABLED-ENDPOINTS *
+# **********************************************************
+
+  # createSigningSession:
+  #   handler: build/routes/docusign/session/index.createSigningSession
+  #   events:
+  #     - http:
+  #         # path: {applicationId}/session # ?
+  #         path: envelope/{envelopeId}/session
+  #         method: post
+  #         request:
+  #           parameters:
+  #             paths:
+  #               envelopeId: true
+  #         cors: true
+  #         documentation:
+  #           summary: Create Signing Session
+  #           description: Create Signing Session [POST]
+
+  # getSigningSession:
+  #   handler: build/routes/docusign/session/index.getSigningSession
+  #   events:
+  #     - http:
+  #         # path: {applicationId}/session # ?
+  #         path: envelope/{envelopeId}/session
+  #         method: get
+  #         request:
+  #           parameters:
+  #             paths:
+  #               envelopeId: true
+  #         cors: true
+  #         documentation:
+  #           summary: Get Signing Session
+  #           description: Get Signing Session [POST]
 
   # getApplication:
   #   handler: build/routes/index.get
@@ -35,13 +85,13 @@ functions:
   #           description: Get Application [GET]
 
 # calling this `fetch`, because it's via `POST`-http-method, not `GET`
-  fetchCart:
-    handler: build/routes/cart/index.fetchCart
-    events:
-      - http:
-          path: cart
-          method: post
-          cors: true
-          documentation:
-            summary: Fetch Cart
-            description: Fetch Cart (& Application / Status) [POST]
+  # fetchCart:
+  #   handler: build/routes/cart/index.fetchCart
+  #   events:
+  #     - http:
+  #         path: cart
+  #         method: post
+  #         cors: true
+  #         documentation:
+  #           summary: Fetch Cart
+  #           description: Fetch Cart (& Application / Status) [POST]

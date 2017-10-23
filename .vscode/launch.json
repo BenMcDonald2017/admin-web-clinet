@@ -1,58 +1,70 @@
 {
     "version": "0.2.0",
-    "configurations": [
-        {
-            "type": "node",
-            "request": "attach",
-            "protocol": "inspector",
-            "name": "Attach to (an Existing) Node Process",
-            "address": "localhost",
-            "smartStep": true,
-            "sourceMaps": true,
-            "port": 9229
-        },{
-            "type": "node",
-            "request": "launch",
-            "preLaunchTask": "build", /* "build:watch" */
-            "env": { "SLS_DEBUG": "*" },
-            "name": "Debug Entire Service",
-            "program": "${workspaceRoot}/node_modules/serverless/bin/serverless",
-            "cwd": "${workspaceRoot}",
-            "args": ["offline", "start", "--port", "8000"],
-            "internalConsoleOptions": "openOnSessionStart",
-            "sourceMaps": true,
-            "outFiles": ["${workspaceRoot}/build/**/*.js", "${workspaceRoot}/build/*.js"]
-        },{
-            "name": "Debug Function",
-            "preLaunchTask": "build",
-            "type": "node",
-            "request": "launch",
-            "program": "${workspaceRoot}/node_modules/serverless/bin/serverless",
-            "cwd": "${workspaceRoot}",
-            "env": { "SLS_DEBUG": "*" },
-            "internalConsoleOptions": "openOnSessionStart",
-            "sourceMaps": true,
-            "outFiles": ["${workspaceRoot}/build/**/*.js", "${workspaceRoot}/build/*.js"],
-            "args": ["invoke", "local", "-f", "get-bundles", "-p", "src/routes/bundles/event.json"]
-            // "args": ["invoke", "local", "-f", "get-joined-health-plans", "-p", "src/routes/plans/get/event.json"],
-            // "args": ["invoke", "local", "-f", "get-rating-areas", "-p", "src/routes/ratingareas/get/event.json"],
-            // "args": ["invoke", "local", "-f", "patch-health-plan", "-p", "src/routes/plans/patch/eventPlan.json"],
-            // "args": ["invoke", "local", "-f", "patch-plan-benefits", "-p", "src/routes/plans/patch/eventPlanBenefits.json"],
-            // "args": ["invoke", "local", "-f", "patch-plan-rates", "-p", "src/routes/plans/patch/eventPlanRates.json"],
-        },{
-            "name": "Debug (Jest) Tests",
-            "preLaunchTask": "build",
-            "type": "node",
-            "request": "launch",
-            "program": "${workspaceRoot}/node_modules/jest-cli/bin/jest.js",
-            "args": ["--runInBand"],
-            "runtimeArgs": [
-                "--nolazy"
-            ],
-            "cwd": "${workspaceRoot}",
-            "sourceMaps": true,
-            "outFiles": [],
-            "env": { "SLS_DEBUG": "*" }
-        }
-    ]
+    "configurations": [{
+        "name": "Attach to (an Existing) Node Process",
+        "port": 9229,
+        // "processId": "${command:PickProcess}", // enables you to select the process
+        "protocol": "inspector",
+        "request": "attach",
+        "restart": true,
+        "smartStep": true,
+        "sourceMaps": true,
+        "type": "node"
+    }, {
+        "args": ["offline", "start", "--port", "8000"],
+        "cwd": "${workspaceRoot}",
+        "env": {
+            "SLS_DEBUG": "*"
+        },
+        "internalConsoleOptions": "openOnSessionStart",
+        "name": "Debug Entire Service",
+        "outFiles": ["${workspaceRoot}/build/**/*"],
+        "preLaunchTask": "build",  /* "build:watch" (might be a better one?) */
+        "program": "${workspaceRoot}/node_modules/serverless/bin/serverless",
+        "request": "launch",
+        "restart": true,
+        // "skipFiles": [ "${workspaceRoot}/node_modules/**/*"],
+        "smartStep": true,
+        "sourceMaps": true,
+        "type": "node"
+    }, {
+        "args": ["invoke", "local", "-f", "get-bundles", "-p", "src/routes/bundles/event.json"],
+        // "args": ["invoke", "local", "-f", "get-joined-health-plans", "-p", "src/routes/plans/get/event.json"],
+        // "args": ["invoke", "local", "-f", "get-rating-areas", "-p", "src/routes/ratingareas/get/event.json"],
+        // "args": ["invoke", "local", "-f", "patch-health-plan", "-p", "src/routes/plans/patch/eventPlan.json"],
+        // "args": ["invoke", "local", "-f", "patch-plan-benefits", "-p", "src/routes/plans/patch/eventPlanBenefits.json"],
+        // "args": ["invoke", "local", "-f", "patch-plan-rates", "-p", "src/routes/plans/patch/eventPlanRates.json"],
+        "cwd": "${workspaceRoot}",
+        "env": {
+            "SLS_DEBUG": "*"
+        },
+        "internalConsoleOptions": "openOnSessionStart",
+        "name": "Debug Function",
+        "outFiles": ["${workspaceRoot}/build/**/*"],
+        "preLaunchTask": "build",
+        "program": "${workspaceRoot}/node_modules/serverless/bin/serverless",
+        "request": "launch",
+        "restart": true,
+        // "skipFiles": [ "${workspaceRoot}/node_modules/**/*"],
+        "smartStep": true,
+        "sourceMaps": true,
+        "type": "node"
+    }, {
+        "args": ["--runInBand"],
+        "cwd": "${workspaceRoot}",
+        "env": {
+            "SLS_DEBUG": "*"
+        },
+        "name": "Debug (Jest) Tests",
+        "outFiles": ["${workspaceRoot}/build/**/*"],
+        "preLaunchTask": "build",
+        "program": "${workspaceRoot}/node_modules/jest-cli/bin/jest.js",
+        "request": "launch",
+        "restart": true,
+        // "skipFiles": [ "${workspaceRoot}/node_modules/**/*"],
+        "smartStep": true,
+        "runtimeArgs": ["--nolazy"],
+        "sourceMaps": true,
+        "type": "node"
+    }]
 }

@@ -1,8 +1,8 @@
-import { isError, isObject, isString } from 'lodash';
+import { isError, isString } from 'lodash'
 
-import circular from 'circular-json';
-import http from 'http';
-import ware from 'warewolf';
+import circular from 'circular-json'
+import http from 'http'
+import ware from 'warewolf'
 
 const defaultResponseConfig = {
   headers: {
@@ -12,7 +12,7 @@ const defaultResponseConfig = {
   },
   isBase64Encoded: false,
   statusCode: 200,
-};
+}
 
 function responseController(
   getResults = ({ result }) => (
@@ -23,7 +23,7 @@ function responseController(
   config = {},
 ) {
   return (event, context, done) => {
-    const result = getResults(event);
+    const result = getResults(event)
     const response = {
       ...defaultResponseConfig,
       ...config,
@@ -34,20 +34,20 @@ function responseController(
       body: circular.stringify({
         ...result,
       }),
-    };
-    done(null, response);
-  };
+    }
+    done(null, response)
+  }
 }
 
 const errorHandler = (error, event, context, done) => {
   if (isError(error)) {
-    const statusCode = getStatusCode(error, event);
-    const defaultError = new Error(http.STATUS_CODES[statusCode] || 'An Error Has Occured');
-    const message = `${isError(error) ? error : defaultError}`;
-    const type = http.STATUS_CODES[statusCode] || http.STATUS_CODES[500];
-    // add stack trace ifs running in 'dev', and have opted-in
-    const stack = (process.env.SLS_DEBUG === '*' &&
-            process.env.STAGE === 'dev') ? error.stack : undefined;
+    const { statusCode, type, message } = getFormattedError(error, event)
+    const isInDebugMode = process.env.SLS_DEBUG === '*'
+    const isDevOrInt = ['dev', 'int'].some(env => process.env.STAGE.toLowerCase() === env)
+    const shouldPrintStack = isInDebugMode && isDevOrInt
+    // add stack trace if running in 'dev' or 'int, and have opted-in
+    const stack = shouldPrintStack ? error.stack : undefined
+
     const response = {
       ...defaultResponseConfig,
       statusCode,
@@ -57,51 +57,53 @@ const errorHandler = (error, event, context, done) => {
         message,
         stack,
       }),
-    };
-    done(null, response);
+    }
+    done(null, response)
   }
-  done();
-};
-
-function getStatusCode(error = {}, event = {}) {
-  const { statusCode = 500 } = event;
-  // if (error.statusCode) {
-  //   statusCode = error.statusCode;
-  // }
-  return http.STATUS_CODES[Number.parseInt(statusCode, 10)];
+  done()
 }
 
-export const before = ware(async (event) => {
-  // in some contexts, the event will not be an object.
-  // and so, we make sure it's an object here
-  event = isObject(event) ? event : {};
+function getFormattedError(error = {}, event = {}) {
+  let { statusCode = 500 } = event
+  if (error.statusCode) {
+    ({ statusCode } = error)
+  }
+  if (Number.isInteger(error)) {
+    statusCode = error
+  }
+  statusCode = Number.parseInt(statusCode, 10)
+  const type = http.STATUS_CODES[statusCode] || 'An Error Has Occured'
+  const message = `${statusCode}: ${type}`
 
-  // pull out everything from `event` that we care about
+  return { statusCode, type, message }
+}
+
+export const before = ware(async (event = {}) => {
   const {
     queryStringParameters = {},
     pathParameters = {},
-    body,
-  } = event;
+    body = {},
+  } = event
 
-    // merge `query`, `stage`, and `body` (if existent), into `event`
+  // merge `query`, `stage`, and `body` (if existent), into `event`
   Object.assign(
     event,
     { stage: process.env.STAGE },
     { query: ({ ...queryStringParameters, ...pathParameters, ...event.query }) },
-    { body: isString(body) ? JSON.parse(body) : (body || {}) },
-  );
-});
+    { body: isString(body) ? JSON.parse(body) : body },
+  )
+})
 
 export const after = ware(
   async (event) => {
     Object.assign({}, defaultResponseConfig, {
       body: circular.stringify(event.results || event.result || {}),
-    });
+    })
   },
 
   responseController(),
   errorHandler,
-);
+)
 
 export const isTrue = (value) => {
   if (value && (
@@ -109,11 +111,11 @@ export const isTrue = (value) => {
     value === true ||
     value === '1' ||
     value === 1)) {
-    return true;
+    return true
   }
-  return false;
-};
+  return false
+}
 
-export const stripNonAlphaNumericChars = value => `${value}`.replace(/[^\w\s]*/gi, '');
+export const stripNonAlphaNumericChars = value => `${value}`.replace(/[^\w\s]*/gi, '')
 
-export const queryStringIsTrue = queryString => isTrue(stripNonAlphaNumericChars(queryString));
+export const queryStringIsTrue = queryString => isTrue(stripNonAlphaNumericChars(queryString))

@@ -1,3 +1,3 @@
-export * from './resources';
-export * from './routes';
-export * from './utils';
+export * from './resources'
+export * from './routes'
+export * from './utils'

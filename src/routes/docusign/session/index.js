@@ -1,19 +1,19 @@
-import AWS from 'aws-sdk';
-import fetch from 'node-fetch';
-import ware from 'warewolf';
+import AWS from 'aws-sdk'
+import fetch from 'node-fetch'
+import ware from 'warewolf'
 
-import { before, after } from '../../../utils';
+import { before, after } from '../../../utils'
 
-const docClient = new AWS.DynamoDB.DocumentClient({ region: 'us-west-2' });
+const docClient = new AWS.DynamoDB.DocumentClient({ region: 'us-west-2' })
 
 // GET 'docusign session'
-export const getSession = ware(
+export const getSigningSession = ware(
   before,
 
   async (event) => {
-    const { personPublicKey, envelopeId, returnUrl } = event;
-    const stage = event.stage || process.env.STAGE;
-    const isProd = stage.toLowerCase() === 'prod' ? '_PROD' : '';
+    const { personPublicKey, envelopeId, returnUrl } = event
+    const stage = `${event.stage || process.env.STAGE}`.toLowerCase()
+    const isProd = stage === 'prod' ? '_PROD' : ''
 
     const config = {
       personTable: `${stage}-persons`,
@@ -22,24 +22,24 @@ export const getSession = ware(
       USER_NAME: process.env[`DOCUSIGN_USER${isProd}`],
       PASSWORD: process.env[`DOCUSIGN_PASSWORD${isProd}`],
       INTEGRATOR_KEY: process.env[`DOCUSIGN_IKEY${isProd}`],
-    };
+    }
 
-    const person = await getPerson(personPublicKey, config.personTable).Item;
+    const person = await getPerson(personPublicKey, config.personTable).Item
 
-    event.result = await createSigningSession(person, envelopeId, returnUrl, config);
+    event.result = await createSigningSession(person, envelopeId, returnUrl, config)
   },
 
   after,
-);
+)
 
-async function createSigningSession(person, envelopeId, returnUrl, config) {
+export async function createSigningSession(person, envelopeId, returnUrl, config) {
   const body = {
     email: person.HixmeEmailAlias,
     clientUserId: person.Id,
     userName: `${person.FirstName} ${person.LastName}`,
     authenticationMethod: 'email',
     returnUrl,
-  };
+  }
 
   await fetch({
     url: `${config.BASE_URL}/accounts/${config.ACCOUNT_ID}/envelopes/${envelopeId}/views/recipient`,
@@ -54,12 +54,12 @@ async function createSigningSession(person, envelopeId, returnUrl, config) {
       }),
     },
     body: JSON.stringify(body),
-  }).then(response => ({ url: response.url })).catch(e => new Error(e.statusCode, e.error));
+  }).then(response => ({ url: response.url })).catch(e => new Error(e.statusCode, e.error))
 }
 
 function getPerson(personPublicKey, tableName) {
   return docClient.get({
     TableName: tableName,
     Key: { Id: personPublicKey },
-  }).promise();
+  }).promise()
 }

@@ -1,5 +1,5 @@
-import ware from 'warewolf';
-import { before, after, queryStringIsTrue } from '../../utils';
+import ware from 'warewolf'
+import { before, after, queryStringIsTrue } from '../../utils'
 
 export const ping = ware(
   before,
@@ -8,13 +8,13 @@ export const ping = ware(
     event.result = {
       message: 'pong!',
       version: process.versions.node,
-    };
+    }
 
     // if `showEvent` qs-param is true...
     if (queryStringIsTrue(event.query.showEvent)) {
-      event.result.event = { ...event };
+      event.result.event = { ...event }
     }
   },
 
   after,
-);
+)

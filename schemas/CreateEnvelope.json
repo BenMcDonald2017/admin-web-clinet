@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Create New DocuSign Envelope",
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "string"
+    },
+    "userName": {
+      "type": "string"
+    },
+    "bundleEventId": {
+      "type": "string"
+    },
+    "returnUrl": {
+      "type": "string"
+    }
+  }
+}

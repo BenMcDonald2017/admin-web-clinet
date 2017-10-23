@@ -1,0 +1,10 @@
+-
+  name: ErrorResponse
+  description: Standard Error Response
+  contentType: application/json
+  schema: ${file(schemas/ErrorResponse.json)}
+-
+  name: "CreateEnvelope"
+  description: "Create New DocuSign Envelope"
+  contentType: "application/json"
+  schema: ${file(schemas/CreateEnvelope.json)}

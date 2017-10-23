@@ -1,85 +1,85 @@
 // from: 'get-cart-with-application-status-lambda'
 
-import { isObject, noop } from 'lodash';
-import AWS from 'aws-sdk';
-import fetch from 'node-fetch';
-import moment from 'moment';
-import ware from 'warewolf';
+import { isObject, noop } from 'lodash'
+import AWS from 'aws-sdk'
+import fetch from 'node-fetch'
+import moment from 'moment'
+import ware from 'warewolf'
 
-import { before, after } from '../../utils';
-import getConfig from './config';
+import { before, after } from '../../utils'
+import getConfig from './config'
 
-const docClient = new AWS.DynamoDB.DocumentClient({ region: 'us-west-2' });
-const lambda = new AWS.Lambda({ region: 'us-west-2' });
-const s3 = new AWS.S3();
+const docClient = new AWS.DynamoDB.DocumentClient({ region: 'us-west-2' })
+const lambda = new AWS.Lambda({ region: 'us-west-2' })
+const s3 = new AWS.S3()
 
-const CHECK_TIME = false;
+const CHECK_TIME = false
 
 /* eslint-disable no-console */
-const markTime = CHECK_TIME ? console.time.bind(console) : noop;
-const markTimeEnd = CHECK_TIME ? console.timeEnd.bind(console) : noop;
+const markTime = CHECK_TIME ? console.time.bind(console) : noop
+const markTimeEnd = CHECK_TIME ? console.timeEnd.bind(console) : noop
 
 // POST
 export const fetchCart = ware(
   before,
 
   async (event) => {
-    event.stage = event.stage || process.env.STAGE;
-    event.config = getConfig(event.stage);
+    event.stage = event.stage || process.env.STAGE
+    event.config = getConfig(event.stage)
   },
 
   async (event) => {
-    const { employeePublicKey, stage, config } = event;
+    const { employeePublicKey, stage, config } = event
     if (!stage) {
-      const err = new Error('could not determine stage');
-      err.statusCode = 400;
-      throw err;
+      const err = new Error('could not determine stage')
+      err.statusCode = 400
+      throw err
     }
 
     const [family, { Item: cart }] = await Promise.all([
       getFamily(employeePublicKey, config),
       getCart(employeePublicKey, config.cartTable),
-    ]);
+    ])
 
-    let healthIns = getHealthIns(cart.Cart, config);
+    let healthIns = getHealthIns(cart.Cart, config)
 
     if (!healthIns) {
-      event.result = cart.Cart;
-      return;
+      event.result = cart.Cart
+      return
     }
 
-    const primary = getPrimarySigner(healthIns, family);
-    healthIns = await checkApplicationsAvailable(healthIns, config);
+    const primary = getPrimarySigner(healthIns, family)
+    healthIns = await checkApplicationsAvailable(healthIns, config)
 
-    markTime('create-envelope');
-    healthIns = await createEnvelopes(healthIns, primary, family, config);
-    markTimeEnd('create-envelope');
+    markTime('create-envelope')
+    healthIns = await createEnvelopes(healthIns, primary, family, config)
+    markTimeEnd('create-envelope')
 
     cart.Cart = cart.Cart.map(product =>
-      (product.BenefitType === config.HEALTH_BUNDLE ? healthIns : product));
+      (product.BenefitType === config.HEALTH_BUNDLE ? healthIns : product))
 
-    await saveCart(cart, config.cartTable);
+    await saveCart(cart, config.cartTable)
 
-    event.result = cart.Cart;
+    event.result = cart.Cart
   },
 
   after,
-);
+)
 
 async function createEnvelopes(healthIns, primary, family, config) {
   healthIns.Benefits = await Promise.all(healthIns.Benefits.map(async (benefit, i) => {
     if (!benefit.DocuSignEnvelopeId && benefit.PdfApplicationAvailable === true) {
-      const hasTransmerica = benefit.hasTransmerica || true;
-      const applicants = getApplicationPersons(benefit.Persons, primary, family);
-      let signers = getSigners(applicants, config);
-      markTime(`doc-${i}`);
-      const documents = await getDocuments(benefit, applicants, primary, hasTransmerica, config);
-      markTimeEnd(`doc-${i}`);
+      const hasTransmerica = benefit.hasTransmerica || true
+      const applicants = getApplicationPersons(benefit.Persons, primary, family)
+      let signers = getSigners(applicants, config)
+      markTime(`doc-${i}`)
+      const documents = await getDocuments(benefit, applicants, primary, hasTransmerica, config)
+      markTimeEnd(`doc-${i}`)
 
-      benefit.EnvelopeComplete = false;
+      benefit.EnvelopeComplete = false
       if (benefit.HealthPlanId.substring(0, 7) === '10544CA' ||
         benefit.HealthPlanId.substring(0, 7) === '59763MA') {
-        signers = [];
+        signers = []
         signers.push(getSignerObject({
           email: applicants.Primary.HixmeEmailAlias,
           first: applicants.Primary.FirstName,
@@ -88,28 +88,28 @@ async function createEnvelopes(healthIns, primary, family, config) {
           firstAnchor: 'PrimaryGuardian_Hixme_1',
           secondAnchor: 'PrimaryGuardian_Hixme_2',
           thirdAnchor: 'PrimaryGuardian_Hixme_3',
-        }));
+        }))
       }
-      benefit.DocumentLocation = documents[0].documentLocation;
-      markTime(`doc-create-${i}`);
+      benefit.DocumentLocation = documents[0].documentLocation
+      markTime(`doc-create-${i}`)
       /* eslint-disable max-len */
-      benefit.DocuSignEnvelopeId = await createEnvelope(applicants, signers, documents, primary, config);
-      markTimeEnd(`doc-create-${i}`);
+      benefit.DocuSignEnvelopeId = await createEnvelope(applicants, signers, documents, primary, config)
+      markTimeEnd(`doc-create-${i}`)
       benefit.PdfSignatures = signers.map(signer => ({
         Id: signer.clientUserId,
         Signed: false,
-      }));
+      }))
     }
 
     if (benefit.DocumentLocation) {
       benefit.UnsignedPdfApplication = await s3.getSignedUrl('getObject', {
         Bucket: benefit.DocumentLocation.bucket,
         Key: benefit.DocumentLocation.key,
-      });
+      })
     }
-    return benefit;
-  }));
-  return healthIns;
+    return benefit
+  }))
+  return healthIns
 }
 
 async function createEnvelope(applicants, signers, documents, primary, config) {
@@ -127,7 +127,7 @@ async function createEnvelope(applicants, signers, documents, primary, config) {
       show: false,
       value: primary.Id,
     }],
-  };
+  }
 
   await fetch(`${config.BASE_URL}/accounts/${config.ACCOUNT_ID}/envelopes`, {
     method: 'POST',
@@ -140,23 +140,23 @@ async function createEnvelope(applicants, signers, documents, primary, config) {
       }),
     },
     body: JSON.stringify(body),
-  }).then(response => (response.json().envelopeId)).catch(e => new Error(e.statusCode, e.error));
+  }).then(response => (response.json().envelopeId)).catch(e => new Error(e.statusCode, e.error))
 }
 
 /* eslint-disable no-nested-ternary */
 const forcePlain = arg => (Array.isArray(arg)
   ? arg.map(forcePlain)
-  : (isObject(arg) ? Object.assign({}, arg) : arg));
+  : (isObject(arg) ? Object.assign({}, arg) : arg))
 
 function getSigners(family, config) {
-  const signers = [];
-  const applicants = forcePlain(family);
+  const signers = []
+  const applicants = forcePlain(family)
   if (applicants.Primary && applicants.Guardian) {
     if (applicants.Primary.Relationship === 'Child') {
-      const primary = applicants.Primary;
-      if (!applicants.Children) applicants.Children = [];
-      applicants.Children.push(primary);
-      delete applicants.Primary;
+      const primary = applicants.Primary
+      if (!applicants.Children) applicants.Children = []
+      applicants.Children.push(primary)
+      delete applicants.Primary
     }
   }
 
@@ -169,7 +169,7 @@ function getSigners(family, config) {
       firstAnchor: 'PrimaryGuardian_Hixme_1',
       secondAnchor: 'PrimaryGuardian_Hixme_2',
       thirdAnchor: 'PrimaryGuardian_Hixme_3',
-    }));
+    }))
   }
 
   if (applicants.Guardian) {
@@ -181,12 +181,12 @@ function getSigners(family, config) {
       firstAnchor: 'PrimaryGuardian_Hixme_1',
       secondAnchor: 'PrimaryGuardian_Hixme_2',
       thirdAnchor: 'PrimaryGuardian_Hixme_3',
-    }));
+    }))
   }
 
   if (applicants.Spouse) {
     const email = applicants.Spouse.HixmeEmailAlias ||
-      (`${applicants.Spouse.FirstName}.${applicants.Spouse.FirstName}@hixmeusers.com`);
+      (`${applicants.Spouse.FirstName}.${applicants.Spouse.FirstName}@hixmeusers.com`)
     signers.push(getSignerObject({
       email,
       first: applicants.Spouse.FirstName,
@@ -195,17 +195,17 @@ function getSigners(family, config) {
       firstAnchor: 'Spouse_Hixme_1',
       secondAnchor: 'Spouse_Hixme_2',
       thirdAnchor: 'Spouse_Hixme_3',
-    }));
+    }))
   }
 
   if (applicants.Children && applicants.Children.length > 0) {
     /* eslint-disable max-len */
-    const kids = applicants.Children.filter(kid => effectiveAge(kid.DateOfBirth, config.EFFECTIVE_DATE) >= 18);
+    const kids = applicants.Children.filter(kid => effectiveAge(kid.DateOfBirth, config.EFFECTIVE_DATE) >= 18)
 
     /* eslint-disable no-plusplus */
     for (let i = 0; i < kids.length; i++) {
       const email = kids[i].HixmeEmailAlias ||
-        (`${kids[i].FirstName}.${kids[i].FirstName}@hixmeusers.com`);
+        (`${kids[i].FirstName}.${kids[i].FirstName}@hixmeusers.com`)
       signers.push(getSignerObject({
         email,
         first: kids[i].FirstName,
@@ -214,11 +214,11 @@ function getSigners(family, config) {
         firstAnchor: `Dependent${i + 1}_Hixme_1`,
         secondAnchor: `Dependent${i + 1}_Hixme_2`,
         thirdAnchor: `Dependent${i + 1}_Hixme_3`,
-      }));
+      }))
     }
   }
 
-  return signers;
+  return signers
 }
 
 function getSignerObject(params) {
@@ -246,54 +246,54 @@ function getSignerObject(params) {
         },
       ],
     },
-  };
+  }
 }
 
 function getApplicationPersons(persons, primary, family) {
-  const signerMap = {};
+  const signerMap = {}
   const applicants = persons.map(person =>
-    family.find(member => person.Id === member.Id));
+    family.find(member => person.Id === member.Id))
 
   const children = applicants.filter(person =>
-    person && person.Relationship === 'Child');
+    person && person.Relationship === 'Child')
 
   if (children.Length > 1) {
-    children.sort((a, b) => +b.DateOfBirth - a.DateOfBirth);
+    children.sort((a, b) => +b.DateOfBirth - a.DateOfBirth)
   }
 
-  signerMap.Primary = applicants.find(member => member && member.Relationship === 'Employee');
+  signerMap.Primary = applicants.find(member => member && member.Relationship === 'Employee')
 
   if (!signerMap.Primary) {
     signerMap.Primary =
-      applicants.find(member => member && member.Relationship === 'Spouse');
+      applicants.find(member => member && member.Relationship === 'Spouse')
   } else {
-    const spouse = applicants.find(member => member.Relationship === 'Spouse');
+    const spouse = applicants.find(member => member.Relationship === 'Spouse')
     if (spouse) {
-      signerMap.Spouse = spouse;
+      signerMap.Spouse = spouse
     }
   }
   if (!signerMap.Primary) {
-    signerMap.Guardian = primary;
-    signerMap.Primary = children.pop();
+    signerMap.Guardian = primary
+    signerMap.Primary = children.pop()
   }
   if (children.length) {
-    signerMap.Children = children;
+    signerMap.Children = children
   }
-  return signerMap;
+  return signerMap
 }
 
 async function getDocuments(benefit, applicants, primary, hasTransmerica, config) {
-  const documents = [];
-  markTime('get-doc');
-  const document = await getDocument(applicants, benefit.HealthPlanId, config);
-  markTimeEnd('get-doc');
+  const documents = []
+  markTime('get-doc')
+  const document = await getDocument(applicants, benefit.HealthPlanId, config)
+  markTimeEnd('get-doc')
 
-  markTime('get-bucket');
+  markTime('get-bucket')
   const s3Result = await s3.getObject({
     Bucket: document.bucket,
     Key: document.key,
-  }).promise();
-  markTimeEnd('get-bucket');
+  }).promise()
+  markTimeEnd('get-bucket')
 
   documents.push({
     documentId: '1',
@@ -307,86 +307,86 @@ async function getDocuments(benefit, applicants, primary, hasTransmerica, config
       bucket: document.bucket,
       key: document.key,
     },
-  });
+  })
 
-  return documents;
+  return documents
 }
 
 async function getDocument(applicants, hios, config) {
-  const document = {};
-  const getFilledWithRetries = tryFor(4, 500)(getFilledDocument, res => !!res);
-  const result = await getFilledWithRetries(applicants, hios, config);
-  const components = result.data.split('/');
-  const bucket = components[0];
+  const document = {}
+  const getFilledWithRetries = tryFor(4, 500)(getFilledDocument, res => !!res)
+  const result = await getFilledWithRetries(applicants, hios, config)
+  const components = result.data.split('/')
+  const bucket = components[0]
 
-  document.bucket = bucket;
-  document.key = result.data.substring(result.data.indexOf('/') + 1);
-  document.filename = components[components.length - 1];
+  document.bucket = bucket
+  document.key = result.data.substring(result.data.indexOf('/') + 1)
+  document.filename = components[components.length - 1]
 
-  return document;
+  return document
 }
 
-const waitFor = (time, ...args) => new Promise(resolve => setTimeout(resolve, time, ...args));
+const waitFor = (time, ...args) => new Promise(resolve => setTimeout(resolve, time, ...args))
 
 const tryFor = (times, delay, dieOffRate = 1) => (fn, isOk) => async (...args) => {
-  let timesTried = 0;
+  let timesTried = 0
 
   /* eslint-disable no-await-in-loop */
   /* eslint-disable no-plusplus */
   // C.f. https://eslint.org/docs/rules/no-await-in-loop
   while (timesTried++ <= times) {
-    const result = await fn(...args);
+    const result = await fn(...args)
     if (isOk(result)) {
-      return result;
+      return result
     }
-    await waitFor(delay * (1 + Math.log(dieOffRate ** (timesTried - 1))));
+    await waitFor(delay * (1 + Math.log(dieOffRate ** (timesTried - 1))))
   }
-  throw new Error(`Method ${fn.name} was tried too many times.`);
-};
+  throw new Error(`Method ${fn.name} was tried too many times.`)
+}
 
 async function getFilledDocument(applicants, hios, config) {
   const params = {
     FunctionName: `get-filled-pdf-application:${config.stage}`,
     Payload: JSON.stringify({ employeeGraph: applicants, HIOS_ID: hios, stage: config.stage }, null, 2),
-  };
-  markTime(`get-doc-check-${hios}`);
-  let response = await lambda.invoke(params).promise();
-  markTimeEnd(`get-doc-check-${hios}`);
-  try {
-    response = JSON.parse(response.Payload);
-  } catch (err) {
-    console.error(err);
   }
-  return response;
+  markTime(`get-doc-check-${hios}`)
+  let response = await lambda.invoke(params).promise()
+  markTimeEnd(`get-doc-check-${hios}`)
+  try {
+    response = JSON.parse(response.Payload)
+  } catch (err) {
+    console.error(err)
+  }
+  return response
 }
 
 function getPrimarySigner(healthIns, family) {
   return family
-    .find(person => person.Id === healthIns.EmployeePublicKey);
+    .find(person => person.Id === healthIns.EmployeePublicKey)
 }
 
 async function checkApplicationsAvailable(healthIns, config) {
-  let allAvailable = false;
+  let allAvailable = false
 
-  if (healthIns.Benefits.length > 0) { allAvailable = true; }
+  if (healthIns.Benefits.length > 0) { allAvailable = true }
 
   await Promise.all(healthIns.Benefits.map(async (benefit) => {
     if (benefit.PdfApplicationAvailable) {
-      return benefit;
+      return benefit
     }
-    const available = await applicationAvailable(benefit.HealthPlanId, config);
-    benefit.PdfApplicationAvailable = available;
-    if (!available) allAvailable = false;
+    const available = await applicationAvailable(benefit.HealthPlanId, config)
+    benefit.PdfApplicationAvailable = available
+    if (!available) allAvailable = false
 
-    return benefit;
-  }));
+    return benefit
+  }))
 
-  healthIns.AllApplicationsAvailable = allAvailable;
-  return healthIns;
+  healthIns.AllApplicationsAvailable = allAvailable
+  return healthIns
 }
 
 async function applicationAvailable(hiosId, config) {
-  const issuerId = hiosId.substring(0, 5);
+  const issuerId = hiosId.substring(0, 5)
   // const hiosRegion = hiosId.replace(/[0-9]/g, '');
 
   const params = {
@@ -406,40 +406,40 @@ async function applicationAvailable(hiosId, config) {
     ExpressionAttributeValues: {
       ':issuer': issuerId,
     },
-  };
+  }
 
-  const { Items: response } = await docClient.query(params).promise();
+  const { Items: response } = await docClient.query(params).promise()
 
   if (!response) {
-    return false;
+    return false
   }
 
   const application = response.find((app) => {
     if (app.HIOS_ID) {
-      return app.HIOS_ID.indexOf(hiosId) !== -1;
+      return app.HIOS_ID.indexOf(hiosId) !== -1
     }
-    return false;
-  });
+    return false
+  })
 
-  return !(!application || !application.TemplateReviewComplete);
+  return !(!application || !application.TemplateReviewComplete)
 }
 
 function getHealthIns(cart, config) {
-  return cart.find(benefit => benefit.BenefitType === config.HEALTH_BUNDLE);
+  return cart.find(benefit => benefit.BenefitType === config.HEALTH_BUNDLE)
 }
 
 async function getCart(Id, tableName) {
   return docClient.get({
     TableName: tableName,
     Key: { EmployeePublicKey: Id },
-  }).promise();
+  }).promise()
 }
 
 async function saveCart(item, tableName) {
   return docClient.put({
     TableName: tableName,
     Item: item,
-  }).promise();
+  }).promise()
 }
 
 async function getFamily(employeePublicKey, config) {
@@ -452,23 +452,23 @@ async function getFamily(employeePublicKey, config) {
       ':key': employeePublicKey,
       ':isActive': true,
     },
-  }).promise();
+  }).promise()
 
   return Promise.all(family.map(async (person) => {
-    person.SSN = await getSSN(person.Id, config.stage);
-    return person;
-  }));
+    person.SSN = await getSSN(person.Id, config.stage)
+    return person
+  }))
 }
 
 async function getSSN(personPublicKey, stage) {
   const response = await lambda.invoke({
     FunctionName: `get-ssn:${stage}`,
     Payload: JSON.stringify({ PersonPublicKey: personPublicKey }, null, 2),
-  }).promise();
+  }).promise()
 
-  return JSON.parse(response.Payload).SSN;
+  return JSON.parse(response.Payload).SSN
 }
 
 function effectiveAge(birthday, effectiveDate) { // birthday is a date
-  return moment(effectiveDate, 'YYYYMMDD').diff(moment(birthday), 'years');
+  return moment(effectiveDate, 'YYYYMMDD').diff(moment(birthday), 'years')
 }

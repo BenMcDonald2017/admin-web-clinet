@@ -1,6 +1,6 @@
 {
   "name": "application-service",
-  "version": "0.3.1",
+  "version": "1.0.0",
   "description": "Application Service",
   "author": "Hixme.com",
   "contributors": [
@@ -42,6 +42,7 @@
     "info:stage": "sls info -v -r $npm_package_config_region --stage",
     "info": "sls info -v -r $npm_package_config_region",
     "invoke:local": "sls invoke local -f",
+    "lint:fix": "npm run lint -- --fix",
     "lint": "eslint src __tests__",
     "logs:custom": "sls logs -v -t -i $npm_package_config_log_fetch_refresh_interval -r $npm_package_config_region --startTime $npm_package_config_log_fetch_start_time -f",
     "logs:dev": "sls logs -v -t -i $npm_package_config_log_fetch_refresh_interval --stage dev -r $npm_package_config_region --startTime $npm_package_config_log_fetch_start_time -f",
@@ -49,12 +50,13 @@
     "logs:prod": "sls logs -t -i $npm_package_config_log_fetch_refresh_interval --stage prod -r $npm_package_config_region --startTime $npm_package_config_log_fetch_start_time -f",
     "logs": "npm run logs:$npm_package_config_region",
     "merge:yaml": "merge-yaml -i ./src/config/**/*.yml -o serverless.yml",
-    "offline:80": "sudo node --inspect --inspect-port=localhost:$npm_package_config_inspector_port ./node_modules/.bin/serverless offline start --port $AP_PORT --noTimeout --prefix \"$(echo $npm_package_name | sed 's/-[sS][eE][rR][vV][iI][cC][eE]//')\"",
-    "offline": "node --inspect --inspect-port=localhost:$npm_package_config_inspector_port ./node_modules/.bin/serverless offline start --port $AP_PORT --noTimeout --prefix \"$(echo $npm_package_name | sed 's/-[sS][eE][rR][vV][iI][cC][eE]//')\"",
+    "offline:80": "sudo node --require source-map-support/register --inspect --inspect-port=localhost:$npm_package_config_inspector_port ./node_modules/.bin/serverless offline start --port $AP_PORT --noTimeout",
+    "offline": "node --require source-map-support/register --inspect --inspect-port=localhost:$npm_package_config_inspector_port ./node_modules/.bin/serverless offline start --port $AP_PORT --noTimeout",
     "package": "npm run build && sls package --stage $npm_package_config_stage -r $npm_package_config_region",
+    "precommit": "npm run lint:fix && npm run coverage",
     "start:80": "cross-env AP_PORT=\"80\" npm run start:run:80",
-    "start:run:80": "npm run build && concurrently --kill-others --prefix={name}-{time} --names=BUILD-,SERVER --timestamp-format=HH:mm:ss.SSS -c bgBlue,bgMagenta \"npm run build:watch\" \"npm run offline:80\"",
-    "start:run": "npm run build && concurrently --kill-others --prefix={name}-{time} --names=BUILD-,SERVER --timestamp-format=HH:mm:ss.SSS -c bgBlue,bgMagenta \"npm run build:watch\" \"npm run offline\"",
+    "start:run:80": "npm run build && concurrently --kill-others --prefix={name}-{time} --names=BUILD-,SERVER --timestamp-format=HH:mm:ss.SSS -c bgBlue,bgMagenta \"npm run build:watch -- --skip-initial-build\" \"npm run offline:80\"",
+    "start:run": "npm run build && concurrently --kill-others --prefix={name}-{time} --names=BUILD-,SERVER --timestamp-format=HH:mm:ss.SSS -c bgBlue,bgMagenta \"npm run build:watch -- --skip-initial-build\" \"npm run offline\"",
     "start": "cross-env AP_PORT=\"8000\" npm run start:run",
     "tag": "git tag -am $npm_package_version $npm_package_version && git push --tags",
     "test:wip": "jest -t wip",
@@ -107,6 +109,7 @@
     "serverless-offline": "3.16.0",
     "serverless-plugin-webpack": "1.3.0",
     "source-map-loader": "0.2.2",
+    "source-map-support": "0.5.0",
     "webpack": "3.8.1",
     "yargs": "9.0.1"
   },
@@ -131,6 +134,10 @@
     ],
     "root": true,
     "rules": {
+      "semi": [
+        2,
+        "never"
+      ],
       "import/no-extraneous-dependencies": [
         2,
         {
@@ -145,8 +152,9 @@
         2,
         {
           "allow": [
-            "warn",
-            "error"
+            "dir",
+            "error",
+            "warn"
           ]
         }
       ],
