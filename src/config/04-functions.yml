@@ -24,17 +24,17 @@ functions:
             tags: ["docusign", "envelope", "signing session"]
             requestBody:
               description: "Request body description"
-          methodResponses:
-            -
-              statusCode: "200"
-              responseBody:
-                description: "Response body description"
-            -
-              statusCode: "400"
-              responseModels:
-                "application/json": "ErrorResponse"
-          requestModels:
-            "application/json": "CreateEnvelope"
+            methodResponses:
+              -
+                statusCode: "200"
+                responseBody:
+                  description: "Response body description"
+              -
+                statusCode: "400"
+                responseModels:
+                  "application/json": "ErrorResponse"
+            requestModels:
+              "application/json": "CreateEnvelope"
 
 # **********************************************************
 # DON'T WORRY ABOUT THE BELOW CURRENTLY-DISABLED-ENDPOINTS *

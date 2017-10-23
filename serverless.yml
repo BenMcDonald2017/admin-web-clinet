@@ -80,6 +80,7 @@ custom:
     summary: '${self:custom.service.DESCRIPTION}'
     version: '${self:custom.service.VERSION}'
     models: '${file(schemas/all.yml)}'
+    resources: '${file(schemas/resources.yml)}'
   dotENV: '${file(./env.js):default}'
   stackTags:
     BASE_PATH: '${self:custom.customDomain.basePath}'
@@ -197,6 +198,21 @@ functions:
           documentation:
             summary: Create Envelope
             description: 'Create Envelope [POST]'
+            tags:
+              - docusign
+              - envelope
+              - signing session
+            requestBody:
+              description: Request body description
+            methodResponses:
+              - statusCode: '200'
+                responseBody:
+                  description: Response body description
+              - statusCode: '400'
+                responseModels:
+                  application/json: ErrorResponse
+            requestModels:
+              application/json: CreateEnvelope
 resources:
   Resources: null
   Outputs: null
