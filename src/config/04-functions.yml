@@ -12,6 +12,7 @@ functions:
             description: Service Up? Check w/ Ping / Pong!
 
   createEnvelope:
+    description: Create Envelope [POST]
     handler: build/routes/envelope/index.createEnvelope
     events:
       - http:
@@ -36,6 +37,7 @@ functions:
               "application/json": "CreateEnvelope"
 
   getEnvelope:
+    description: Get Envelope [GET]
     handler: build/routes/envelope/index.getEnvelope
     events:
       - http:
@@ -64,6 +66,7 @@ functions:
               "application/json": "GetEnvelope"
 
   createSigningSession:
+    description: Create Signing Session [POST]
     handler: build/routes/envelope/sign/index.createSigningSession
     events:
       - http:
