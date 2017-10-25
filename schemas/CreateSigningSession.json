@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "title": "Create Envelope",
+  "title": "Create Signing Session",
   "type": "object",
   "properties": {
     "bundleEventId": {

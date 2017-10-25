@@ -2,7 +2,7 @@
 import { map, isEmpty } from 'lodash'
 import uuid from 'uuid/v4'
 
-import { createEnvelope, createEmbeddedEnvelope } from './docusign-api'
+import { createEnvelope, getEnvelopes, createEmbeddedEnvelope } from './docusign-api'
 
 const getTemplateJson = (user, fields) => ({
   templateId: process.env.STAGE === 'prod' // '2018 Health Insurance Enrollment Application'
@@ -22,7 +22,24 @@ const getTemplateJson = (user, fields) => ({
   }],
 })
 
-export const getDocuSignEnvelopeController =
+export const getDocuSignEnvelope =
+  async (event) => {
+    const { envelopeId } = event.params
+    event.envelopeId = envelopeId
+
+
+    if (!event.envelopeId) return
+
+    event.result = await getEnvelopes({
+      query: {
+        envelope_ids: `${event.envelopeId}`,
+      },
+    })
+
+    event.result.exists = !!(event.result.envelopes && event.result.envelopes.length)
+  }
+
+export const createDocuSignEnvelope =
   async (event) => {
     const {
       requestId,
@@ -90,7 +107,7 @@ export const getDocuSignEnvelopeController =
     }
   }
 
-export const getDocusignEmbeddedEnvelopeController =
+export const createDocusignEmbeddedEnvelope =
   async (event) => {
     const params = {
       ...(event.body || {}),

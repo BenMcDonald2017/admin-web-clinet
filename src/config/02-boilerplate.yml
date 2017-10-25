@@ -97,4 +97,3 @@ provider:
     <<:               *environmentVariables
     GW_URL:           ${self:custom.service.GW_URL}
     NODE_ENV:         ${self:custom.service.STAGE}
-  iamRoleStatements:  ${self:custom.iamRoleStatements}

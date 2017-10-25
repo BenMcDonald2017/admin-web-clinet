@@ -1,21 +1,22 @@
 import ware from 'warewolf'
+
 import { before, after } from '../../../utils'
+import { createDocusignEmbeddedEnvelope } from '../../../controllers'
 import { getPerson } from '../../../resources'
-import { getDocuSignEnvelopeController } from '../../../controllers'
 
 const fetchPerson = ware(async (event) => {
   event.person = await getPerson(event.body.personPublicKey)
 })
 
-export const createEnvelope = ware(
+// create signing session
+export const createSigningSession = ware(
   before,
 
   // fetch person object and set to 'event.person'
   fetchPerson,
 
-  // create everything in DS and set embedded DS-link to 'event.result.url'
   async (event) => {
-    await getDocuSignEnvelopeController(event)
+    await createDocusignEmbeddedEnvelope(event)
   },
 
   after,

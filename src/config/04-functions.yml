@@ -12,7 +12,7 @@ functions:
             description: Service Up? Check w/ Ping / Pong!
 
   createEnvelope:
-    handler: build/routes/docusign/envelope/index.createEnvelope
+    handler: build/routes/envelope/index.createEnvelope
     events:
       - http:
           path: envelope
@@ -35,11 +35,11 @@ functions:
             requestModels:
               "application/json": "CreateEnvelope"
 
-  getEnvelopeStatus:
-    handler: build/routes/docusign/status/index.getEnvelopeStatus
+  getEnvelope:
+    handler: build/routes/envelope/index.getEnvelope
     events:
       - http:
-          path: status/{envelopeId}
+          path: envelope/{envelopeId}
           method: get
           request:
             parameters:
@@ -47,14 +47,27 @@ functions:
                 envelopeId: true
           cors: true
           documentation:
-            summary: Get Envelope Status (from DocuSign)
-            description: Get Envelope Status (from DocuSign) [GET]
+            summary: Get Envelope (from DocuSign)
+            description: Get Envelope (from DocuSign) [GET]
+            requestBody:
+              description: "Request body description"
+            methodResponses:
+              -
+                statusCode: "200"
+                responseBody:
+                  description: "Response body description"
+              -
+                statusCode: "400"
+                responseModels:
+                  "application/json": "ErrorResponse"
+            requestModels:
+              "application/json": "GetEnvelope"
 
   createSigningSession:
-    handler: build/routes/docusign/session/index.createSigningSession
+    handler: build/routes/envelope/sign/index.createSigningSession
     events:
       - http:
-          path: session/{envelopeId}
+          path: envelope/{envelopeId}/sign
           method: post
           request:
             parameters:
@@ -62,58 +75,34 @@ functions:
                 envelopeId: true
           cors: true
           documentation:
-            summary: Create New Signing Session (from DocuSign)
-            description: Create New Signing Session (from DocuSign) [GET]
+            summary: Create Signing Session (from DocuSign)
+            description: Create Signing Session (from DocuSign) [GET]
+            requestBody:
+              description: "Request body description"
+            methodResponses:
+              -
+                statusCode: "200"
+                responseBody:
+                  description: "Response body description"
+              -
+                statusCode: "400"
+                responseModels:
+                  "application/json": "ErrorResponse"
+            requestModels:
+              "application/json": "CreateSigningSession"
 
-  # createSigningSession:
-  #   handler: build/routes/docusign/session/index.createSigningSession
-  #   events:
-  #     - http:
-  #         path: envelope/{envelopeId}/session
-  #         method: post
-  #         request:
-  #           parameters:
-  #             paths:
-  #               envelopeId: true
-  #         cors: true
-  #         documentation:
-  #           summary: Create Signing Session
-  #           description: Create Signing Session [POST]
 
-  # getSigningSession:
-  #   handler: build/routes/docusign/session/index.getSigningSession
-  #   events:
-  #     - http:
-  #         path: envelope/{envelopeId}/session
-  #         method: get
-  #         request:
-  #           parameters:
-  #             paths:
-  #               envelopeId: true
-  #         cors: true
-  #         documentation:
-  #           summary: Get Signing Session
-  #           description: Get Signing Session [POST]
-
-  # getApplication:
-  #   handler: build/routes/cart/index.get
-  #   events:
-  #     - http:
-  #         path: cart/{cartID}/applications
-  #         method: get
-  #         cors: true
-  #         documentation:
-  #           summary: Get Application
-  #           description: Get Application [GET]
-
-# calling this `fetch`, because it's via `POST`-http-method, not `GET`
-  # fetchCart:
-  #   handler: build/routes/cart/index.fetchCart
-  #   events:
-  #     - http:
-  #         path: cart
-  #         method: post
-  #         cors: true
-  #         documentation:
-  #           summary: Fetch Cart
-  #           description: Fetch Cart (& Application / Status) [POST]
+    # getApplication:
+    #   handler: build/routes/index.getApplication
+    #   events:
+    #     - http:
+    #         path: {applicationId}
+    #         method: get
+    #         request:
+    #           parameters:
+    #             paths:
+    #               applicationId: true
+    #         cors: true
+    #         documentation:
+    #           summary: Get Application
+    #           description: Get Application [GET]

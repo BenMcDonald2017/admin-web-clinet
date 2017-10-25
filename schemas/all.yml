@@ -1,10 +1,20 @@
 -
+  name: "CreateEnvelope"
+  description: "Create Envelope"
+  contentType: "application/json"
+  schema: ${file(schemas/CreateEnvelope.json)}
+-
+  name: "CreateSigningSession"
+  description: "Create Signing Session"
+  contentType: "application/json"
+  schema: ${file(schemas/CreateSigningSession.json)}
+-
   name: ErrorResponse
   description: Standard Error Response
   contentType: application/json
   schema: ${file(schemas/ErrorResponse.json)}
 -
-  name: "CreateEnvelope"
-  description: "Create New DocuSign Envelope"
+  name: "GetEnvelope"
+  description: "Get Envelope"
   contentType: "application/json"
-  schema: ${file(schemas/CreateEnvelope.json)}
+  schema: ${file(schemas/GetEnvelope.json)}

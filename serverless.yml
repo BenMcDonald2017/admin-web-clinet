@@ -163,7 +163,6 @@ provider:
     applicationSourceBucket: '${self:custom.dotENV.applicationSourceBucket}'
     GW_URL: '${self:custom.service.GW_URL}'
     NODE_ENV: '${self:custom.service.STAGE}'
-  iamRoleStatements: '${self:custom.iamRoleStatements}'
 functions:
   ping:
     description: Ping / Pong
@@ -177,7 +176,7 @@ functions:
             summary: ping
             description: Service Up? Check w/ Ping / Pong!
   createEnvelope:
-    handler: build/routes/docusign/envelope/index.createEnvelope
+    handler: build/routes/envelope/index.createEnvelope
     events:
       - http:
           path: envelope
@@ -197,11 +196,11 @@ functions:
                   application/json: ErrorResponse
             requestModels:
               application/json: CreateEnvelope
-  getEnvelopeStatus:
-    handler: build/routes/docusign/status/index.getEnvelopeStatus
+  getEnvelope:
+    handler: build/routes/envelope/index.getEnvelope
     events:
       - http:
-          path: 'status/{envelopeId}'
+          path: 'envelope/{envelopeId}'
           method: get
           request:
             parameters:
@@ -209,13 +208,13 @@ functions:
                 envelopeId: true
           cors: true
           documentation:
-            summary: Get Envelope Status (from DocuSign)
-            description: 'Get Envelope Status (from DocuSign) [GET]'
+            summary: Get Envelope (from DocuSign)
+            description: 'Get Envelope (from DocuSign) [GET]'
   createSigningSession:
-    handler: build/routes/docusign/session/index.createSigningSession
+    handler: build/routes/envelope/sign/index.createSigningSession
     events:
       - http:
-          path: 'session/{envelopeId}'
+          path: 'envelope/{envelopeId}/sign'
           method: post
           request:
             parameters:
@@ -223,8 +222,8 @@ functions:
                 envelopeId: true
           cors: true
           documentation:
-            summary: Create New Signing Session (from DocuSign)
-            description: 'Create New Signing Session (from DocuSign) [GET]'
+            summary: Create Signing Session (from DocuSign)
+            description: 'Create Signing Session (from DocuSign) [GET]'
 resources:
   Resources: null
   Outputs: null

@@ -1,6 +1,9 @@
 -
   path: "envelope"
-  description: "Create New DocuSign Envelope"
+  description: "Create Envelope [POST]"
 -
-  path: "status"
-  description: "Get Signing Status"
+  path: "envelope/{envelopeId}/status"
+  description: "Get Envelope Status [GET]"
+-
+  path: "envelope/{envelopeId}/sign"
+  description: "Create Signing Session [POST]"
