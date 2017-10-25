@@ -2,18 +2,18 @@
 #   # if set, the values below will override those set within `02-boilerplate.yml`
 #   memorySize: 512
 #   timeout:    6
-
-custom:
-
-  iamRoleStatements:
-    - Effect: Allow
-      Action:
-        - dynamodb:DescribeTable
-        - dynamodb:Query
-        - dynamodb:Scan
-        - dynamodb:GetItem
-        - dynamodb:PutItem
-        - dynamodb:UpdateItem
-        # - dynamodb:DeleteItem
-      Resource:
-        - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-application-service*
+#
+# custom:
+#
+#   iamRoleStatements:
+#     - Effect: Allow
+#       Action:
+#         - dynamodb:DescribeTable
+#         - dynamodb:Query
+#         - dynamodb:Scan
+#         - dynamodb:GetItem
+#         - dynamodb:PutItem
+#         - dynamodb:UpdateItem
+#         # - dynamodb:DeleteItem
+#       Resource:
+#         - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-application-service*

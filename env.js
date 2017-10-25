@@ -20,6 +20,7 @@ module.exports.default = () => new Promise((resolve, reject) => {
   fs.readFile(PATH.join(__dirname, '.env'), (error, data) => {
     if (error) {
       if (error.code === 'ENOENT') {
+        // don't error if no '.env' file found
         return resolve({
           STAGE: stage,
         })

@@ -89,7 +89,7 @@ export const before = ware(async (event = {}) => {
   Object.assign(
     event,
     { stage: process.env.STAGE },
-    { query: ({ ...queryStringParameters, ...pathParameters, ...event.query }) },
+    { params: ({ ...queryStringParameters, ...pathParameters, ...event.query }) },
     { body: isString(body) ? JSON.parse(body) : body },
   )
 })

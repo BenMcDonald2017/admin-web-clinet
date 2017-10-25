@@ -41,22 +41,24 @@ export const getDocuSignEnvelopeController =
     const {
       userName: name,
       email,
-      bundleEventId,
+      // bundleEventId,
+      // personPublicKey,
       returnUrl,
     } = params
 
-    const required = [name, email, bundleEventId, returnUrl]
+    const required = [returnUrl]
     if (required.some(isEmpty)) {
       const err = new Error(`Missing required parameter ${required.filter(isEmpty).join(', ')}.`)
       err.statusCode = 400
       throw err
     }
 
+    // const clientUserId = event.isOffline ? uuid() : requestId || claims['cognito:username'] || uuid()
     const clientUserId = event.isOffline ? uuid() : requestId || claims['cognito:username'] || uuid()
 
     const body = getTemplateJson({
-      email,
       name,
+      email,
       recipientId,
       clientUserId,
       returnUrl,
@@ -81,7 +83,26 @@ export const getDocuSignEnvelopeController =
     // bundleEvent.DocusignEnvelopes.push({ envelopeId })
     // await bundleEvent.save()
 
-    event.result = await createEmbeddedEnvelope({
+    event.result = {
+      status: 'success',
+      envelopeId,
+      clientUserId,
+    }
+  }
+
+export const getDocusignEmbeddedEnvelopeController =
+  async (event) => {
+    const params = {
+      ...(event.body || {}),
+      ...(event.query || {}),
+    }
+    const { requestId, authorizer } = event.requestContext
+    const { claims } = authorizer
+    const { envelopeId } = event.params
+    const clientUserId = event.body.clientUserId || requestId || claims['cognito:username'] || uuid()
+    const recipientId = '1'
+
+    const payload = {
       params: {
         envelopeId,
       },
@@ -91,5 +112,7 @@ export const getDocuSignEnvelopeController =
         recipientId,
         authenticationMethod: 'email',
       }),
-    })
+    }
+
+    event.result = await createEmbeddedEnvelope(payload)
   }

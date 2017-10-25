@@ -1,3 +1,6 @@
 -
-  path: "sign/envelope"
+  path: "envelope"
   description: "Create New DocuSign Envelope"
+-
+  path: "status"
+  description: "Get Signing Status"

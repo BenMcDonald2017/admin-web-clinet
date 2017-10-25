@@ -12,16 +12,15 @@ functions:
             description: Service Up? Check w/ Ping / Pong!
 
   createEnvelope:
-    handler: build/routes/sign/envelope/index.createEnvelope
+    handler: build/routes/docusign/envelope/index.createEnvelope
     events:
       - http:
-          path: sign/envelope
+          path: envelope
           method: post
           cors: true
           documentation:
-            summary: Create Envelope
-            description: Create Envelope [POST]
-            tags: ["docusign", "sign", "envelope", "signing session"]
+            summary: Create Envelope (on DocuSign)
+            description: Create Envelope (on DocuSign) [POST]
             requestBody:
               description: "Request body description"
             methodResponses:
@@ -36,16 +35,41 @@ functions:
             requestModels:
               "application/json": "CreateEnvelope"
 
-# **********************************************************
-# DON'T WORRY ABOUT THE BELOW CURRENTLY-DISABLED-ENDPOINTS *
-# **********************************************************
+  getEnvelopeStatus:
+    handler: build/routes/docusign/status/index.getEnvelopeStatus
+    events:
+      - http:
+          path: status/{envelopeId}
+          method: get
+          request:
+            parameters:
+              paths:
+                envelopeId: true
+          cors: true
+          documentation:
+            summary: Get Envelope Status (from DocuSign)
+            description: Get Envelope Status (from DocuSign) [GET]
+
+  createSigningSession:
+    handler: build/routes/docusign/session/index.createSigningSession
+    events:
+      - http:
+          path: session/{envelopeId}
+          method: post
+          request:
+            parameters:
+              paths:
+                envelopeId: true
+          cors: true
+          documentation:
+            summary: Create New Signing Session (from DocuSign)
+            description: Create New Signing Session (from DocuSign) [GET]
 
   # createSigningSession:
-  #   handler: build/routes/sign/session/index.createSigningSession
+  #   handler: build/routes/docusign/session/index.createSigningSession
   #   events:
   #     - http:
-  #         # path: sign/{applicationId}/session # ?
-  #         path: sign/envelope/{envelopeId}/session
+  #         path: envelope/{envelopeId}/session
   #         method: post
   #         request:
   #           parameters:
@@ -57,11 +81,10 @@ functions:
   #           description: Create Signing Session [POST]
 
   # getSigningSession:
-  #   handler: build/routes/sign/session/index.getSigningSession
+  #   handler: build/routes/docusign/session/index.getSigningSession
   #   events:
   #     - http:
-  #         # path: sign/{applicationId}/session # ?
-  #         path: sign/envelope/{envelopeId}/session
+  #         path: envelope/{envelopeId}/session
   #         method: get
   #         request:
   #           parameters:
@@ -76,7 +99,7 @@ functions:
   #   handler: build/routes/cart/index.get
   #   events:
   #     - http:
-  #         path: sign/cart/{cartID}/applications  // fetch all applications from a cart?
+  #         path: cart/{cartID}/applications
   #         method: get
   #         cors: true
   #         documentation:

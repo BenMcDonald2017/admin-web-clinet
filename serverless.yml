@@ -121,18 +121,6 @@ custom:
     stage: '${file(./env.js):packageStageName}'
   serverless-offline:
     prefix: '${self:custom.customDomain.basePath}'
-  iamRoleStatements:
-    - Effect: Allow
-      Action:
-        - 'dynamodb:DescribeTable'
-        - 'dynamodb:Query'
-        - 'dynamodb:Scan'
-        - 'dynamodb:GetItem'
-        - 'dynamodb:PutItem'
-        - 'dynamodb:UpdateItem'
-      Resource:
-        - >-
-          arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-application-service*
 provider:
   name: aws
   memorySize: 1024
@@ -189,20 +177,15 @@ functions:
             summary: ping
             description: Service Up? Check w/ Ping / Pong!
   createEnvelope:
-    handler: build/routes/sign/envelope/index.createEnvelope
+    handler: build/routes/docusign/envelope/index.createEnvelope
     events:
       - http:
-          path: sign/envelope
+          path: envelope
           method: post
           cors: true
           documentation:
-            summary: Create Envelope
-            description: 'Create Envelope [POST]'
-            tags:
-              - docusign
-              - sign
-              - envelope
-              - signing session
+            summary: Create Envelope (on DocuSign)
+            description: 'Create Envelope (on DocuSign) [POST]'
             requestBody:
               description: Request body description
             methodResponses:
@@ -214,6 +197,34 @@ functions:
                   application/json: ErrorResponse
             requestModels:
               application/json: CreateEnvelope
+  getEnvelopeStatus:
+    handler: build/routes/docusign/status/index.getEnvelopeStatus
+    events:
+      - http:
+          path: 'status/{envelopeId}'
+          method: get
+          request:
+            parameters:
+              paths:
+                envelopeId: true
+          cors: true
+          documentation:
+            summary: Get Envelope Status (from DocuSign)
+            description: 'Get Envelope Status (from DocuSign) [GET]'
+  createSigningSession:
+    handler: build/routes/docusign/session/index.createSigningSession
+    events:
+      - http:
+          path: 'session/{envelopeId}'
+          method: post
+          request:
+            parameters:
+              paths:
+                envelopeId: true
+          cors: true
+          documentation:
+            summary: Create New Signing Session (from DocuSign)
+            description: 'Create New Signing Session (from DocuSign) [GET]'
 resources:
   Resources: null
   Outputs: null
