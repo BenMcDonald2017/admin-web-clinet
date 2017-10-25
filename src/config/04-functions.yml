@@ -1,6 +1,6 @@
 functions:
   ping:
-    description: Ping / Pong
+    description: ${self:custom.documentation.summary} | Ping / Pong
     handler: build/routes/ping/index.ping
     events:
       - http:
@@ -12,7 +12,7 @@ functions:
             description: Service Up? Check w/ Ping / Pong!
 
   createEnvelope:
-    description: Create Envelope [POST]
+    description: ${self:custom.documentation.summary} | Create Envelope [POST]
     handler: build/routes/envelope/index.createEnvelope
     events:
       - http:
@@ -37,7 +37,7 @@ functions:
               "application/json": "CreateEnvelope"
 
   getEnvelope:
-    description: Get Envelope [GET]
+    description: ${self:custom.documentation.summary} | Get Envelope [GET]
     handler: build/routes/envelope/index.getEnvelope
     events:
       - http:
@@ -66,7 +66,7 @@ functions:
               "application/json": "GetEnvelope"
 
   createSigningSession:
-    description: Create Signing Session [POST]
+    description: ${self:custom.documentation.summary} | Create Signing Session [POST]
     handler: build/routes/envelope/sign/index.createSigningSession
     events:
       - http:
@@ -96,6 +96,7 @@ functions:
 
 
     # getApplication:
+    #   description: ${self:custom.documentation.summary} | Get Application [GET]
     #   handler: build/routes/index.getApplication
     #   events:
     #     - http:

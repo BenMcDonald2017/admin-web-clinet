@@ -165,7 +165,7 @@ provider:
     NODE_ENV: '${self:custom.service.STAGE}'
 functions:
   ping:
-    description: Ping / Pong
+    description: '${self:custom.documentation.summary} | Ping / Pong'
     handler: build/routes/ping/index.ping
     events:
       - http:
@@ -176,6 +176,7 @@ functions:
             summary: ping
             description: Service Up? Check w/ Ping / Pong!
   createEnvelope:
+    description: '${self:custom.documentation.summary} | Create Envelope [POST]'
     handler: build/routes/envelope/index.createEnvelope
     events:
       - http:
@@ -197,6 +198,7 @@ functions:
             requestModels:
               application/json: CreateEnvelope
   getEnvelope:
+    description: '${self:custom.documentation.summary} | Get Envelope [GET]'
     handler: build/routes/envelope/index.getEnvelope
     events:
       - http:
@@ -210,7 +212,19 @@ functions:
           documentation:
             summary: Get Envelope (from DocuSign)
             description: 'Get Envelope (from DocuSign) [GET]'
+            requestBody:
+              description: Request body description
+            methodResponses:
+              - statusCode: '200'
+                responseBody:
+                  description: Response body description
+              - statusCode: '400'
+                responseModels:
+                  application/json: ErrorResponse
+            requestModels:
+              application/json: GetEnvelope
   createSigningSession:
+    description: '${self:custom.documentation.summary} | Create Signing Session [POST]'
     handler: build/routes/envelope/sign/index.createSigningSession
     events:
       - http:
@@ -224,6 +238,17 @@ functions:
           documentation:
             summary: Create Signing Session (from DocuSign)
             description: 'Create Signing Session (from DocuSign) [GET]'
+            requestBody:
+              description: Request body description
+            methodResponses:
+              - statusCode: '200'
+                responseBody:
+                  description: Response body description
+              - statusCode: '400'
+                responseModels:
+                  application/json: ErrorResponse
+            requestModels:
+              application/json: CreateSigningSession
 resources:
   Resources: null
   Outputs: null
