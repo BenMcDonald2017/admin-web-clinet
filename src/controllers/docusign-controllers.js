@@ -2,7 +2,7 @@ import { isEmpty } from 'lodash'
 import { getEnvelopes, getRootUrl, fetchDocuSignURL } from './docusign-api'
 
 export const getEnvelopesForBundleEventController = async (event) => {
-  const bundleEvent = await event.Models.BundleEvent.get(event.query.bundleEventId)
+  const bundleEvent = await event.Models.BundleEvent.get(event.params.bundleEventId)
   if (!bundleEvent || isEmpty(bundleEvent.DocusignEnvelopes)) {
     return
   }

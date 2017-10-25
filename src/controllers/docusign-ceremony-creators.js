@@ -53,6 +53,7 @@ export const createDocuSignEnvelope =
     const params = {
       ...(event.body || {}),
       ...(event.query || {}),
+      ...(event.params || {}),
     }
 
     const {
@@ -112,6 +113,7 @@ export const createDocusignEmbeddedEnvelope =
     const params = {
       ...(event.body || {}),
       ...(event.query || {}),
+      ...(event.params || {}),
     }
     const { requestId, authorizer } = event.requestContext
     const { claims } = authorizer

@@ -7,11 +7,14 @@ export const ping = ware(
   async (event) => {
     event.result = {
       message: 'pong!',
-      version: process.versions.node,
+      versions: {
+        node: process.versions.node,
+        app: process.env.VERSION,
+      },
     }
 
     // if `showEvent` qs-param is true...
-    if (queryStringIsTrue(event.query.showEvent)) {
+    if (queryStringIsTrue(event.params.showEvent)) {
       event.result.event = { ...event }
     }
   },
