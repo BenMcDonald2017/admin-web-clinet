@@ -3,7 +3,7 @@
   "title": "Get Cart With Application Status",
   "type": "object",
   "properties": {
-    "personPublicKey": {
+    "employeePublicKey": {
       "type": "string"
     }
   }
