@@ -84,8 +84,6 @@ export const createDocuSignEnvelope = async (event) => {
   body.status = 'sent' // indicates to DS that this _isn't_ a draft
   body.fromDate = new Date()
 
-  console.dir(body)
-
   const envelope = await createEnvelope({ body: JSON.stringify(body) })
   const { envelopeId } = envelope
 
