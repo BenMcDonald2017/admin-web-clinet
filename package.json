@@ -63,11 +63,6 @@
     "test": "jest"
   },
   "dependencies": {
-    "@hixme/error-middleware": "1.4.6",
-    "@hixme/error-response": "0.3.0",
-    "@hixme/model-middleware": "1.4.5",
-    "@hixme/moosify": "5.4.6",
-    "@hixme/stage-middleware": "5.10.0",
     "aws-sdk": "2.134.0",
     "babel-runtime": "6.26.0",
     "circular-json": "0.3.3",

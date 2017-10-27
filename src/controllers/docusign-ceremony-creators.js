@@ -1,15 +1,10 @@
 /* eslint-disable no-param-reassign */
-import { map, isEmpty } from 'lodash'
-import uuid from 'uuid/v4'
+import { map } from 'lodash'
 
 import { createEnvelope, getEnvelopes, createEmbeddedEnvelope } from './docusign-api'
 
-const getTemplateJson = (user, fields) => ({
-  templateId: process.env.STAGE === 'prod' // '2018 Health Insurance Enrollment Application'
-    // will need to create the forms in dev/int first and then copy them
-    // over via DocuSign's built-in JSON copy feature thing
-    ? '99999999-9999-9999-9999-999999999999' // PROD powerform
-    : '96dc44bf-1199-4841-a3d1-e6568238aab5', // INT powerform
+const getTemplateJSON = (user, templateId, fields) => ({
+  templateId,
   templateRoles: [{
     roleName: 'Worker',
     ...user,
@@ -22,116 +17,121 @@ const getTemplateJson = (user, fields) => ({
   }],
 })
 
-export const getDocuSignEnvelope =
-  async (event) => {
-    const { envelopeId } = event.params
-    event.envelopeId = envelopeId
+function envelopeIsCompleted(e) {
+  const status = e && `${e.status}`.toLowerCase()
+  return status === 'completed'
+}
 
+export const getDocuSignEnvelope = async (event) => {
+  const { envelopeId } = event.params
+  event.envelopeId = envelopeId
 
-    if (!event.envelopeId) return
+  event.result = await getEnvelopes({
+    query: {
+      envelope_ids: `${event.envelopeId}`,
+    },
+  })
 
-    event.result = await getEnvelopes({
-      query: {
-        envelope_ids: `${event.envelopeId}`,
-      },
-    })
+  const { envelopes } = event.result
+  event.result.exists = !!(envelopes && envelopes.length)
 
-    event.result.exists = !!(event.result.envelopes && event.result.envelopes.length)
+  const { envelopes: envelopesExist } = event.result
+
+  const allEnvelopesAreSigned = (envelopesExist && envelopes.every(envelopeIsCompleted))
+  event.result.completed = (envelopesExist && allEnvelopesAreSigned)
+}
+
+function getDocuSignTemplateId(healthPlanId) {
+  switch (healthPlanId) {
+    case '123':
+    case '456':
+    case '789':
+      return '99999999-9999-9999-9999-999999999999'
+    default: // default INT template if none are found above
+      return '96dc44bf-1199-4841-a3d1-e6568238aab5'
+  }
+}
+
+export const createDocuSignEnvelope = async (event) => {
+  const data = {
+    ...(event.body || {}),
+    ...(event.params || {}),
+  }
+  // const { authorizer } = event.requestContext
+  // const { claims } = authorizer
+  const { enrollmentPublicKey, returnUrl } = data
+
+  // TODO:
+  // using `enrollmentPublicKey`, we need to fetch the following:
+  // (1) user's email
+  // (2) user's first/last name
+  // (3) user's health plan ID (or whatever is needed to match healthplans to docusign templates)
+
+  const clientUserId = event.isOffline ? '123-456' : enrollmentPublicKey
+  const email = 'john@smith.com'
+  const name = 'John Smith'
+  const recipientId = '1'
+
+  const body = getTemplateJSON({
+    clientUserId,
+    email,
+    name,
+    recipientId,
+    returnUrl,
+  }, getDocuSignTemplateId(), { /* other form fields here */ })
+
+  body.emailSubject = 'DocuSign API call - Request Signature'
+  body.status = 'sent' // indicates to DS that this _isn't_ a draft
+  body.fromDate = new Date()
+
+  console.dir(body)
+
+  const envelope = await createEnvelope({ body: JSON.stringify(body) })
+  const { envelopeId } = envelope
+
+  event.result = {
+    created: true,
+    envelopeId,
+    clientUserId,
   }
 
-export const createDocuSignEnvelope =
-  async (event) => {
-    const {
-      requestId,
-      authorizer,
-    } = event.requestContext
-    const {
-      claims,
-    } = authorizer
-    const recipientId = '1'
+  // TODO:
+  // Save `envelopeId` and `clientUserId` to Enrollment or Cart or something else
+}
 
-    const params = {
-      ...(event.body || {}),
-      ...(event.query || {}),
-      ...(event.params || {}),
-    }
+export const createDocuSignEmbeddedEnvelope = async (event) => {
+  const data = {
+    ...(event.body || {}),
+    ...(event.params || {}),
+  }
+  // const { authorizer } = event.requestContext
+  // const { claims } = authorizer
+  const { enrollmentPublicKey, envelopeId } = data
+  const clientUserId = event.isOffline ? '123-456' : enrollmentPublicKey
 
-    const {
-      userName: name,
-      email,
-      // bundleEventId,
-      // personPublicKey,
-      returnUrl,
-    } = params
+  // TODO:
+  // using `enrollmentPublicKey`, we need to fetch the following:
+  // (1) user's email
+  // (2) user's first/last name
 
-    const required = [returnUrl]
-    if (required.some(isEmpty)) {
-      const err = new Error(`Missing required parameter ${required.filter(isEmpty).join(', ')}.`)
-      err.statusCode = 400
-      throw err
-    }
+  const email = 'john@smith.com'
+  // NOTE: they need `userName` — not `name`
+  const userName = 'John Smith'
+  const recipientId = '1'
 
-    // const clientUserId = event.isOffline ? uuid() : requestId || claims['cognito:username'] || uuid()
-    const clientUserId = event.isOffline ? uuid() : requestId || claims['cognito:username'] || uuid()
-
-    const body = getTemplateJson({
-      name,
+  const payload = {
+    params: {
+      envelopeId,
+    },
+    body: JSON.stringify({
+      ...data,
+      authenticationMethod: 'email',
+      clientUserId,
       email,
       recipientId,
-      clientUserId,
-      returnUrl,
-    }, { /* fields here */ })
-
-    body.emailSubject = 'DocuSign API call - Request Signature'
-    body.status = 'sent' // indicates to DS that this _isn't_ a draft
-    body.fromDate = new Date()
-
-    const envelope = await createEnvelope({ body: JSON.stringify(body) })
-    const { envelopeId } = envelope
-
-    // const { Models } = event
-    // const bundleEvent = await Models.BundleEvent.get(bundleEventId)
-
-    // if (!bundleEvent) {
-    //   const err = new Error(`Bundle Event ${bundleEventId} not found.`)
-    //   err.statusCode = 404
-    //   throw err
-    // }
-    // bundleEvent.DocusignEnvelopes = bundleEvent.DocusignEnvelopes || []
-    // bundleEvent.DocusignEnvelopes.push({ envelopeId })
-    // await bundleEvent.save()
-
-    event.result = {
-      status: 'success',
-      envelopeId,
-      clientUserId,
-    }
+      userName,
+    }),
   }
 
-export const createDocusignEmbeddedEnvelope =
-  async (event) => {
-    const params = {
-      ...(event.body || {}),
-      ...(event.query || {}),
-      ...(event.params || {}),
-    }
-    const { requestId, authorizer } = event.requestContext
-    const { claims } = authorizer
-    const { envelopeId } = event.params
-    const clientUserId = event.body.clientUserId || requestId || claims['cognito:username'] || uuid()
-    const recipientId = '1'
-
-    const payload = {
-      params: {
-        envelopeId,
-      },
-      body: JSON.stringify({
-        ...params,
-        clientUserId,
-        recipientId,
-        authenticationMethod: 'email',
-      }),
-    }
-
-    event.result = await createEmbeddedEnvelope(payload)
-  }
+  event.result = await createEmbeddedEnvelope(payload)
+}

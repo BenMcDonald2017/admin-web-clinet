@@ -6,17 +6,77 @@ const DEFAULT_STAGE = process.env.npm_package_config_stage
 const { STAGE = DEFAULT_STAGE } = process.env
 const lambda = new aws.Lambda({ region: DEFAULT_REGION })
 
-const invokeLambda = async (nameArg = '', payload = {}, setStage = true) => {
-  const name = nameArg.indexOf(':') === -1 && setStage ? [nameArg, process.env.STAGE].join(':') : nameArg
-  payload.Stage = payload.Stage || STAGE
-  const params = {
-    FunctionName: name,
+export const invokeLambda = async (functionName = '', payload = {}, options = {}) => {
+  const {
+    requestContext = null,
+    appendStage = true,
+  } = options
+
+  const rawResponse = await (lambda.invoke({
+    FunctionName: `${functionName}${appendStage ? `:${process.env.STAGE}` : ''}`,
     InvocationType: 'RequestResponse',
     LogType: 'Tail',
-    Payload: JSON.stringify(payload),
+    Payload: JSON.stringify({
+      ...payload,
+      requestContext,
+    }),
+  }).promise())
+  const response = JSON.parse(rawResponse.Payload)
+  if (response && response.errorMessage) {
+    throw new Error(`invokeLambda ${functionName} error ${response.errorMessage}, request payload ${JSON.stringify(payload)}`)
   }
-  const res = await lambda.invoke(params).promise()
-  return res.Payload ? JSON.parse(res.Payload) : null
+  return response
+}
+
+// const invokeLambda2 = async (nameArg = '', payload = {}, setStage = true) => {
+//   const name = nameArg.indexOf(':') === -1 && setStage ? [nameArg, process.env.STAGE].join(':') : nameArg
+//   payload.Stage = payload.Stage || STAGE
+
+//   const params = {
+//     FunctionName: name,
+//     InvocationType: 'RequestResponse',
+//     LogType: 'Tail',
+//     Payload: JSON.stringify(payload),
+//   }
+//   const res = await lambda.invoke(params).promise()
+//   return res.Payload ? JSON.parse(res.Payload) : null
+// }
+
+export const saveDocuSignEnvelopeToEnrollment = (event) => {
+  if (!event || !event.result || !event.result.created) {
+    const error = new Error('DocuSign Envelope Could Not Be Found')
+    error.statusCode = 400
+    throw error
+  }
+
+  const { authorizer } = event.requestContext
+  const { claims } = authorizer
+
+  invokeLambda('bundle-signatures-put', {
+    pathParameters: {
+      // EnrollmentPublicKey: '10908a4c-5ca8-4c69-82a1-788fd6416239',
+      EnrollmentPublicKey: event.enrollmentPublicKey,
+    },
+    body: {
+      Signatures: [{
+        // BundlePublicKey: 'b041a93e-7a1c-46cc-aaf4-e0ef7877f418',
+        BundlePublicKey: event.bundlePublicKey,
+        // DocuSignEnvelopeId: '785b91c7-756b-443e-8971-65d20e0ebaee',
+        DocuSignEnvelopeId: event.result.docuSignEnvelopeId,
+        ClientUserId: event.result.clientUserId,
+      }],
+    },
+    requestContext: {
+      authorizer: {
+        claims,
+        // claims: {
+        //   'custom:user-role': 'PlatformEmployee',
+        //   'cognito:username': 'b6c4e54b-66a6-4807-8436-bfab0ace2b60',
+        //   email: 'c.bumstead@hixme.com',
+        // },
+      },
+    },
+  })
 }
 
 export const getBenefitsEffectiveDate = employeePublicKey =>
@@ -24,11 +84,11 @@ export const getBenefitsEffectiveDate = employeePublicKey =>
     EmployeePublicKey: employeePublicKey,
   })
 
-// export const getAgeFactor = (stateProvince, effectiveAge) =>
-//   invokeLambda('get-age-factor', {
-//     EffectiveAge: effectiveAge,
-//     StateProvince: stateProvince,
-//   });
+export const getAgeFactor = (stateProvince, effectiveAge) =>
+  invokeLambda('get-age-factor', {
+    EffectiveAge: effectiveAge,
+    StateProvince: stateProvince,
+  })
 
 export const getEnrollmentQuestions = clientPublicKey =>
   invokeLambda('get-enrollment-questions', {

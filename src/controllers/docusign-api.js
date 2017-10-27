@@ -1,7 +1,7 @@
-import QS from 'qs'
 import { isString } from 'lodash'
-import URL from 'url-parse'
 import fetch from 'node-fetch'
+import QS from 'qs'
+import URL from 'url-parse'
 
 const {
   STAGE,
@@ -118,11 +118,10 @@ export const getDocusignAuth = async () => {
 
 export const createEnvelope = fetchDocuSign('/envelopes', { method: 'POST' })
 
-export const createEmbeddedEnvelope =
-  fetchDocuSign(
-    '/envelopes/{envelopeId}/views/recipient',
-    { method: 'POST' },
-  )
+export const createEmbeddedEnvelope = fetchDocuSign(
+  '/envelopes/{envelopeId}/views/recipient',
+  { method: 'POST' },
+)
 
 export const getEnvelope = fetchDocuSign(
   '/envelopes/{envelopeId}',

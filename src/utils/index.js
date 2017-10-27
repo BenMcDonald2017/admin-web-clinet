@@ -1,5 +1,4 @@
 import { isError, isString } from 'lodash'
-
 import circular from 'circular-json'
 import http from 'http'
 import ware from 'warewolf'
@@ -48,7 +47,7 @@ const errorHandler = (error, event, context, done) => {
     // add stack trace if running in 'dev' or 'int, and have opted-in
     const stack = shouldPrintStack ? error.stack : undefined
 
-    const response = {
+    done(null, {
       ...defaultResponseConfig,
       statusCode,
       body: JSON.stringify({
@@ -57,8 +56,7 @@ const errorHandler = (error, event, context, done) => {
         message,
         stack,
       }),
-    }
-    done(null, response)
+    })
   }
   done()
 }
@@ -85,7 +83,6 @@ export const before = ware(async (event = {}) => {
     body = {},
   } = event
 
-  // merge `query`, `stage`, and `body` (if existent), into `event`
   Object.assign(
     event,
     { stage: process.env.STAGE },
