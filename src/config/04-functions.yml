@@ -94,19 +94,14 @@ functions:
             requestModels:
               "application/json": "CreateSigningSession"
 
-
-    # getApplication:
-    #   description: ${self:custom.documentation.summary} | Get Application [GET]
-    #   handler: build/routes/index.getApplication
-    #   events:
-    #     - http:
-    #         path: {applicationId}
-    #         method: get
-    #         request:
-    #           parameters:
-    #             paths:
-    #               applicationId: true
-    #         cors: true
-    #         documentation:
-    #           summary: Get Application
-    #           description: Get Application [GET]
+  getCartWithApplicationStatus:
+    description: ${self:custom.documentation.summary} | Get Cart With Application Status [GET]
+    handler: build/routes/index.getCartWithApplicationStatus
+    events:
+      - http:
+          path: status
+          method: get
+          cors: true
+          documentation:
+            summary: Get Cart With Application Status
+            description: Get Cart With Application Status [GET]

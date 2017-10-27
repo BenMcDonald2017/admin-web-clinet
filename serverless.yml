@@ -249,6 +249,19 @@ functions:
                   application/json: ErrorResponse
             requestModels:
               application/json: CreateSigningSession
+  getCartWithApplicationStatus:
+    description: >-
+      ${self:custom.documentation.summary} | Get Cart With Application Status
+      [GET]
+    handler: build/routes/index.getCartWithApplicationStatus
+    events:
+      - http:
+          path: status
+          method: get
+          cors: true
+          documentation:
+            summary: Get Cart With Application Status
+            description: 'Get Cart With Application Status [GET]'
 resources:
   Resources: null
   Outputs: null

@@ -41,11 +41,11 @@ export const createSigningSession = ware(
   //   console.dir(examplePATCHtoEnrollmentService)
   // },
 
-  async (event) => {
-    // save user's `envelopeId` into their Enrollment Bundle
-    console.log(event.result && event.result.envelopeId)
-    console.log(event.result && event.result.clientUserId)
-  },
+  // async (event) => {
+  //   // save user's `envelopeId` into their Enrollment Bundle
+  //   console.log(event.result && event.result.envelopeId)
+  //   console.log(event.result && event.result.clientUserId)
+  // },
 
   after,
 )

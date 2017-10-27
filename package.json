@@ -51,7 +51,7 @@
     "logs": "npm run logs:$npm_package_config_region",
     "merge:yaml": "merge-yaml -i ./src/config/**/*.yml -o serverless.yml",
     "offline:80": "sudo node --require source-map-support/register --inspect --inspect-port=localhost:$npm_package_config_inspector_port ./node_modules/.bin/serverless offline start --port $AP_PORT --noTimeout",
-    "offline": "node --require source-map-support/register --inspect --inspect-port=localhost:$npm_package_config_inspector_port ./node_modules/.bin/serverless offline start --port $AP_PORT --noTimeout",
+    "offline": "cross-env SLS_DEBUG=* node --require source-map-support/register --inspect --inspect-port=localhost:$npm_package_config_inspector_port ./node_modules/.bin/serverless offline start --port $AP_PORT --noTimeout",
     "package": "npm run build && sls package --stage $npm_package_config_stage -r $npm_package_config_region",
     "precommit": "npm run lint:fix && npm run coverage",
     "start:80": "cross-env AP_PORT=\"80\" npm run start:run:80",
