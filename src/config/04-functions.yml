@@ -96,7 +96,7 @@ functions:
 
   getCartWithApplicationStatus:
     description: ${self:custom.documentation.summary} | Get Cart With Application Status [GET]
-    handler: build/routes/index.getCartWithApplicationStatus
+    handler: build/routes/status/index.getCartWithApplicationStatus
     events:
       - http:
           path: status
@@ -105,3 +105,16 @@ functions:
           documentation:
             summary: Get Cart With Application Status
             description: Get Cart With Application Status [GET]
+            requestBody:
+              description: "Request body description"
+            methodResponses:
+              -
+                statusCode: "200"
+                responseBody:
+                  description: "Response body description"
+              -
+                statusCode: "400"
+                responseModels:
+                  "application/json": "ErrorResponse"
+            requestModels:
+              "application/json": "GetCartWithApplicationStatus"

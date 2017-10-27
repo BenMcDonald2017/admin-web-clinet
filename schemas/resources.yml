@@ -7,3 +7,6 @@
 -
   path: "envelope/{envelopeId}/sign"
   description: "Create Signing Session [POST]"
+-
+  path: "status"
+  description: "Get Cart With Application Status [GET]"

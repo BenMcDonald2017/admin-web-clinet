@@ -18,3 +18,8 @@
   description: "Get Envelope"
   contentType: "application/json"
   schema: ${file(schemas/GetEnvelope.json)}
+-
+  name: "GetCartWithApplicationStatus"
+  description: "Get Cart With Application Status"
+  contentType: "application/json"
+  schema: ${file(schemas/GetCartWithApplicationStatus.json)}

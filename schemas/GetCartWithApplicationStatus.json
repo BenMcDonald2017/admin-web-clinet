@@ -1,0 +1,10 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Get Cart With Application Status",
+  "type": "object",
+  "properties": {
+    "personPublicKey": {
+      "type": "string"
+    }
+  }
+}

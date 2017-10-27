@@ -36,9 +36,9 @@ custom:
     # authorizers:  ${file(schemas/authorizers.yml)}
     resources:    ${file(schemas/resources.yml)}
 
-  dotENV: &dotENV
+  # dotENV: &dotENV
     # finds a '.env' file, if any, and sets environment vars
-    ${file(./env.js):default}
+    # ${file(./env.js):setEnvironmentVariables}
 
   stackTags:    &stackTags
     BASE_PATH:    ${self:custom.customDomain.basePath}
@@ -51,23 +51,40 @@ custom:
   environmentVariables: &environmentVariables
     # <<: [*stackTags, *dotENV] # ideally, this line would have worked
     <<: *stackTags
-    DOCUSIGN_ACCOUNT_ID_PROD: ${self:custom.dotENV.DOCUSIGN_ACCOUNT_ID_PROD}
-    DOCUSIGN_ACCOUNT_ID: ${self:custom.dotENV.DOCUSIGN_ACCOUNT_ID}
-    DOCUSIGN_BASE_URL_PROD: ${self:custom.dotENV.DOCUSIGN_BASE_URL_PROD}
-    DOCUSIGN_BASE_URL: ${self:custom.dotENV.DOCUSIGN_BASE_URL}
-    DOCUSIGN_IKEY_PROD: ${self:custom.dotENV.DOCUSIGN_IKEY_PROD}
-    DOCUSIGN_IKEY: ${self:custom.dotENV.DOCUSIGN_IKEY}
-    DOCUSIGN_PASSWORD_PROD: ${self:custom.dotENV.DOCUSIGN_PASSWORD_PROD}
-    DOCUSIGN_PASSWORD: ${self:custom.dotENV.DOCUSIGN_PASSWORD}
-    DOCUSIGN_USER_PROD: ${self:custom.dotENV.DOCUSIGN_USER_PROD}
-    DOCUSIGN_USER: ${self:custom.dotENV.DOCUSIGN_USER}
-    EFFECTIVE_DATE: ${self:custom.dotENV.EFFECTIVE_DATE}
-    HEALTH_BUNDLE: ${self:custom.dotENV.HEALTH_BUNDLE}
-    cartTable: ${self:custom.dotENV.cartTable}
-    personsTable: ${self:custom.dotENV.personsTable}
-    applicationTable: ${self:custom.dotENV.applicationTable}
-    applicationOutputBucket: ${self:custom.dotENV.applicationOutputBucket}
-    applicationSourceBucket: ${self:custom.dotENV.applicationSourceBucket}
+    applicationOutputBucket: ${self:custom:service:STAGE}-employee-documents
+    applicationSourceBucket: ${self:custom:service:STAGE}-carrier-application-documents
+    applicationTable: ${self:custom:service:STAGE}-carrier-applications
+    cartTable: ${self:custom:service:STAGE}-cart
+    DOCUSIGN_ACCOUNT_ID_PROD: 43952094
+    DOCUSIGN_ACCOUNT_ID: 1840519
+    DOCUSIGN_BASE_URL_PROD: https://na2.docusign.net/restapi/v2
+    DOCUSIGN_BASE_URL: https://demo.docusign.net/restapi/v2
+    DOCUSIGN_IKEY_PROD: 76039e56-0960-401b-b7c0-eaefc320f22e
+    DOCUSIGN_IKEY: 76039e56-0960-401b-b7c0-eaefc320f22e
+    DOCUSIGN_PASSWORD_PROD: Hixme@docusign1
+    DOCUSIGN_PASSWORD: Hixme@docusign9
+    DOCUSIGN_USER_PROD: cb0b2cc9-dc65-4c3f-9871-2008915871db
+    DOCUSIGN_USER: b5860307-f4fd-4911-9e7f-659c7694257e
+    EFFECTIVE_DATE: 20170101
+    HEALTH_BUNDLE: HealthBundle
+    personsTable: ${self:custom:service:STAGE}-persons
+    # applicationOutputBucket: ${self:custom.service.STAGE}${ssm:applicationOutputBucket}
+    # applicationSourceBucket: ${self:custom.service.STAGE}${ssm:applicationSourceBucket}
+    # applicationTable: ${self:custom.service.STAGE}${ssm:applicationTable}
+    # cartTable: ${self:custom.service.STAGE}${ssm:cartTable}
+    # DOCUSIGN_ACCOUNT_ID_PROD: ${ssm:DOCUSIGN_ACCOUNT_ID_PROD}
+    # DOCUSIGN_ACCOUNT_ID: ${ssm:DOCUSIGN_ACCOUNT_ID}
+    # DOCUSIGN_BASE_URL_PROD: ${ssm:DOCUSIGN_BASE_URL_PROD}
+    # DOCUSIGN_BASE_URL: ${ssm:DOCUSIGN_BASE_URL}
+    # DOCUSIGN_IKEY_PROD: ${ssm:DOCUSIGN_IKEY_PROD}
+    # DOCUSIGN_IKEY: ${ssm:DOCUSIGN_IKEY}
+    # DOCUSIGN_PASSWORD_PROD: ${ssm:DOCUSIGN_PASSWORD_PROD}
+    # DOCUSIGN_PASSWORD: ${ssm:DOCUSIGN_PASSWORD}
+    # DOCUSIGN_USER_PROD: ${ssm:DOCUSIGN_USER_PROD}
+    # DOCUSIGN_USER: ${ssm:DOCUSIGN_USER}
+    # EFFECTIVE_DATE: ${ssm:EFFECTIVE_DATE}
+    # HEALTH_BUNDLE: ${ssm:HEALTH_BUNDLE}
+    # personsTable: ${self:custom.service.STAGE}${ssm:personsTable}
 
   customDomain:
     basePath:             ${file(./env.js):getAPIBasePath} # 'application'
