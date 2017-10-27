@@ -22,3 +22,9 @@ custom:
         - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-carrier-application-documents*
         - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-carrier-applications*
         - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-carrier-applications*
+    - Effect: Allow
+      Action:
+        - lambda:InvokeFunction
+      Resource:
+        - arn:aws:lambda:us-west-2:409076796536:function:get-ssn:${self:custom.service.STAGE}
+        - arn:aws:lambda:us-west-2:409076796536:function:get-filled-pdf-application:${self:custom.service.STAGE}
