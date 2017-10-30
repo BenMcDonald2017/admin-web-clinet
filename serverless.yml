@@ -81,7 +81,7 @@ custom:
     version: '${self:custom.service.VERSION}'
     models: '${file(schemas/all.yml)}'
     resources: '${file(schemas/resources.yml)}'
-  dotENV: '${file(./env.js):default}'
+  dotENV: '${file(./env.js):getAndSetVarsFromEnvFile}'
   stackTags:
     BASE_PATH: '${self:custom.customDomain.basePath}'
     DOMAIN_NAME: '${self:custom.customDomain.domainName}'
@@ -118,9 +118,39 @@ custom:
     certificateName: '*.hixme.com'
     createRoute53Record: false
     domainName: '${file(./env.js):getDomainName}'
-    stage: '${file(./env.js):packageStageName}'
+    stage: '${file(./env.js):getDesiredStageFromPackageJSON}'
   serverless-offline:
     prefix: '${self:custom.customDomain.basePath}'
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - 'dynamodb:DescribeTable'
+        - 'dynamodb:Query'
+        - 'dynamodb:Scan'
+        - 'dynamodb:GetItem'
+        - 'dynamodb:PutItem'
+        - 'dynamodb:UpdateItem'
+      Resource:
+        - >-
+          arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-cart*
+        - >-
+          arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-persons*
+        - >-
+          arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-employee-documents*
+        - >-
+          arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-carrier-application-documents*
+        - >-
+          arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-carrier-applications*
+        - >-
+          arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-carrier-applications*
+    - Effect: Allow
+      Action:
+        - 'lambda:InvokeFunction'
+      Resource:
+        - >-
+          arn:aws:lambda:us-west-2:409076796536:function:get-ssn:${self:custom.service.STAGE}
+        - >-
+          arn:aws:lambda:us-west-2:409076796536:function:get-filled-pdf-application:${self:custom.service.STAGE}
 provider:
   name: aws
   memorySize: 1024
@@ -163,6 +193,7 @@ provider:
     applicationSourceBucket: '${self:custom.dotENV.applicationSourceBucket}'
     GW_URL: '${self:custom.service.GW_URL}'
     NODE_ENV: '${self:custom.service.STAGE}'
+  iamRoleStatements: '${self:custom.iamRoleStatements}'
 functions:
   ping:
     description: '${self:custom.documentation.summary} | Ping / Pong'
@@ -173,7 +204,7 @@ functions:
           method: get
           cors: true
           documentation:
-            summary: ping
+            summary: Ping The Service
             description: Service Up? Check w/ Ping / Pong!
   createEnvelope:
     description: '${self:custom.documentation.summary} | Create Envelope [POST]'
@@ -259,11 +290,16 @@ functions:
           path: status
           method: get
           cors: true
+          request:
+            parameters:
+              querystrings:
+                employeePublicKey: true
           documentation:
             summary: Get Cart With Application Status
             description: 'Get Cart With Application Status [GET]'
-            requestBody:
-              description: Request body description
+            queryParams:
+              - name: employeePublicKey
+                description: The Employee Public Key
             methodResponses:
               - statusCode: '200'
                 responseBody:
@@ -271,8 +307,6 @@ functions:
               - statusCode: '400'
                 responseModels:
                   application/json: ErrorResponse
-            requestModels:
-              application/json: GetCartWithApplicationStatus
 resources:
   Resources: null
   Outputs: null
