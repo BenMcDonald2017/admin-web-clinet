@@ -1,6 +1,5 @@
 import { isObject } from 'lodash'
 import AWS from 'aws-sdk'
-import fetch from 'node-fetch'
 import moment from 'moment'
 import ware from 'warewolf'
 
@@ -15,7 +14,6 @@ const {
 
 const docClient = new AWS.DynamoDB.DocumentClient({ region: 'us-west-2' })
 const lambda = new AWS.Lambda({ region: 'us-west-2' })
-const s3 = new AWS.S3()
 
 const data = {
   cart: null,
@@ -42,7 +40,9 @@ export const getCartWithApplicationStatus = ware(
 
     data.family = theFamily
     data.cart = theCart
-    data.healthBundle = getHealthBundle(data.cart && data.cart.Cart)
+    if (data.cart) {
+      data.healthBundle = getHealthBundle(data.cart.Cart)
+    }
   },
 
   async (event) => {
@@ -66,36 +66,25 @@ export const getCartWithApplicationStatus = ware(
     data.primary = getPrimarySigner(data.healthBundle, data.family)
   },
 
-  // async (event) => {
-  //   await createDocuSignEnvelope(event)
-  // },
-
-  // NOTE: stuff I need to set
-  // PdfApplicationIsManual
-  // PdfSignatures
-  // UnsignedPdfApplication
-  // DocuSignEnvelopeId
-
-  // async (event) => {
-  //   const cart = data.cart && data.cart.Cart
-  //   // set result to cart
-  //   event.result = Object.assign({}, event.result, { cart })
-  // },
-
   async (event) => {
     // set everything to `true`, in order to match legacy payload
     data.healthBundle.Benefits.map((benefit) => {
       benefit.PdfApplicationAvailable = true
       return benefit
     })
-
     data.healthBundle.AllApplicationsAvailable = true
   },
 
   async (event) => {
+    // PdfApplicationIsManual, PdfSignatures, UnsignedPdfApplication, DocuSignEnvelopeId
     data.healthBundle = await createEnvelopes(data.healthBundle, data.primary, data.family, event)
 
-    data.cart.Cart = data.cart.Cart.map(product => (product.BenefitType === HEALTH_BUNDLE ? data.healthBundle : product))
+    data.cart.Cart = data.cart.Cart.map((product) => {
+      if (product.BenefitType === HEALTH_BUNDLE) {
+        return data.healthBundle
+      }
+      return product
+    })
 
     await saveCart(data.cart)
 
@@ -106,26 +95,12 @@ export const getCartWithApplicationStatus = ware(
 )
 
 async function createEnvelopes(healthIns, primary, family, event) {
-  healthIns.Benefits = await Promise.all(healthIns.Benefits.map(async (benefit, i) => {
+  healthIns.Benefits = await Promise.all(healthIns.Benefits.map(async (benefit) => {
     if (!benefit.DocuSignEnvelopeId && benefit.PdfApplicationAvailable === true) {
-      const hasTransmerica = benefit.hasTransmerica || true
       const applicants = getApplicationPersons(benefit.Persons, primary, family)
       const signers = getSigners(applicants)
 
       benefit.EnvelopeComplete = false
-      // if (benefit.HealthPlanId.substring(0, 7) === '10544CA' ||
-      //   benefit.HealthPlanId.substring(0, 7) === '59763MA') {
-      //   signers = []
-      //   signers.push(getSignerObject({
-      //     email: applicants.Primary.HixmeEmailAlias,
-      //     first: applicants.Primary.FirstName,
-      //     last: applicants.Primary.LastName,
-      //     id: applicants.Primary.Id,
-      //     firstAnchor: 'PrimaryGuardian_Hixme_1',
-      //     secondAnchor: 'PrimaryGuardian_Hixme_2',
-      //     thirdAnchor: 'PrimaryGuardian_Hixme_3',
-      //   }))
-      // }
 
       await createDocuSignEnvelope(event, data)
 

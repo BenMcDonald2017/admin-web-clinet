@@ -28,20 +28,6 @@ export const invokeLambda = async (functionName = '', payload = {}, options = {}
   return response
 }
 
-// const invokeLambda2 = async (nameArg = '', payload = {}, setStage = true) => {
-//   const name = nameArg.indexOf(':') === -1 && setStage ? [nameArg, process.env.STAGE].join(':') : nameArg
-//   payload.Stage = payload.Stage || STAGE
-
-//   const params = {
-//     FunctionName: name,
-//     InvocationType: 'RequestResponse',
-//     LogType: 'Tail',
-//     Payload: JSON.stringify(payload),
-//   }
-//   const res = await lambda.invoke(params).promise()
-//   return res.Payload ? JSON.parse(res.Payload) : null
-// }
-
 export const saveDocuSignEnvelopeToEnrollment = (event) => {
   if (!event || !event.result || !event.result.created) {
     const error = new Error('DocuSign Envelope Could Not Be Found')
