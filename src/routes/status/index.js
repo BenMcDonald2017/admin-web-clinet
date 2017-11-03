@@ -5,6 +5,7 @@ import moment from 'moment'
 import ware from 'warewolf'
 
 import { before, after } from '../../utils'
+import { createDocuSignEnvelope } from '../../controllers'
 
 const {
   STAGE: stage,
@@ -16,128 +17,129 @@ const docClient = new AWS.DynamoDB.DocumentClient({ region: 'us-west-2' })
 const lambda = new AWS.Lambda({ region: 'us-west-2' })
 const s3 = new AWS.S3()
 
+const data = {
+  cart: null,
+  family: null,
+  healthBundle: null,
+  primary: null,
+}
+
 export const getCartWithApplicationStatus = ware(
   before,
 
   async (event) => {
-    const data = {
-      ...(event.body || {}),
-      ...(event.params || {}),
-    }
+    const { employeePublicKey } = event.params
 
-    const { employeePublicKey } = data
-    const [family, { Item: cart }] = await Promise.all([
+    // TODO: validate incoming `employeePublicKey`
+    // if (!employeePublicKey) {
+    //   return
+    // }
+
+    const [theFamily, { Item: theCart }] = await Promise.all([
       getFamily(employeePublicKey),
       getCart(employeePublicKey),
     ])
 
-    console.dir(family)
-    console.dir(cart)
+    data.family = theFamily
+    data.cart = theCart
+    data.healthBundle = getHealthBundle(data.cart && data.cart.Cart)
+  },
 
-    let healthIns = getHealthIns(cart.Cart)
+  async (event) => {
+    // check if worker has `healthBundle`
+    if (!data.healthBundle) {
+      console.warn(`${'*'.repeat(10)}  Health Bundle: NOT FOUND`)
 
-    if (!healthIns) {
-      event.result = cart.Cart
+      // set result to cart
+      event.result = data.cart && data.cart.Cart
       return
     }
 
-    const primary = getPrimarySigner(healthIns, family)
-    healthIns = await checkApplicationsAvailable(healthIns)
+    // check if missing `cart` or `family`
+    if (!data.cart || !data.family) {
+      console.warn(`${'*'.repeat(10)}  Missing Cart and/or Family!`)
+    }
+  },
 
-    healthIns = await createEnvelopes(healthIns, primary, family)
+  async () => {
+    // now that we have everything, let's get the primary signer/applicant
+    data.primary = getPrimarySigner(data.healthBundle, data.family)
+  },
 
-    cart.Cart = cart.Cart.map(product =>
-      (product.BenefitType === HEALTH_BUNDLE ? healthIns : product))
+  // async (event) => {
+  //   await createDocuSignEnvelope(event)
+  // },
 
-    await saveCart(cart)
+  // NOTE: stuff I need to set
+  // PdfApplicationIsManual
+  // PdfSignatures
+  // UnsignedPdfApplication
+  // DocuSignEnvelopeId
 
-    event.result = cart.Cart
+  // async (event) => {
+  //   const cart = data.cart && data.cart.Cart
+  //   // set result to cart
+  //   event.result = Object.assign({}, event.result, { cart })
+  // },
+
+  async (event) => {
+    // set everything to `true`, in order to match legacy payload
+    data.healthBundle.Benefits.map((benefit) => {
+      benefit.PdfApplicationAvailable = true
+      return benefit
+    })
+
+    data.healthBundle.AllApplicationsAvailable = true
+  },
+
+  async (event) => {
+    data.healthBundle = await createEnvelopes(data.healthBundle, data.primary, data.family, event)
+
+    data.cart.Cart = data.cart.Cart.map(product => (product.BenefitType === HEALTH_BUNDLE ? data.healthBundle : product))
+
+    await saveCart(data.cart)
+
+    event.result = data.cart.Cart
   },
 
   after,
 )
 
-async function createEnvelopes(healthIns, primary, family) {
+async function createEnvelopes(healthIns, primary, family, event) {
   healthIns.Benefits = await Promise.all(healthIns.Benefits.map(async (benefit, i) => {
     if (!benefit.DocuSignEnvelopeId && benefit.PdfApplicationAvailable === true) {
       const hasTransmerica = benefit.hasTransmerica || true
       const applicants = getApplicationPersons(benefit.Persons, primary, family)
-      let signers = getSigners(applicants)
-      const documents = await getDocuments(benefit, applicants, primary, hasTransmerica)
+      const signers = getSigners(applicants)
 
       benefit.EnvelopeComplete = false
-      if (benefit.HealthPlanId.substring(0, 7) === '10544CA' ||
-        benefit.HealthPlanId.substring(0, 7) === '59763MA') {
-        signers = []
-        signers.push(getSignerObject({
-          email: applicants.Primary.HixmeEmailAlias,
-          first: applicants.Primary.FirstName,
-          last: applicants.Primary.LastName,
-          id: applicants.Primary.Id,
-          firstAnchor: 'PrimaryGuardian_Hixme_1',
-          secondAnchor: 'PrimaryGuardian_Hixme_2',
-          thirdAnchor: 'PrimaryGuardian_Hixme_3',
-        }))
-      }
-      benefit.DocumentLocation = documents[0].documentLocation
-      benefit.DocuSignEnvelopeId = await createEnvelope(applicants, signers, documents, primary, config)
+      // if (benefit.HealthPlanId.substring(0, 7) === '10544CA' ||
+      //   benefit.HealthPlanId.substring(0, 7) === '59763MA') {
+      //   signers = []
+      //   signers.push(getSignerObject({
+      //     email: applicants.Primary.HixmeEmailAlias,
+      //     first: applicants.Primary.FirstName,
+      //     last: applicants.Primary.LastName,
+      //     id: applicants.Primary.Id,
+      //     firstAnchor: 'PrimaryGuardian_Hixme_1',
+      //     secondAnchor: 'PrimaryGuardian_Hixme_2',
+      //     thirdAnchor: 'PrimaryGuardian_Hixme_3',
+      //   }))
+      // }
+
+      await createDocuSignEnvelope(event, data)
+
+      benefit.DocumentLocation = 'DocuSign'
+      benefit.UnsignedPdfApplication = 'DocuSign'
+      benefit.DocuSignEnvelopeId = event.envelope.envelopeId
       benefit.PdfSignatures = signers.map(signer => ({
         Id: signer.clientUserId,
         Signed: false,
       }))
     }
-
-    if (benefit.DocumentLocation) {
-      benefit.UnsignedPdfApplication = await s3.getSignedUrl('getObject', {
-        Bucket: benefit.DocumentLocation.bucket,
-        Key: benefit.DocumentLocation.key,
-      })
-    }
     return benefit
   }))
   return healthIns
-}
-
-async function createEnvelope(applicants, signers, documents, primary) {
-  const body = {
-    emailSubject: 'Health Insurance Application',
-    emailBlurb: 'Read and sign please!',
-    recipients: {
-      signers,
-    },
-    documents,
-    status: 'sent',
-    textCustomFields: [{
-      name: 'cartId',
-      required: false,
-      show: false,
-      value: primary.Id,
-    }],
-  }
-  const isProd = stage.toLowerCase() === 'prod' ? '_PROD' : ''
-  const DOCUSIGN_ACCOUNT_ID = process.env[`DOCUSIGN_ACCOUNT_ID${isProd}`]
-  const DOCUSIGN_BASE_URL = process.env[`DOCUSIGN_BASE_URL${isProd}`]
-  const DOCUSIGN_IKEY = process.env[`DOCUSIGN_IKEY${isProd}`]
-  const DOCUSIGN_PASSWORD = process.env[`DOCUSIGN_PASSWORD${isProd}`]
-  const DOCUSIGN_USER_NAME = process.env[`DOCUSIGN_USER_NAME${isProd}`]
-
-
-  const res = await fetch(`${DOCUSIGN_BASE_URL}/accounts/${DOCUSIGN_ACCOUNT_ID}/envelopes`, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'X-DocuSign-Authentication': JSON.stringify({
-        Username: DOCUSIGN_USER_NAME,
-        Password: DOCUSIGN_PASSWORD,
-        IntegratorKey: DOCUSIGN_IKEY,
-      }),
-    },
-    body: JSON.stringify(body),
-  })
-
-  const result = await res.json()
-
-  return result.envelopeId
 }
 
 const forcePlain = arg => (Array.isArray(arg)
@@ -150,7 +152,7 @@ function getSigners(family) {
   if (applicants.Primary && applicants.Guardian) {
     if (applicants.Primary.Relationship === 'Child') {
       const primary = applicants.Primary
-      if (!applicants.Children) applicants.Children = []
+      applicants.Children = applicants.Children || []
       applicants.Children.push(primary)
       delete applicants.Primary
     }
@@ -182,7 +184,7 @@ function getSigners(family) {
 
   if (applicants.Spouse) {
     const email = applicants.Spouse.HixmeEmailAlias ||
-      (`${applicants.Spouse.FirstName}.${applicants.Spouse.FirstName}@hixmeusers.com`)
+      (`${applicants.Spouse.FirstName}.${applicants.Spouse.LastName}@hixmeusers.com`)
     signers.push(getSignerObject({
       email,
       first: applicants.Spouse.FirstName,
@@ -199,7 +201,7 @@ function getSigners(family) {
 
     for (let i = 0; i < kids.length; i++) {
       const email = kids[i].HixmeEmailAlias ||
-        (`${kids[i].FirstName}.${kids[i].FirstName}@hixmeusers.com`)
+        (`${kids[i].FirstName}.${kids[i].LastName}@hixmeusers.com`)
       signers.push(getSignerObject({
         email,
         first: kids[i].FirstName,
@@ -276,142 +278,13 @@ function getApplicationPersons(persons, primary, family) {
   return signerMap
 }
 
-async function getDocuments(benefit, applicants, primary, hasTransmerica) {
-  // NOTE: doesn't look like `hasTransmerica` is being used anywhere?
-  // however, it's being set and passed into this function above...
-  const documents = []
-  const document = await getDocument(applicants, benefit.HealthPlanId)
-
-  const s3Result = await s3.getObject({
-    Bucket: document.bucket,
-    Key: document.key,
-  }).promise()
-
-  documents.push({
-    documentId: '1',
-    name: document.filename,
-    documentBase64: s3Result.Body.toString('base64'),
-    documentFields: [
-      { name: 'cartId', value: primary.Id },
-      { name: 'hiosId', value: benefit.HealthPlanId },
-    ],
-    documentLocation: {
-      bucket: document.bucket,
-      key: document.key,
-    },
-  })
-
-  return documents
-}
-
-async function getDocument(applicants, hios) {
-  const document = {}
-  const getFilledWithRetries = tryFor(4, 500)(getFilledDocument, res => !!res)
-  const result = await getFilledWithRetries(applicants, hios)
-  const components = result.data.split('/')
-
-  document.bucket = components[0]
-  document.key = result.data.substring(result.data.indexOf('/') + 1)
-  document.filename = components[components.length - 1]
-
-  return document
-}
-
-const waitFor = (time, ...args) => new Promise(resolve => setTimeout(resolve, time, ...args))
-
-const tryFor = (times, delay, dieOffRate = 1) => (fn, isOk) => async (...args) => {
-  let timesTried = 0
-
-  while (timesTried++ <= times) {
-    const result = await fn(...args)
-    if (isOk(result)) {
-      return result
-    }
-    await waitFor(delay * (1 + Math.log(Math.pow(dieOffRate, timesTried - 1))))
-  }
-  throw new Error(`Method ${fn.name} was tried too many times.`)
-}
-
-async function getFilledDocument(applicants, hios) {
-  const params = {
-    FunctionName: `get-filled-pdf-application:${stage}`,
-    Payload: JSON.stringify({ employeeGraph: applicants, HIOS_ID: hios, stage }, null, 2),
-  }
-  let response = await lambda.invoke(params).promise()
-  try {
-    response = JSON.parse(response.Payload)
-  } catch (err) {
-    console.error(err)
-  }
-  return response
-}
-
-function getPrimarySigner(healthIns, family) {
+function getPrimarySigner(healthIns = {}, family = []) {
+  const primarySignerID = healthIns.EmployeePublicKey
   return family
-    .find(person => person.Id === healthIns.EmployeePublicKey)
+    .find(person => person.Id === primarySignerID)
 }
 
-async function checkApplicationsAvailable(healthIns) {
-  let allAvailable = false
-
-  if (healthIns.Benefits.length > 0) { allAvailable = true }
-
-  await Promise.all(healthIns.Benefits.map(async (benefit) => {
-    if (benefit.PdfApplicationAvailable) {
-      return benefit
-    }
-    const available = await applicationAvailable(benefit.HealthPlanId)
-    benefit.PdfApplicationAvailable = available
-    if (!available) allAvailable = false
-
-    return benefit
-  }))
-
-  healthIns.AllApplicationsAvailable = allAvailable
-  return healthIns
-}
-
-async function applicationAvailable(hiosId) {
-  const issuerId = hiosId.substring(0, 5)
-  // NOTE: `hiosRegion`, below, isn't being used
-  const hiosRegion = hiosId.replace(/[0-9]/g, '')
-
-  const params = {
-    TableName: `${stage}-carrier-applications`,
-    IndexName: 'HIOS_ISSUER_ID-index',
-    ProjectionExpression: [
-      'Id',
-      'Carrier',
-      'ApplicationName',
-      'ApplicationPath',
-      'Template',
-      'TemplateReviewComplete',
-      'HIOS_ID',
-      'HIOS_ISSUER_ID',
-    ].join(', '),
-    KeyConditionExpression: 'HIOS_ISSUER_ID = :issuer',
-    ExpressionAttributeValues: {
-      ':issuer': issuerId,
-    },
-  }
-
-  const { Items: response } = await docClient.query(params).promise()
-
-  if (!response) {
-    return false
-  }
-
-  const application = response.find((app) => {
-    if (app.HIOS_ID) {
-      return app.HIOS_ID.indexOf(hiosId) !== -1
-    }
-    return false
-  })
-
-  return !(!application || !application.TemplateReviewComplete)
-}
-
-function getHealthIns(cart) {
+function getHealthBundle(cart) {
   return cart.find(benefit => benefit.BenefitType === HEALTH_BUNDLE)
 }
 

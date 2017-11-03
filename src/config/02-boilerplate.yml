@@ -79,7 +79,6 @@ custom:
   serverless-offline:
     prefix: ${self:custom.customDomain.basePath}
 
-
 provider:
   name:       aws
   memorySize: 1024

@@ -2,7 +2,7 @@ import ware from 'warewolf'
 
 import { before, after } from '../../../utils'
 import { createDocuSignEmbeddedEnvelope } from '../../../controllers'
-import { getPerson } from '../../../resources'
+// import { getPerson } from '../../../resources'
 
 // create signing session
 export const createSigningSession = ware(

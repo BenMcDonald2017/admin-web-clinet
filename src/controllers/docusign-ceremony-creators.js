@@ -48,28 +48,33 @@ function getDocuSignTemplateId(healthPlanId) {
     case '789':
       return '99999999-9999-9999-9999-999999999999'
     default: // default INT template if none are found above
-      return '96dc44bf-1199-4841-a3d1-e6568238aab5'
+      return 'd002f6f3-b944-43c5-9456-9461eceb5765'
+      // return '96dc44bf-1199-4841-a3d1-e6568238aab5'  // previous one in int
   }
 }
 
-export const createDocuSignEnvelope = async (event) => {
-  const data = {
+export const createDocuSignEnvelope = async (event, data) => {
+  const request = {
     ...(event.body || {}),
     ...(event.params || {}),
   }
+  const { employeePublicKey, returnUrl } = request
+
+  // TODO: VALIDATION of USERS' AUTHORIZATION!
   // const { authorizer } = event.requestContext
   // const { claims } = authorizer
-  const { enrollmentPublicKey, returnUrl } = data
 
-  // TODO:
-  // using `enrollmentPublicKey`, we need to fetch the following:
-  // (1) user's email
-  // (2) user's first/last name
-  // (3) user's health plan ID (or whatever is needed to match healthplans to docusign templates)
+  // TODO: USE `EmployeePublicKey` BELOW
+  const {
+    cart,
+    family,
+    healthBundle,
+    primary,
+  } = data
 
-  const clientUserId = event.isOffline ? '123-456' : enrollmentPublicKey
-  const email = 'john@smith.com'
-  const name = 'John Smith'
+  const clientUserId = event.isOffline ? '123' : employeePublicKey
+  const email = primary.HixmeEmailAlias
+  const name = `${primary.FirstName} ${primary.LastName}`
   const recipientId = '1'
 
   const body = getTemplateJSON({
@@ -78,7 +83,15 @@ export const createDocuSignEnvelope = async (event) => {
     name,
     recipientId,
     returnUrl,
-  }, getDocuSignTemplateId(), { /* other form fields here */ })
+  }, getDocuSignTemplateId(), {
+    // carrier_name: `${cart.planName}`,
+    // name_first: `${primary.first_name}`,
+    // name_last: `${primary.last_name}`,
+    // name_full: `${primary.first_name} ${primary.last_name}`,
+    // plan_name: `${healthBundle.name}`,
+    // plan_hios_id: `${healthBundle.hios}`,
+    // gender: `${primary.gender}`,
+  })
 
   body.emailSubject = 'DocuSign API call - Request Signature'
   body.status = 'sent' // indicates to DS that this _isn't_ a draft
@@ -87,7 +100,7 @@ export const createDocuSignEnvelope = async (event) => {
   const envelope = await createEnvelope({ body: JSON.stringify(body) })
   const { envelopeId } = envelope
 
-  event.result = {
+  event.envelope = {
     created: true,
     envelopeId,
     clientUserId,
@@ -104,17 +117,13 @@ export const createDocuSignEmbeddedEnvelope = async (event) => {
   }
   // const { authorizer } = event.requestContext
   // const { claims } = authorizer
-  const { enrollmentPublicKey, envelopeId } = data
-  const clientUserId = event.isOffline ? '123-456' : enrollmentPublicKey
-
-  // TODO:
-  // using `enrollmentPublicKey`, we need to fetch the following:
-  // (1) user's email
-  // (2) user's first/last name
-
-  const email = 'john@smith.com'
-  // NOTE: they need `userName` — not `name`
-  const userName = 'John Smith'
+  const {
+    email,
+    enrollmentPublicKey,
+    envelopeId,
+    userName,
+  } = data
+  const clientUserId = event.isOffline ? '123' : enrollmentPublicKey
   const recipientId = '1'
 
   const payload = {

@@ -1,7 +1,7 @@
 import aws from 'aws-sdk'
 
-const DEFAULT_REGION = process.env.npm_package_config_region
-const DEFAULT_STAGE = process.env.npm_package_config_stage
+const DEFAULT_REGION = process.env.npm_package_config_region || 'us-west-2'
+const DEFAULT_STAGE = process.env.npm_package_config_stage || 'int'
 
 const { STAGE = DEFAULT_STAGE } = process.env
 const lambda = new aws.Lambda({ region: DEFAULT_REGION })

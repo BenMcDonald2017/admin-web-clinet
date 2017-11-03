@@ -123,6 +123,21 @@ export const createEmbeddedEnvelope = fetchDocuSign(
   { method: 'POST' },
 )
 
+export const createCustomField = fetchDocuSign(
+  '/tab_definitions/',
+  { method: 'POST' },
+)
+
+export const deleteCustomField = fetchDocuSign(
+  '/tab_definitions/{customTabId}/',
+  { method: 'DELETE' },
+)
+
+export const getAllCustomFields = fetchDocuSign(
+  '/tab_definitions/',
+  { method: 'GET' },
+)
+
 export const getEnvelope = fetchDocuSign(
   '/envelopes/{envelopeId}',
   { method: 'GET' },
