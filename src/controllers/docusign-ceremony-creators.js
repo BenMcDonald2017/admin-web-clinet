@@ -2,6 +2,7 @@
 import { map } from 'lodash'
 
 import { createEnvelope, getEnvelopes, createEmbeddedEnvelope } from './docusign-api'
+import { getDocuSignCustomFieldData } from '../controllers'
 
 const getTemplateJSON = (user, templateId, fields) => ({
   templateId,
@@ -42,14 +43,20 @@ export const getDocuSignEnvelope = async (event) => {
 }
 
 function getDocuSignTemplateId(healthPlanId) {
-  switch (healthPlanId) {
-    case '123':
-    case '456':
-    case '789':
-      return '99999999-9999-9999-9999-999999999999'
-    default: // default INT template if none are found above
-      return 'd002f6f3-b944-43c5-9456-9461eceb5765'
-      // return '96dc44bf-1199-4841-a3d1-e6568238aab5'  // previous one in int
+  switch (process.env.STAGE) {
+    case 'prod':
+      switch (healthPlanId) {
+        case '123':
+        case '456':
+        case '789':
+          return '99999999-9999-9999-9999-999999999999'
+        default:
+          return 'b095e9e2-ef99-4100-bb4d-19d01783823a'
+      }
+    case 'int':
+    case 'dev':
+    default:
+      return '2dda4584-dc4b-4502-870c-19920ed987a7'
   }
 }
 
@@ -71,7 +78,6 @@ export const createDocuSignEnvelope = async (event, data) => {
     healthBundle,
     primary,
   } = data
-
   const clientUserId = event.isOffline ? '123' : employeePublicKey
   const email = primary.HixmeEmailAlias
   const name = `${primary.FirstName} ${primary.LastName}`
@@ -83,15 +89,7 @@ export const createDocuSignEnvelope = async (event, data) => {
     name,
     recipientId,
     returnUrl,
-  }, getDocuSignTemplateId(), {
-    // carrier_name: `${cart.planName}`,
-    // name_first: `${primary.first_name}`,
-    // name_last: `${primary.last_name}`,
-    // name_full: `${primary.first_name} ${primary.last_name}`,
-    // plan_name: `${healthBundle.name}`,
-    // plan_hios_id: `${healthBundle.hios}`,
-    // gender: `${primary.gender}`,
-  })
+  }, getDocuSignTemplateId(), getDocuSignCustomFieldData(data))
 
   body.emailSubject = 'DocuSign API call - Request Signature'
   body.status = 'sent' // indicates to DS that this _isn't_ a draft
@@ -105,9 +103,6 @@ export const createDocuSignEnvelope = async (event, data) => {
     envelopeId,
     clientUserId,
   }
-
-  // TODO:
-  // Save `envelopeId` and `clientUserId` to Enrollment or Cart or something else
 }
 
 export const createDocuSignEmbeddedEnvelope = async (event) => {

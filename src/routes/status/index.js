@@ -51,7 +51,8 @@ export const getCartWithApplicationStatus = ware(
       console.warn(`${'*'.repeat(10)}  Health Bundle: NOT FOUND`)
 
       // set result to cart
-      event.result = data.cart && data.cart.Cart
+      const { Cart: cart } = data.cart
+      event.result = [cart]
       return
     }
 
@@ -88,7 +89,9 @@ export const getCartWithApplicationStatus = ware(
 
     await saveCart(data.cart)
 
-    event.result = data.cart.Cart
+    const { Cart: cart } = data.cart
+
+    event.result = [cart]
   },
 
   after,
