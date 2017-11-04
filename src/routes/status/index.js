@@ -67,7 +67,7 @@ export const getCartWithApplicationStatus = ware(
     data.primary = getPrimarySigner(data.healthBundle, data.family)
   },
 
-  async (event) => {
+  async () => {
     // set everything to `true`, in order to match legacy payload
     data.healthBundle.Benefits.map((benefit) => {
       benefit.PdfApplicationAvailable = true
@@ -88,9 +88,7 @@ export const getCartWithApplicationStatus = ware(
     })
 
     await saveCart(data.cart)
-
     const { Cart: cart } = data.cart
-
     event.result = [cart]
   },
 
@@ -120,6 +118,7 @@ async function createEnvelopes(healthIns, primary, family, event) {
   return healthIns
 }
 
+/* eslint-disable no-nested-ternary */
 const forcePlain = arg => (Array.isArray(arg)
   ? arg.map(forcePlain)
   : (isObject(arg) ? Object.assign({}, arg) : arg))

@@ -15,9 +15,12 @@ const defaultResponseConfig = {
 
 function responseController(
   getResults = ({ result }) => (
+    /* eslint-disable no-nested-ternary */
     typeof result === 'string'
       ? { result }
-      : { ...result }
+      : Array.isArray(result)
+        ? result
+        : { ...result }
   ),
   config = {},
 ) {
@@ -30,9 +33,7 @@ function responseController(
         ...defaultResponseConfig.headers,
         ...config.headers,
       },
-      body: circular.stringify({
-        ...result,
-      }),
+      body: circular.stringify(result),
     }
     done(null, response)
   }
@@ -94,7 +95,7 @@ export const before = ware(async (event = {}) => {
 export const after = ware(
   async (event) => {
     Object.assign({}, defaultResponseConfig, {
-      body: circular.stringify(event.results || event.result || {}),
+      body: event.result || event.results || {},
     })
   },
 
