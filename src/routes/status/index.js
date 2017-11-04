@@ -52,7 +52,7 @@ export const getCartWithApplicationStatus = ware(
 
       // set result to cart
       const { Cart: cart } = data.cart
-      event.result = [cart]
+      event.result = cart
       return
     }
 
@@ -89,7 +89,7 @@ export const getCartWithApplicationStatus = ware(
 
     await saveCart(data.cart)
     const { Cart: cart } = data.cart
-    event.result = [cart]
+    event.result = cart
   },
 
   after,
