@@ -13,3 +13,6 @@
 -
   path: "sign"
   description: "Get an Application Signing Link [GET]"
+-
+  path: "sign"
+  description: "Save DocuSign Envelope Signature Status [POST]"

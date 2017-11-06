@@ -1,8 +1,7 @@
 import ware from 'warewolf'
 
 import { before, after } from '../../../utils'
-import { createDocuSignEmbeddedEnvelope } from '../../../controllers'
-// import { getPerson } from '../../../resources'
+import { createDocuSignEmbeddedEnvelope, setDocuSignEnvelopeSigningStatus } from '../../../controllers'
 
 // POST create signing session
 export const createSigningSession = ware(
@@ -15,13 +14,22 @@ export const createSigningSession = ware(
   after,
 )
 
-
 // GET create signing session
 export const getApplicationSigningLink = ware(
   before,
 
   async (event) => {
     await createDocuSignEmbeddedEnvelope(event)
+  },
+
+  after,
+)
+
+export const saveSignatureStatus = ware(
+  before,
+
+  async (event) => {
+    await setDocuSignEnvelopeSigningStatus(event)
   },
 
   after,

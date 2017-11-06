@@ -3,7 +3,8 @@ import { map } from 'lodash'
 
 import { createEnvelope, getEnvelopes, createEmbeddedEnvelope } from './docusign-api'
 import { getDocuSignCustomFieldData } from '../controllers'
-import { getCart, getFamily, getHealthBundle, getPrimarySigner } from '../resources'
+import { saveCart, getCart, getFamily, getHealthBundle, getPrimarySigner } from '../resources'
+import { getSigners, getApplicationPersons } from '../resources/family'
 
 const getTemplateJSON = (user, templateId, fields) => ({
   templateId,
@@ -22,6 +23,62 @@ const getTemplateJSON = (user, templateId, fields) => ({
 function envelopeIsCompleted(e) {
   const status = e && `${e.status}`.toLowerCase()
   return status === 'completed'
+}
+
+export const setDocuSignEnvelopeSigningStatus = async (event) => {
+  const { envelopeId, employeePublicKey } = event.body
+
+  const [theFamily, { Item: theCart }] = await Promise.all([
+    getFamily(employeePublicKey),
+    getCart(employeePublicKey),
+  ])
+
+  event.family = theFamily
+  event.cart = theCart
+
+  if (event.cart) {
+    event.healthBundle = getHealthBundle(event.cart.Cart)
+  }
+
+  if (event.healthBundle) {
+    event.primary = getPrimarySigner(event.healthBundle, event.family)
+  }
+
+  event.healthBundle.Benefits = await Promise.all(event.healthBundle.Benefits.map(async (benefit) => {
+    // if the item in the cart has no docusignID, then give it one!
+    if (benefit.DocuSignEnvelopeId) {
+      const applicants = getApplicationPersons(benefit.Persons, event.primary, event.family)
+      const signers = getSigners(applicants)
+
+      if (benefit.DocuSignEnvelopeId === envelopeId) {
+        benefit.PdfSignatures = signers.map((signer) => {
+          if (signer.clientUserId === employeePublicKey) {
+            return {
+              Id: signer.clientUserId,
+              Signed: true,
+            }
+          }
+          return {
+            Id: signer.clientUserId,
+            Signed: false,
+          }
+        })
+      }
+
+      // if all signers have signed, then mark envelope as COMPLETE!
+      if (benefit.PdfSignatures && benefit.PdfSignatures.every(signer => (signer.Signed === true))) {
+        benefit.EnvelopeComplete = true
+      }
+
+      event.result = { success: 'true' }
+      return benefit
+    }
+
+    event.result = { success: 'false' }
+    return benefit
+  }))
+
+  await saveCart(event.cart)
 }
 
 export const getDocuSignEnvelope = async (event) => {
@@ -83,8 +140,6 @@ export const createDocuSignEnvelope = async (event, data) => {
   const email = `${primary.HixmeEmailAlias}`.toLowerCase()
   const name = `${primary.FirstName} ${primary.LastName}`
   const recipientId = '1'
-
-  console.dir(data)
 
   const body = getTemplateJSON({
     clientUserId,

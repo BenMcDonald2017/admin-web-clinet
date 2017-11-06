@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Save Signature Status",
+  "type": "object",
+  "properties": {
+    "employeePublicKey": {
+      "type": "string"
+    },
+    "envelopeId": {
+      "type": "string"
+    }
+  }
+}

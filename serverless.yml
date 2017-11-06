@@ -343,6 +343,30 @@ functions:
               - statusCode: '400'
                 responseModels:
                   application/json: ErrorResponse
+  saveSignatureStatus:
+    description: >-
+      ${self:custom.documentation.summary} | Save Signature Status (After
+      Signing is Complete) [POST]
+    handler: build/routes/envelope/sign/index.saveSignatureStatus
+    events:
+      - http:
+          path: sign
+          method: post
+          cors: true
+          documentation:
+            summary: 'Save Signature Status (After Signing is Complete) [POST]'
+            description: 'Save Signature Status (After Signing is Complete) [POST]'
+            requestBody:
+              description: Request body description
+            methodResponses:
+              - statusCode: '200'
+                responseBody:
+                  description: Response body description
+              - statusCode: '400'
+                responseModels:
+                  application/json: ErrorResponse
+            requestModels:
+              application/json: SaveSignatureStatus
 resources:
   Resources: null
   Outputs: null

@@ -11,10 +11,6 @@ import {
 import { before, after } from '../../utils'
 import { createDocuSignEnvelope } from '../../controllers'
 
-const {
-  HEALTH_BUNDLE = 'HealthBundle',
-} = process.env
-
 const data = {
   cart: null,
   family: null,
@@ -87,7 +83,7 @@ export const getCartWithApplicationStatus = ware(
     data.healthBundle.AllApplicationsAvailable = true
 
     data.cart.Cart = data.cart.Cart.map((product) => {
-      if (product.BenefitType === HEALTH_BUNDLE) {
+      if (product.BenefitType === 'HealthBundle') {
         return data.healthBundle
       }
       return product
@@ -114,7 +110,7 @@ async function createEnvelopes(healthIns, primary, family, event) {
 
       benefit.DocumentLocation = 'DocuSign'
       benefit.UnsignedPdfApplication = 'DocuSign'
-      benefit.DocuSignEnvelopeId = event.envelope.envelopeId
+      benefit.DocuSignEnvelopeId = event.envelope && event.envelope.envelopeId
 
       // handle multiple signatures
       benefit.PdfSignatures = signers.map(signer => ({
