@@ -1,26 +1,6 @@
 import moment from 'moment'
 
 export const getDocuSignCustomFieldData = (data) => {
-  // console.warn(`${'*'.repeat(40)}`)
-  // console.warn(`${'*'.repeat(20)} DATA`)
-  // console.dir(data)
-  // console.warn(`${'*'.repeat(40)}`)
-  // console.warn(`${'*'.repeat(20)} PRIMARY`)
-  // console.dir(data.primary)
-  // console.warn(`${'*'.repeat(40)}`)
-  // console.warn(`${'*'.repeat(20)} healthBundle`)
-  // console.dir(data.healthBundle)
-  // console.warn(`${'*'.repeat(40)}`)
-  // console.warn(`${'*'.repeat(20)} cart`)
-  // console.dir(data.cart)
-  // console.warn(`${'*'.repeat(40)}`)
-  // console.warn(`${'*'.repeat(20)} cart.Cart`)
-  // console.dir(data.cart.Cart)
-  // console.warn(`${'*'.repeat(40)}`)
-  // console.warn(`${'*'.repeat(20)} FAMILY`)
-  // console.dir(data.family)
-  // console.warn(`${'*'.repeat(40)}`)
-
   const payload = {
     /* eslint-disable key-spacing */
     carrier_company_name:                    `${data.healthBundle && (data.healthBundle.CarrierName || ' ')}`,
@@ -86,6 +66,12 @@ export const getDocuSignCustomFieldData = (data) => {
     worker_ssn_full_all_numbers_with_dashes: `${data.primary && (data.primary.SSN || ' ').slice(0, 3)}-${data.primary && (data.primary.SSN || ' ').slice(3, 5)}-${data.primary && (data.primary.SSNLastFour || ' ')}`,
     worker_ssn_last_four_numbers:            `${data.primary && (data.primary.SSNLastFour || ' ')}`,
     worker_ssn_middle_two_numbers:           `${data.primary && (data.primary.SSN || ' ').slice(3, 5)}`,
+  }
+
+  if (data.family) {
+    data.family.forEach((person) => {
+      console.dir(person)
+    })
   }
 
   return payload
