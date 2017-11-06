@@ -76,7 +76,7 @@ export const createDocuSignEnvelope = async (event, data) => {
   const {
     // cart,
     // family,
-    // healthBundle,
+    healthBundle,
     primary,
   } = data
   const clientUserId = event.isOffline ? '123' : employeePublicKey
@@ -90,9 +90,9 @@ export const createDocuSignEnvelope = async (event, data) => {
     name,
     recipientId,
     returnUrl,
-  }, getDocuSignTemplateId(`${data.healthBundle.hios}`), getDocuSignCustomFieldData(data))
+  }, getDocuSignTemplateId(`${healthBundle.HealthPlanId}`), getDocuSignCustomFieldData(data))
 
-  body.emailSubject = 'DocuSign API call - Request Signature'
+  body.emailSubject = `Signature Request: ${name}`
   body.status = 'sent' // indicates to DS that this _isn't_ a draft
   body.fromDate = new Date()
 
