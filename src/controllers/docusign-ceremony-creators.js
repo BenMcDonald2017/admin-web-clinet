@@ -3,6 +3,7 @@ import { map } from 'lodash'
 
 import { createEnvelope, getEnvelopes, createEmbeddedEnvelope } from './docusign-api'
 import { getDocuSignCustomFieldData } from '../controllers'
+import { getCart, getFamily, getHealthBundle, getPrimarySigner } from '../resources'
 
 const getTemplateJSON = (user, templateId, fields) => ({
   templateId,
@@ -73,13 +74,13 @@ export const createDocuSignEnvelope = async (event, data) => {
 
   // TODO: USE `EmployeePublicKey` BELOW
   const {
-    cart,
-    family,
-    healthBundle,
+    // cart,
+    // family,
+    // healthBundle,
     primary,
   } = data
   const clientUserId = event.isOffline ? '123' : employeePublicKey
-  const email = primary.HixmeEmailAlias
+  const email = `${primary.HixmeEmailAlias}`.toLowerCase()
   const name = `${primary.FirstName} ${primary.LastName}`
   const recipientId = '1'
 
@@ -89,7 +90,7 @@ export const createDocuSignEnvelope = async (event, data) => {
     name,
     recipientId,
     returnUrl,
-  }, getDocuSignTemplateId(), getDocuSignCustomFieldData(data))
+  }, getDocuSignTemplateId(`${data.healthBundle.hios}`), getDocuSignCustomFieldData(data))
 
   body.emailSubject = 'DocuSign API call - Request Signature'
   body.status = 'sent' // indicates to DS that this _isn't_ a draft
@@ -106,19 +107,36 @@ export const createDocuSignEnvelope = async (event, data) => {
 }
 
 export const createDocuSignEmbeddedEnvelope = async (event) => {
-  const data = {
+  const request = {
     ...(event.body || {}),
     ...(event.params || {}),
   }
   // const { authorizer } = event.requestContext
   // const { claims } = authorizer
+  const data = {}
   const {
-    email,
-    enrollmentPublicKey,
+    enrollmentPublicKey, // I believe this is the same as employeePublicKey
     envelopeId,
-    userName,
-  } = data
-  const clientUserId = event.isOffline ? '123' : enrollmentPublicKey
+  } = request
+
+  const employeePublicKey = enrollmentPublicKey
+  const [theFamily, { Item: theCart }] = await Promise.all([
+    getFamily(employeePublicKey),
+    getCart(employeePublicKey),
+  ])
+
+  data.family = theFamily
+  data.cart = theCart
+
+  if (data.cart) {
+    data.healthBundle = getHealthBundle(data.cart.Cart)
+    data.primary = getPrimarySigner(data.healthBundle, data.family)
+  }
+
+  const email = `${data.primary && data.primary.HixmeEmailAlias}`
+  const userName = `${data.primary && data.primary.FirstName} ${data.primary && data.primary.LastName}`
+
+  const clientUserId = event.isOffline ? '123' : employeePublicKey
   const recipientId = '1'
 
   const payload = {
