@@ -12,7 +12,7 @@
   description: "Get Cart With Application Status [GET]"
 -
   path: "sign"
-  description: "Get an Application Signing Link [GET]"
--
-  path: "sign"
-  description: "Save DocuSign Envelope Signature Status [POST]"
+  description: "Get an Application Signing Link [GET] or Save DocuSign Envelope Signature Status [POST]"
+# -
+#   path: "sign"
+#   description: "Save DocuSign Envelope Signature Status [POST]"
