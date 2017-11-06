@@ -294,12 +294,48 @@ functions:
             parameters:
               querystrings:
                 employeePublicKey: true
+                returnUrl: true
           documentation:
             summary: Get Cart With Application Status
             description: 'Get Cart With Application Status [GET]'
             queryParams:
               - name: employeePublicKey
                 description: The Employee Public Key
+              - name: returnUrl
+                description: The URL That DocuSign Should Return to After Signing
+            methodResponses:
+              - statusCode: '200'
+                responseBody:
+                  description: Response body description
+              - statusCode: '400'
+                responseModels:
+                  application/json: ErrorResponse
+  getApplicationSigningLink:
+    description: >-
+      ${self:custom.documentation.summary} | Get an Application Signing Link
+      [GET]
+    handler: build/routes/envelope/sign/index.getApplicationSigningLink
+    events:
+      - http:
+          path: sign
+          method: get
+          cors: true
+          request:
+            parameters:
+              querystrings:
+                employeePublicKey: true
+                envelopeId: true
+                returnUrl: true
+          documentation:
+            summary: Get an Application Signing Link
+            description: 'Get an Application Signing Link [GET]'
+            queryParams:
+              - name: employeePublicKey
+                description: The Employee Public Key
+              - name: envelopeId
+                description: The Envelope Id
+              - name: returnUrl
+                description: The URL That DocuSign Should Return to After Signing
             methodResponses:
               - statusCode: '200'
                 responseBody:

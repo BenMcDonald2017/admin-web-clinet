@@ -116,7 +116,6 @@ async function createEnvelopes(healthIns, primary, family, event) {
       benefit.UnsignedPdfApplication = 'DocuSign'
       benefit.DocuSignEnvelopeId = event.envelope.envelopeId
 
-
       // handle multiple signatures
       benefit.PdfSignatures = signers.map(signer => ({
         Id: signer.clientUserId,

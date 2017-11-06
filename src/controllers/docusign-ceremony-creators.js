@@ -117,6 +117,7 @@ export const createDocuSignEmbeddedEnvelope = async (event) => {
   const {
     enrollmentPublicKey, // I believe this is the same as employeePublicKey
     envelopeId,
+    returnUrl,
   } = request
 
   const employeePublicKey = enrollmentPublicKey
@@ -144,7 +145,8 @@ export const createDocuSignEmbeddedEnvelope = async (event) => {
       envelopeId,
     },
     body: JSON.stringify({
-      ...data,
+      ...request,
+      returnUrl,
       authenticationMethod: 'email',
       clientUserId,
       email,
