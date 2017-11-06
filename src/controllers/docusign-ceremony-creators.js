@@ -84,6 +84,8 @@ export const createDocuSignEnvelope = async (event, data) => {
   const name = `${primary.FirstName} ${primary.LastName}`
   const recipientId = '1'
 
+  console.dir(data)
+
   const body = getTemplateJSON({
     clientUserId,
     email,
