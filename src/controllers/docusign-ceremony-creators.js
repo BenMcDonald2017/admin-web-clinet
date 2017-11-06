@@ -115,12 +115,13 @@ export const createDocuSignEmbeddedEnvelope = async (event) => {
   // const { claims } = authorizer
   const data = {}
   const {
-    enrollmentPublicKey, // I believe this is the same as employeePublicKey
+    // enrollmentPublicKey, // I believe this is the same as employeePublicKey
+    employeePublicKey,
     envelopeId,
     returnUrl,
   } = request
 
-  const employeePublicKey = enrollmentPublicKey
+  // const employeePublicKey = enrollmentPublicKey
   const [theFamily, { Item: theCart }] = await Promise.all([
     getFamily(employeePublicKey),
     getCart(employeePublicKey),
