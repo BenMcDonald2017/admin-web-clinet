@@ -66,6 +66,7 @@
     "aws-sdk": "2.134.0",
     "babel-runtime": "6.26.0",
     "circular-json": "0.3.3",
+    "delver": "1.1.2",
     "dynamoose": "0.8.5",
     "lodash": "4.17.4",
     "moment": "2.19.1",

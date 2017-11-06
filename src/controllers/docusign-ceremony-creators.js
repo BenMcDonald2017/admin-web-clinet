@@ -26,7 +26,7 @@ function envelopeIsCompleted(e) {
 }
 
 export const setDocuSignEnvelopeSigningStatus = async (event) => {
-  const { envelopeId, employeePublicKey } = event.body
+  const { envelopeId, employeePublicKey, personPublicKey } = event.body
 
   const [theFamily, { Item: theCart }] = await Promise.all([
     getFamily(employeePublicKey),
@@ -52,7 +52,7 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
 
       if (benefit.DocuSignEnvelopeId === envelopeId) {
         benefit.PdfSignatures = signers.map((signer) => {
-          if (signer.clientUserId === employeePublicKey) {
+          if (signer.clientUserId === personPublicKey) {
             return {
               Id: signer.clientUserId,
               Signed: true,
@@ -70,11 +70,11 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
         benefit.EnvelopeComplete = true
       }
 
-      event.result = { success: 'true' }
+      event.result = { success: true }
       return benefit
     }
 
-    event.result = { success: 'false' }
+    event.result = { success: false }
     return benefit
   }))
 

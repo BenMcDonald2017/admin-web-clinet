@@ -6,6 +6,9 @@
     "employeePublicKey": {
       "type": "string"
     },
+    "personPublicKey": {
+      "type": "string"
+    },
     "envelopeId": {
       "type": "string"
     }
