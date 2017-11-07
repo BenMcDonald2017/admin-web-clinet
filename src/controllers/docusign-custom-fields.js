@@ -26,10 +26,10 @@ export const getDocuSignCustomFieldData = (data) => {
   Object.assign(payload, fetchAndFillDataFor(spouse, 'spouse'))
 
   // add family members and up to 6 blank dependents
-  // for (let i = 0; i < 6; i += 1) {
-  //   const familyMember = Delver.get(family || {}, `family[${i}]`) || {}
-  //   Object.assign(payload, fetchAndFillDataFor(familyMember, `dep${i + 1}`))
-  // }
+  for (let i = 0; i < 6; i += 1) {
+    const familyMember = family[i] || {}
+    Object.assign(payload, fetchAndFillDataFor(familyMember, `dep${i + 1}`))
+  }
 
   function fetchAndFillDataFor(person, type) {
     return {
@@ -62,7 +62,7 @@ export const getDocuSignCustomFieldData = (data) => {
       [`${type}_gender_checkbox_male`]:             Delver.get(person, 'Gender') === 'Male',
       [`${type}_gender_full_word`]:                 Delver.get(person, 'Gender'),
       [`${type}_gender_only_letter`]:               Delver.get(person, 'Gender') ? Delver.get(person, 'Gender').slice(0, 1) : ' ',
-      [`${type}_name_first_initial`]:               Delver.get(person, 'FirstName').slice(0, 1),
+      [`${type}_name_first_initial`]:               Delver.get(person, 'FirstName') ? Delver.get(person, 'FirstName').slice(0, 1) : ' ',
       [`${type}_name_first_name`]:                  Delver.get(person, 'FirstName'),
       [`${type}_name_full_name`]:                   `${Delver.get(person, 'FirstName')}${Delver.get(person, 'MiddleName') ? ` ${Delver.get(person, 'MiddleName')} ` : ' '}${Delver.get(person, 'LastName')}`,
       [`${type}_name_last_initial`]:                Delver.get(person, 'LastName') ? Delver.get(person, 'LastName').slice(0, 1) : ' ',
