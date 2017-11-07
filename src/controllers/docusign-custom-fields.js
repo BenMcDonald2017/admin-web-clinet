@@ -1,5 +1,6 @@
-import moment from 'moment'
 import Delver from 'delver'
+import moment from 'moment'
+import us from 'us'
 
 export const getDocuSignCustomFieldData = (data) => {
   const worker = data.primary
@@ -17,6 +18,7 @@ export const getDocuSignCustomFieldData = (data) => {
   const payload = {}
 
   /* eslint-disable no-multi-spaces */
+  // first, let's add some generic plan-related data to our DocuSign payload
   payload.carrier_company_name = Delver.get(data.healthBundle, 'CarrierName')
   payload.carrier_plan_hios_id = Delver.get(data.healthBundle, 'HealthPlanId')
   payload.carrier_plan_name    = Delver.get(data.healthBundle, 'PlanName')
@@ -27,11 +29,12 @@ export const getDocuSignCustomFieldData = (data) => {
 
   // add family members and up to 6 blank dependents
   for (let i = 0; i < 6; i += 1) {
-    const familyMember = family[i] || {}
+    const familyMember = family ? family[i] : {}
     Object.assign(payload, fetchAndFillDataFor(familyMember, `dep${i + 1}`))
   }
 
   function fetchAndFillDataFor(person, type) {
+    person = person === undefined ? {} : person
     return {
       /* eslint-disable key-spacing */
       [`${type}_address_city`]:                     Delver.get(person, 'City'),
@@ -39,8 +42,7 @@ export const getDocuSignCustomFieldData = (data) => {
       [`${type}_address_full`]:                     `${Delver.get(person, 'StreetAddress')}${Delver.get(person, 'StreetAddressExt') ? `, ${Delver.get(person, 'StreetAddressExt')}` : ''}`,
       [`${type}_address_line_1`]:                   Delver.get(person, 'StreetAddress'),
       [`${type}_address_line_2_apartment`]:         Delver.get(person, 'StreetAddressExt'),
-      // this isn't the "full" state name below, if that matters
-      [`${type}_address_state_full`]:               Delver.get(person, 'StateProvince'),
+      [`${type}_address_state_full`]:               us.lookup(Delver.get(person, 'StateProvince')) && us.lookup(Delver.get(person, 'StateProvince')).name,
       [`${type}_address_state_two_letters`]:        Delver.get(person, 'StateProvince'),
       [`${type}_address_zip_code`]:                 Delver.get(person, 'PostalCode'),
       [`${type}_birthdate_day`]:                    Delver.get(person, 'DateOfBirth') ? moment(Delver.get(person, 'DateOfBirth')).format('dddd') : ' ',
@@ -75,11 +77,10 @@ export const getDocuSignCustomFieldData = (data) => {
       [`${type}_phone_number_first_three`]:         Delver.get(person, 'PhoneNumber') ? Delver.get(person, 'PhoneNumber').slice(3, 6) : ' ',
       [`${type}_phone_number_full`]:                Delver.get(person, 'PhoneNumber'),
       [`${type}_phone_number_last_four`]:           Delver.get(person, 'PhoneNumber') ? Delver.get(person, 'PhoneNumber').slice(6, 10) : ' ',
-      // Preferred Language
       [`${type}_preferred_language`]:               'English',
       [`${type}_relationship_to_primary`]:          Delver.get(person, 'Relationship') === 'Employee' ? 'Self' : Delver.get(person, 'Relationship'),
       // signature?  do anything to this?
-      // [`${type}_signature`]:                        ' ',
+      [`${type}_signature`]:                        !!person,
       [`${type}_signature_date_dd`]:                person && moment().format('DD'),
       [`${type}_signature_date_mm`]:                person && moment().format('MM'),
       [`${type}_signature_date_mm_dd_yyyy`]:        person && moment().format('MM / DD / YYYY'),
