@@ -2,86 +2,100 @@ import moment from 'moment'
 import Delver from 'delver'
 
 export const getDocuSignCustomFieldData = (data) => {
-  const worker = new Delver(data.primary)
-  const healthBundle = new Delver(data.healthBundle)
-  const spouse = new Delver(data.family.find(person => Delver.get(person, 'Relationship') === 'Spouse'))
+  const worker = data.primary
+  const spouse = data.family.find((person) => {
+    const relation = Delver.get(person, 'Relationship')
+    return Delver.get(person, 'IncludedInMedical') === true &&
+      (relation === 'Spouse' || relation === 'Domestic Partner')
+  })
+  const family = data.family.filter((person) => {
+    const relation = Delver.get(person, 'Relationship')
+    return Delver.get(person, 'IncludedInMedical') === true &&
+      (relation !== 'Employee' && relation !== 'Spouse' && relation !== 'Domestic Partner')
+  })
 
-  console.dir(spouse)
-  console.warn(`Spouse name is ${spouse.get('FirstName')} ${spouse.get('LastName')}`)
+  const payload = {}
 
-  const payload = {
-    /* eslint-disable key-spacing */
-    carrier_company_name:                    healthBundle.get('CarrierName'),
-    carrier_plan_hios_id:                    healthBundle.get('HealthPlanId'),
-    carrier_plan_name:                       healthBundle.get('PlanName'),
+  /* eslint-disable no-multi-spaces */
+  payload.carrier_company_name = Delver.get(data.healthBundle, 'CarrierName')
+  payload.carrier_plan_hios_id = Delver.get(data.healthBundle, 'HealthPlanId')
+  payload.carrier_plan_name    = Delver.get(data.healthBundle, 'PlanName')
 
-    worker_address_city:                     worker.get('City'),
-    worker_address_county:                   worker.get('County'),
-    worker_address_full:                     `${worker.get('StreetAddress')}${worker.get('StreetAddressExt') ? `, ${worker.get('StreetAddressExt')}` : ''}`,
-    worker_address_line_1:                   worker.get('StreetAddress'),
-    worker_address_line_2_apartment:         worker.get('StreetAddressExt'),
-    // this isn't the "full" state name below, if that matters
-    worker_address_state_full:               worker.get('StateProvince'),
-    worker_address_state_two_letters:        worker.get('StateProvince'),
-    worker_address_zip_code:                 worker.get('PostalCode'),
-    worker_birthdate_day:                    worker.get('DateOfBirth') ? moment(worker.get('DateOfBirth')).format('dddd') : ' ',
-    worker_birthdate_dd:                     worker.get('DateOfBirth') ? moment(worker.get('DateOfBirth')).format('DD') : ' ',
-    worker_birthdate_full_words:             worker.get('DateOfBirth') ? moment(worker.get('DateOfBirth')).format('MMMM MM, YYYY') : ' ',
-    worker_birthdate_mm:                     worker.get('DateOfBirth') ? moment(worker.get('DateOfBirth')).format('MM') : ' ',
-    worker_birthdate_mm_dd_yyyy:             worker.get('DateOfBirth') ? moment(worker.get('DateOfBirth')).format('MM / DD / YYYY') : ' ',
-    worker_birthdate_month:                  worker.get('DateOfBirth') ? moment(worker.get('DateOfBirth')).format('MMMM') : ' ',
-    worker_birthdate_year:                   worker.get('DateOfBirth') ? moment(worker.get('DateOfBirth')).format('YYYY') : ' ',
-    worker_birthdate_yy:                     worker.get('DateOfBirth') ? moment(worker.get('DateOfBirth')).format('YY') : ' ',
-    worker_birthdate_yyyy:                   worker.get('DateOfBirth') ? moment(worker.get('DateOfBirth')).format('YYYY') : ' ',
-    worker_checkbox_is_daughter:             worker.get('Gender') === 'Female' && (worker.get('Relationship') === 'Child' || worker.get('Relationship') === 'Child of Domestic Partner'),
-    worker_checkbox_is_son:                  worker.get('Gender') === 'Male' && (worker.get('Relationship') === 'Child' || worker.get('Relationship') === 'Child of Domestic Partner'),
-    worker_checkbox_is_domestic_partner:     worker.get('Relationship') === 'Domestic Partner',
-    worker_checkbox_is_married:              worker.get('MarriageStatus') === 'Married',
-    worker_checkbox_is_single:               worker.get('MarriageStatus') === 'Single' || (worker.get('MarriageStatus') !== 'Married' && worker.get('MarriageStatus') !== 'Domestic Partner'),
-    worker_email_address:                    worker.get('EmailAddress'),
-    worker_gender_checkbox_female:           worker.get('Gender') === 'Female',
-    worker_gender_checkbox_male:             worker.get('Gender') === 'Male',
-    worker_gender_full_word:                 worker.get('Gender'),
-    worker_gender_only_letter:               worker.get('Gender') ? worker.get('Gender').slice(0, 1) : ' ',
-    worker_name_first_initial:               worker.get('FirstName').slice(0, 1),
-    worker_name_first_name:                  worker.get('FirstName'),
-    worker_name_full_name:                   `${worker.get('FirstName')}${worker.get('MiddleName') ? ` ${worker.get('MiddleName')} ` : ' '}${worker.get('LastName')}`,
-    worker_name_last_initial:                worker.get('LastName') ? worker.get('LastName').slice(0, 1) : ' ',
-    worker_name_last_name:                   worker.get('LastName'),
-    worker_name_middle_initial:              worker.get('MiddleName') ? worker.get('MiddleName').slice(0, 1) : ' ',
-    worker_name_middle_name:                 worker.get('MiddleName'),
-    worker_phone_number_area_code:           worker.get('PhoneNumber') ? worker.get('PhoneNumber').slice(0, 3) : ' ',
-    // check extension below
-    worker_phone_number_extension:           worker.get('PhoneNumber') ? worker.get('PhoneNumber').slice(10, 20) : ' ',
-    worker_phone_number_first_three:         worker.get('PhoneNumber') ? worker.get('PhoneNumber').slice(3, 6) : ' ',
-    worker_phone_number_full:                worker.get('PhoneNumber'),
-    worker_phone_number_last_four:           worker.get('PhoneNumber') ? worker.get('PhoneNumber').slice(6, 10) : ' ',
-    // Preferred Language
-    worker_preferred_language:               'English',
-    worker_relationship_to_primary:          worker.get('Relationship') === 'Employee' ? 'Self' : worker.get('Relationship'),
-    // signature?  do anything to this?
-    // worker_signature:                        ` `,
-    worker_signature_date_dd:                moment().format('DD'),
-    worker_signature_date_mm:                moment().format('MM'),
-    worker_signature_date_mm_dd_yyyy:        moment().format('MM / DD / YYYY'),
-    worker_signature_date_yyyy:              moment().format('YYYY'),
-    worker_smoker_checkbox:                  worker.get('Smoker') === true,
-    worker_smoker_checkbox_no:               worker.get('Smoker') === false,
-    worker_smoker_checkbox_yes:              worker.get('Smoker') === true,
-    worker_smoker_y_n:                       worker.get('Smoker') === true ? 'Y' : 'N',
-    worker_smoker_yes_no:                    worker.get('Smoker') === true ? 'YES' : 'NO',
-    worker_ssn_full_all_numbers_only:        worker.get('SSN'),
-    worker_ssn_first_three_numbers:          worker.get('SSN') ? worker.get('SSN').slice(0, 3) : ' ',
-    worker_ssn_middle_two_numbers:           worker.get('SSN') ? worker.get('SSN').slice(3, 5) : ' ',
-    worker_ssn_last_four_numbers:            worker.get('SSNLastFour'),
-    worker_ssn_full_all_numbers_with_dashes: worker.get('SSN') ? `${worker.get('SSN').slice(0, 3)}-${worker.get('SSN').slice(3, 5)}-${worker.get('SSNLastFour')}` : ' ',
-  }
+  // add worker and spouse to payload
+  Object.assign(payload, fetchAndFillDataFor(worker, 'worker'))
+  Object.assign(payload, fetchAndFillDataFor(spouse, 'spouse'))
 
-  // if (data.family) {
-  //   data.family.forEach((person) => {
-  //     console.dir(person)
-  //   })
+  // add family members and up to 6 blank dependents
+  // for (let i = 0; i < 6; i += 1) {
+  //   const familyMember = Delver.get(family || {}, `family[${i}]`) || {}
+  //   Object.assign(payload, fetchAndFillDataFor(familyMember, `dep${i + 1}`))
   // }
+
+  function fetchAndFillDataFor(person, type) {
+    return {
+      /* eslint-disable key-spacing */
+      [`${type}_address_city`]:                     Delver.get(person, 'City'),
+      [`${type}_address_county`]:                   Delver.get(person, 'County'),
+      [`${type}_address_full`]:                     `${Delver.get(person, 'StreetAddress')}${Delver.get(person, 'StreetAddressExt') ? `, ${Delver.get(person, 'StreetAddressExt')}` : ''}`,
+      [`${type}_address_line_1`]:                   Delver.get(person, 'StreetAddress'),
+      [`${type}_address_line_2_apartment`]:         Delver.get(person, 'StreetAddressExt'),
+      // this isn't the "full" state name below, if that matters
+      [`${type}_address_state_full`]:               Delver.get(person, 'StateProvince'),
+      [`${type}_address_state_two_letters`]:        Delver.get(person, 'StateProvince'),
+      [`${type}_address_zip_code`]:                 Delver.get(person, 'PostalCode'),
+      [`${type}_birthdate_day`]:                    Delver.get(person, 'DateOfBirth') ? moment(Delver.get(person, 'DateOfBirth')).format('dddd') : ' ',
+      [`${type}_birthdate_dd`]:                     Delver.get(person, 'DateOfBirth') ? moment(Delver.get(person, 'DateOfBirth')).format('DD') : ' ',
+      [`${type}_birthdate_full_words`]:             Delver.get(person, 'DateOfBirth') ? moment(Delver.get(person, 'DateOfBirth')).format('MMMM MM, YYYY') : ' ',
+      [`${type}_birthdate_mm`]:                     Delver.get(person, 'DateOfBirth') ? moment(Delver.get(person, 'DateOfBirth')).format('MM') : ' ',
+      [`${type}_birthdate_mm_dd_yyyy`]:             Delver.get(person, 'DateOfBirth') ? moment(Delver.get(person, 'DateOfBirth')).format('MM / DD / YYYY') : ' ',
+      [`${type}_birthdate_month`]:                  Delver.get(person, 'DateOfBirth') ? moment(Delver.get(person, 'DateOfBirth')).format('MMMM') : ' ',
+      [`${type}_birthdate_year`]:                   Delver.get(person, 'DateOfBirth') ? moment(Delver.get(person, 'DateOfBirth')).format('YYYY') : ' ',
+      [`${type}_birthdate_yy`]:                     Delver.get(person, 'DateOfBirth') ? moment(Delver.get(person, 'DateOfBirth')).format('YY') : ' ',
+      [`${type}_birthdate_yyyy`]:                   Delver.get(person, 'DateOfBirth') ? moment(Delver.get(person, 'DateOfBirth')).format('YYYY') : ' ',
+      [`${type}_checkbox_is_daughter`]:             Delver.get(person, 'Gender') === 'Female' && (Delver.get(person, 'Relationship') === 'Child' || Delver.get(person, 'Relationship') === 'Child of Domestic Partner'),
+      [`${type}_checkbox_is_son`]:                  Delver.get(person, 'Gender') === 'Male' && (Delver.get(person, 'Relationship') === 'Child' || Delver.get(person, 'Relationship') === 'Child of Domestic Partner'),
+      [`${type}_checkbox_is_domestic_partner`]:     Delver.get(person, 'Relationship') === 'Domestic Partner',
+      [`${type}_checkbox_is_married`]:              Delver.get(person, 'MarriageStatus') === 'Married',
+      [`${type}_checkbox_is_single`]:               Delver.get(person, 'MarriageStatus') === 'Single' || (Delver.get(person, 'MarriageStatus') !== 'Married' && Delver.get(person, 'MarriageStatus') !== 'Domestic Partner'),
+      [`${type}_email_address`]:                    Delver.get(person, 'EmailAddress'),
+      [`${type}_gender_checkbox_female`]:           Delver.get(person, 'Gender') === 'Female',
+      [`${type}_gender_checkbox_male`]:             Delver.get(person, 'Gender') === 'Male',
+      [`${type}_gender_full_word`]:                 Delver.get(person, 'Gender'),
+      [`${type}_gender_only_letter`]:               Delver.get(person, 'Gender') ? Delver.get(person, 'Gender').slice(0, 1) : ' ',
+      [`${type}_name_first_initial`]:               Delver.get(person, 'FirstName').slice(0, 1),
+      [`${type}_name_first_name`]:                  Delver.get(person, 'FirstName'),
+      [`${type}_name_full_name`]:                   `${Delver.get(person, 'FirstName')}${Delver.get(person, 'MiddleName') ? ` ${Delver.get(person, 'MiddleName')} ` : ' '}${Delver.get(person, 'LastName')}`,
+      [`${type}_name_last_initial`]:                Delver.get(person, 'LastName') ? Delver.get(person, 'LastName').slice(0, 1) : ' ',
+      [`${type}_name_last_name`]:                   Delver.get(person, 'LastName'),
+      [`${type}_name_middle_initial`]:              Delver.get(person, 'MiddleName') ? Delver.get(person, 'MiddleName').slice(0, 1) : ' ',
+      [`${type}_name_middle_name`]:                 Delver.get(person, 'MiddleName'),
+      [`${type}_phone_number_area_code`]:           Delver.get(person, 'PhoneNumber') ? Delver.get(person, 'PhoneNumber').slice(0, 3) : ' ',
+      // check extension below
+      [`${type}_phone_number_extension`]:           Delver.get(person, 'PhoneNumber') ? Delver.get(person, 'PhoneNumber').slice(10, 20) : ' ',
+      [`${type}_phone_number_first_three`]:         Delver.get(person, 'PhoneNumber') ? Delver.get(person, 'PhoneNumber').slice(3, 6) : ' ',
+      [`${type}_phone_number_full`]:                Delver.get(person, 'PhoneNumber'),
+      [`${type}_phone_number_last_four`]:           Delver.get(person, 'PhoneNumber') ? Delver.get(person, 'PhoneNumber').slice(6, 10) : ' ',
+      // Preferred Language
+      [`${type}_preferred_language`]:               'English',
+      [`${type}_relationship_to_primary`]:          Delver.get(person, 'Relationship') === 'Employee' ? 'Self' : Delver.get(person, 'Relationship'),
+      // signature?  do anything to this?
+      // [`${type}_signature`]:                        ' ',
+      [`${type}_signature_date_dd`]:                person && moment().format('DD'),
+      [`${type}_signature_date_mm`]:                person && moment().format('MM'),
+      [`${type}_signature_date_mm_dd_yyyy`]:        person && moment().format('MM / DD / YYYY'),
+      [`${type}_signature_date_yyyy`]:              person && moment().format('YYYY'),
+      [`${type}_smoker_checkbox`]:                  Delver.get(person, 'Smoker') === true,
+      [`${type}_smoker_checkbox_no`]:               Delver.get(person, 'Smoker') === false,
+      [`${type}_smoker_checkbox_yes`]:              Delver.get(person, 'Smoker') === true,
+      [`${type}_smoker_y_n`]:                       Delver.get(person, 'Smoker') === true ? 'Y' : 'N',
+      [`${type}_smoker_yes_no`]:                    Delver.get(person, 'Smoker') === true ? 'YES' : 'NO',
+      [`${type}_ssn_full_all_numbers_only`]:        Delver.get(person, 'SSN'),
+      [`${type}_ssn_first_three_numbers`]:          Delver.get(person, 'SSN') ? Delver.get(person, 'SSN').slice(0, 3) : ' ',
+      [`${type}_ssn_middle_two_numbers`]:           Delver.get(person, 'SSN') ? Delver.get(person, 'SSN').slice(3, 5) : ' ',
+      [`${type}_ssn_last_four_numbers`]:            Delver.get(person, 'SSNLastFour'),
+      [`${type}_ssn_full_all_numbers_with_dashes`]: Delver.get(person, 'SSN') ? `${Delver.get(person, 'SSN').slice(0, 3)}-${Delver.get(person, 'SSN').slice(3, 5)}-${Delver.get(person, 'SSNLastFour')}` : ' ',
+    }
+  }
 
   // change all `undefined`s (and empty strings) to blank spaces (' ') for DocuSign
   Object.keys(payload).forEach((entry) => {
