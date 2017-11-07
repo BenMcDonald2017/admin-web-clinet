@@ -3,6 +3,7 @@ import moment from 'moment'
 import us from 'us'
 
 export const getDocuSignCustomFieldData = (data) => {
+  const { healthBundle } = data
   const worker = data.primary
   const spouse = data.family.find((person) => {
     const relation = Delver.get(person, 'Relationship')
@@ -19,9 +20,8 @@ export const getDocuSignCustomFieldData = (data) => {
 
   /* eslint-disable no-multi-spaces */
   // first, let's add some generic plan-related data to our DocuSign payload
-  payload.carrier_company_name = Delver.get(data.healthBundle, 'CarrierName')
-  payload.carrier_plan_hios_id = Delver.get(data.healthBundle, 'HealthPlanId')
-  payload.carrier_plan_name    = Delver.get(data.healthBundle, 'PlanName')
+  payload.carrier_company_name = Delver.get(healthBundle, 'CarrierName')
+  payload.carrier_plan_name    = Delver.get(healthBundle, 'PlanName')
 
   // add worker and spouse to payload
   Object.assign(payload, fetchAndFillDataFor(worker, 'worker'))
@@ -42,7 +42,7 @@ export const getDocuSignCustomFieldData = (data) => {
       [`${type}_address_full`]:                     `${Delver.get(person, 'StreetAddress')}${Delver.get(person, 'StreetAddressExt') ? `, ${Delver.get(person, 'StreetAddressExt')}` : ''}`,
       [`${type}_address_line_1`]:                   Delver.get(person, 'StreetAddress'),
       [`${type}_address_line_2_apartment`]:         Delver.get(person, 'StreetAddressExt'),
-      [`${type}_address_state_full`]:               us.lookup(Delver.get(person, 'StateProvince')) && us.lookup(Delver.get(person, 'StateProvince')).name,
+      [`${type}_address_state_full`]:               Delver.get(person, 'StateProvince') && us.lookup(Delver.get(person, 'StateProvince')) && us.lookup(Delver.get(person, 'StateProvince')).name,
       [`${type}_address_state_two_letters`]:        Delver.get(person, 'StateProvince'),
       [`${type}_address_zip_code`]:                 Delver.get(person, 'PostalCode'),
       [`${type}_birthdate_day`]:                    Delver.get(person, 'DateOfBirth') ? moment(Delver.get(person, 'DateOfBirth')).format('dddd') : ' ',
