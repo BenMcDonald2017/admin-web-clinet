@@ -8,7 +8,7 @@ import {
   getPrimarySigner,
   getHealthBundle,
 } from '../../resources'
-import { before, after } from '../../utils'
+import { before, after, queryStringIsTrue } from '../../utils'
 import { createDocuSignEnvelope } from '../../controllers'
 
 const data = {
@@ -99,8 +99,11 @@ export const getCartWithApplicationStatus = ware(
 
 async function createEnvelopes(healthIns, primary, family, event) {
   healthIns.Benefits = await Promise.all(healthIns.Benefits.map(async (benefit) => {
+    // TODO: REMOVE THIS?
+    const forceFlagIsSet = event && event.queryStringParameters && queryStringIsTrue(event.queryStringParameters.force)
+
     // if the item in the cart has no docusignID, then give it one!
-    if (!benefit.DocuSignEnvelopeId) {
+    if (!benefit.DocuSignEnvelopeId || forceFlagIsSet) {
       const applicants = getApplicationPersons(benefit.Persons, primary, family)
       const signers = getSigners(applicants)
 

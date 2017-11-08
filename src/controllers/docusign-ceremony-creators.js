@@ -109,27 +109,31 @@ function getDocuSignTemplateId(healthPlanId) {
         case '789':
           return '99999999-9999-9999-9999-999999999999'
         default:
-          return 'b095e9e2-ef99-4100-bb4d-19d01783823a'
+          // everything in 'prod' will fall through to default template:
+          return 'b9bcbb3e-ad06-480f-8639-02e3d5e6acfb'
       }
     case 'int':
     case 'dev':
     default:
-      return '2dda4584-dc4b-4502-870c-19920ed987a7'
+      switch (healthPlanId) {
+        default:
+          // everything in 'int' and 'dev' will fall through to default template:
+          return 'a56ec5bc-5a0b-4d65-b225-dc81378f9650'
+      }
   }
 }
 
 export const createDocuSignEnvelope = async (event, data) => {
+  // TODO: *********************************
+  // TODO: VALIDATE of USERS' AUTHORIZATION!
+  // TODO: *********************************
+
   const request = {
     ...(event.body || {}),
     ...(event.params || {}),
   }
   const { employeePublicKey, returnUrl } = request
 
-  // TODO: VALIDATION of USERS' AUTHORIZATION!
-  // const { authorizer } = event.requestContext
-  // const { claims } = authorizer
-
-  // TODO: USE `EmployeePublicKey` BELOW
   const {
     // cart,
     // family,
@@ -172,13 +176,11 @@ export const createDocuSignEmbeddedEnvelope = async (event) => {
   // const { claims } = authorizer
   const data = {}
   const {
-    // enrollmentPublicKey, // I believe this is the same as employeePublicKey
     employeePublicKey,
     envelopeId,
     returnUrl,
   } = request
 
-  // const employeePublicKey = enrollmentPublicKey
   const [theFamily, { Item: theCart }] = await Promise.all([
     getFamily(employeePublicKey),
     getCart(employeePublicKey),
@@ -192,10 +194,11 @@ export const createDocuSignEmbeddedEnvelope = async (event) => {
     data.primary = getPrimarySigner(data.healthBundle, data.family)
   }
 
-  const email = `${data.primary && data.primary.HixmeEmailAlias}`
-  const userName = `${data.primary && data.primary.FirstName} ${data.primary && data.primary.LastName}`
+  const { primary } = data
 
   const clientUserId = event.isOffline ? '123' : employeePublicKey
+  const email = `${primary.HixmeEmailAlias}`.toLowerCase()
+  const name = `${primary.FirstName} ${data.primary.LastName}`
   const recipientId = '1'
 
   const payload = {
@@ -204,12 +207,13 @@ export const createDocuSignEmbeddedEnvelope = async (event) => {
     },
     body: JSON.stringify({
       ...request,
-      returnUrl,
       authenticationMethod: 'email',
       clientUserId,
       email,
       recipientId,
-      userName,
+      returnUrl,
+      userName: name, // when creating, we passed in 'name'; but, when fetching,
+      // we pass in 'userName'.  Dumb.
     }),
   }
 

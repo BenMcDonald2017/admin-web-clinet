@@ -1,6 +1,5 @@
 import ware from 'warewolf'
 import { before, after } from '../../utils'
-import { getPerson, saveDocuSignEnvelopeToEnrollment } from '../../resources'
 import { createDocuSignEnvelope, getDocuSignEnvelope } from '../../controllers'
 
 export const createEnvelope = ware(
@@ -15,17 +14,9 @@ export const createEnvelope = ware(
     }
   },
 
-  // async (event) => {
-  //   event.person = await getPerson(event.body && (event.body.personPublicKey || event.body.employeePublicKey))
-  // },
-
   async (event) => {
     await createDocuSignEnvelope(event)
   },
-
-  // async (event) => {
-  //   await saveDocuSignEnvelopeToEnrollment(event)
-  // },
 
   after,
 )
@@ -39,7 +30,3 @@ export const getEnvelope = ware(
 
   after,
 )
-
-// function isDocuSignEnvelopeCreated(event) {
-//   return event && event.result && event.result.created
-// }
