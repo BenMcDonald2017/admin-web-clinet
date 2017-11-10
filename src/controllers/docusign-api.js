@@ -116,7 +116,10 @@ export const getDocusignAuth = async () => {
   return res.json()
 }
 
-export const createEnvelope = fetchDocuSign('/envelopes', { method: 'POST' })
+export const createEnvelope = fetchDocuSign(
+  '/envelopes/',
+  { method: 'POST' },
+)
 
 export const createEmbeddedEnvelope = fetchDocuSign(
   '/envelopes/{envelopeId}/views/recipient',
@@ -135,6 +138,11 @@ export const deleteCustomField = fetchDocuSign(
 
 export const getAllCustomFields = fetchDocuSign(
   '/tab_definitions/',
+  { method: 'GET' },
+)
+
+export const getAllTemplates = fetchDocuSign(
+  '/templates/',
   { method: 'GET' },
 )
 

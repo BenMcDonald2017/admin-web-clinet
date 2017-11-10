@@ -6,6 +6,10 @@ import { getDocuSignCustomFieldData } from '../controllers'
 import { saveCart, getCart, getFamily, getHealthBundle, getPrimarySigner } from '../resources'
 import { getSigners, getApplicationPersons } from '../resources/family'
 
+const isBoolean = value => typeof value === typeof true
+const isNumber = value => !!(value === 0 || (!Number.isNaN(value) && Number(value)))
+const isSomething = value => isBoolean(value) || isNumber(value) || (value && value != null)
+
 const getTemplateJSON = (user, templateId, fields) => ({
   templateId,
   templateRoles: [{
@@ -13,8 +17,9 @@ const getTemplateJSON = (user, templateId, fields) => ({
     ...user,
     tabs: {
       textTabs: map(fields, (value, tabLabel) => ({
-        tabLabel,
-        value,
+        tabLabel: `\\*${tabLabel}`,
+        value: isSomething(value) ? `${value}` : ' ', // coercing value to string
+        locked: true,
       })),
     },
   }],
@@ -123,35 +128,36 @@ function getDocuSignTemplateId(healthPlanId) {
   }
 }
 
-export const createDocuSignEnvelope = async (event, data) => {
-  // TODO: *********************************
-  // TODO: VALIDATE of USERS' AUTHORIZATION!
-  // TODO: *********************************
-
+export const createDocuSignEnvelope = async (benefit, worker, family, signers, event) => {
   const request = {
     ...(event.body || {}),
     ...(event.params || {}),
   }
+  // 'worker' is 'primary'
   const { employeePublicKey, returnUrl } = request
-
-  const {
-    // cart,
-    // family,
-    healthBundle,
-    primary,
-  } = data
   const clientUserId = event.isOffline ? '123' : employeePublicKey
-  const email = `${primary.HixmeEmailAlias}`.toLowerCase()
-  const name = `${primary.FirstName} ${primary.LastName}`
+  const email = `${worker.HixmeEmailAlias}`.toLowerCase()
+  const name = [worker.FirstName, worker.MiddleName, worker.LastName].filter(e => e && e != null).join(' ')
   const recipientId = '1'
 
-  const body = getTemplateJSON({
+  const boilerplate = {
     clientUserId,
     email,
     name,
     recipientId,
     returnUrl,
-  }, getDocuSignTemplateId(`${healthBundle.HealthPlanId}`), getDocuSignCustomFieldData(data))
+  }
+
+  const body = getTemplateJSON(
+    boilerplate,
+    getDocuSignTemplateId(benefit.HealthPlanId),
+    getDocuSignCustomFieldData({
+      benefit,
+      worker,
+      family,
+      signers,
+    }),
+  )
 
   body.emailSubject = `Signature Request: ${name}`
   body.status = 'sent' // indicates to DS that this _isn't_ a draft
@@ -194,11 +200,10 @@ export const createDocuSignEmbeddedEnvelope = async (event) => {
     data.primary = getPrimarySigner(data.healthBundle, data.family)
   }
 
-  const { primary } = data
-
+  const { primary: worker } = data
   const clientUserId = event.isOffline ? '123' : employeePublicKey
-  const email = `${primary.HixmeEmailAlias}`.toLowerCase()
-  const name = `${primary.FirstName} ${data.primary.LastName}`
+  const email = `${worker.HixmeEmailAlias}`.toLowerCase()
+  const name = [worker.FirstName, worker.MiddleName, worker.LastName].filter(e => e && e != null).join(' ')
   const recipientId = '1'
 
   const payload = {
@@ -213,7 +218,7 @@ export const createDocuSignEmbeddedEnvelope = async (event) => {
       recipientId,
       returnUrl,
       userName: name, // when creating, we passed in 'name'; but, when fetching,
-      // we pass in 'userName'.  Dumb.
+      // one must pass in 'userName'.  So silly.
     }),
   }
 

@@ -1,4 +1,6 @@
 import ware from 'warewolf'
+import { get } from 'delver'
+
 import {
   getCart,
   saveCart,
@@ -72,11 +74,19 @@ export const getCartWithApplicationStatus = ware(
       return
     }
 
-    // PdfApplicationIsManual, PdfSignatures, UnsignedPdfApplication, DocuSignEnvelopeId
-    data.healthBundle = await createEnvelopes(data.healthBundle, data.primary, data.family, event)
+    // data.healthBundle.Benefits is an array of .... benefits!
+    // data.healthBundle.NotIncluded is an array of people
 
-    // set everything to `true`, in order to match legacy payload
-    data.healthBundle.Benefits.map((benefit) => {
+    // NOTE: these are/were things that the frontend needs or needed at one point
+    // PdfApplicationIsManual
+    // PdfSignatures
+    // UnsignedPdfApplication
+    // DocuSignEnvelopeId
+
+    data.healthBundle = await createEnvelopes(data.healthBundle, data.primary, data.family, event)
+    const { healthBundle: { Benefits = [] } = {} } = data
+
+    Benefits.map((benefit) => {
       benefit.PdfApplicationAvailable = true
       return benefit
     })
@@ -99,17 +109,18 @@ export const getCartWithApplicationStatus = ware(
 
 async function createEnvelopes(healthIns, primary, family, event) {
   healthIns.Benefits = await Promise.all(healthIns.Benefits.map(async (benefit) => {
-    // TODO: REMOVE THIS?
-    const forceFlagIsSet = event && event.queryStringParameters && queryStringIsTrue(event.queryStringParameters.force)
+    const { queryStringParameters: { force = false } = {} } = event
+    const forceFlagIsSet = queryStringIsTrue(force)
 
     // if the item in the cart has no docusignID, then give it one!
     if (!benefit.DocuSignEnvelopeId || forceFlagIsSet) {
-      const applicants = getApplicationPersons(benefit.Persons, primary, family)
+      const coveredPeople = benefit.Persons.filter(b => b.BenefitStatus === 'Included')
+      const applicants = getApplicationPersons(coveredPeople, primary, family)
       const signers = getSigners(applicants)
 
       benefit.EnvelopeComplete = false
 
-      await createDocuSignEnvelope(event, data)
+      await createDocuSignEnvelope(benefit, primary, family, signers, event)
 
       benefit.DocumentLocation = 'DocuSign'
       benefit.UnsignedPdfApplication = 'DocuSign'

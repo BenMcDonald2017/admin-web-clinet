@@ -1,0 +1,113 @@
+[{
+  "Carrier": "93689_WesternHealthAdvantage",
+  "Hios": "93689CA0150001",
+  "Id": "",
+  "InputElement": "Platinum90 HMO",
+  "State": "CA",
+  "TemplateId": "b1919481-f003-4af3-9dec-31f18c922cc2"
+}, {
+  "Carrier": "93689_WesternHealthAdvantage",
+  "Hios": "93689CA0110001",
+  "Id": "",
+  "InputElement": "Platinum90 HMO",
+  "State": "CA",
+  "TemplateId": "b1919481-f003-4af3-9dec-31f18c922cc2"
+}, {
+  "Carrier": "93689_WesternHealthAdvantage",
+  "Hios": "93689CA0110002",
+  "Id": "",
+  "InputElement": "Gold80 HMO",
+  "State": "CA",
+  "TemplateId": "b1919481-f003-4af3-9dec-31f18c922cc2"
+}, {
+  "Carrier": "93689_WesternHealthAdvantage",
+  "Hios": "93689CA0150002",
+  "Id": "",
+  "InputElement": "Gold80 HMO",
+  "State": "CA",
+  "TemplateId": "b1919481-f003-4af3-9dec-31f18c922cc2"
+}, {
+  "Carrier": "93689_WesternHealthAdvantage",
+  "Hios": "93689CA0180001",
+  "Id": "",
+  "InputElement": "Advantage Silver 3600B HSA",
+  "State": "CA",
+  "TemplateId": "b1919481-f003-4af3-9dec-31f18c922cc2"
+}, {
+  "Carrier": "93689_WesternHealthAdvantage",
+  "Hios": "93689CA0050003",
+  "Id": "",
+  "InputElement": "Advantage Silver 3600B HSA",
+  "State": "CA",
+  "TemplateId": "b1919481-f003-4af3-9dec-31f18c922cc2"
+}, {
+  "Carrier": "93689_WesternHealthAdvantage",
+  "Hios": "93689CA0160001",
+  "Id": "",
+  "InputElement": "Silver70 HMO",
+  "State": "CA",
+  "TemplateId": "b1919481-f003-4af3-9dec-31f18c922cc2"
+}, {
+  "Carrier": "93689_WesternHealthAdvantage",
+  "Hios": "93689CA0120001",
+  "Id": "",
+  "InputElement": "Silver70 HMO",
+  "State": "CA",
+  "TemplateId": "b1919481-f003-4af3-9dec-31f18c922cc2"
+}, {
+  "Carrier": "93689_WesternHealthAdvantage",
+  "Hios": "93689CA0180002",
+  "Id": "",
+  "InputElement": "Advantage Bronze 6500B HSA",
+  "State": "CA",
+  "TemplateId": "b1919481-f003-4af3-9dec-31f18c922cc2"
+}, {
+  "Carrier": "93689_WesternHealthAdvantage",
+  "Hios": "93689CA0120004",
+  "Id": "",
+  "InputElement": "Bronze60 HMO",
+  "State": "CA",
+  "TemplateId": "b1919481-f003-4af3-9dec-31f18c922cc2"
+}, {
+  "Carrier": "93689_WesternHealthAdvantage",
+  "Hios": "93689CA0050004",
+  "Id": "",
+  "InputElement": "Advantage Bronze 6500B HSA",
+  "State": "CA",
+  "TemplateId": "b1919481-f003-4af3-9dec-31f18c922cc2"
+}, {
+  "Carrier": "93689_WesternHealthAdvantage",
+  "Hios": "93689CA0170001",
+  "Id": "",
+  "InputElement": "Bronze60 HSA HMO",
+  "State": "CA",
+  "TemplateId": "b1919481-f003-4af3-9dec-31f18c922cc2"
+}, {
+  "Carrier": "93689_WesternHealthAdvantage",
+  "Hios": "93689CA0130002",
+  "Id": "",
+  "InputElement": "Bronze60 HSA HMO",
+  "State": "CA",
+  "TemplateId": "b1919481-f003-4af3-9dec-31f18c922cc2"
+}, {
+  "Carrier": "93689_WesternHealthAdvantage",
+  "Hios": "93689CA0160002",
+  "Id": "",
+  "InputElement": "Bronze60 HMO",
+  "State": "CA",
+  "TemplateId": "b1919481-f003-4af3-9dec-31f18c922cc2"
+}, {
+  "Carrier": "93689_WesternHealthAdvantage",
+  "Hios": "93689CA0160003",
+  "Id": "",
+  "InputElement": "Minimum Coverage HMO",
+  "State": "CA",
+  "TemplateId": "b1919481-f003-4af3-9dec-31f18c922cc2"
+}, {
+  "Carrier": "93689_WesternHealthAdvantage",
+  "Hios": "93689CA0120005",
+  "Id": "",
+  "InputElement": "Minimum Coverage HMO",
+  "State": "CA",
+  "TemplateId": "b1919481-f003-4af3-9dec-31f18c922cc2"
+}]
