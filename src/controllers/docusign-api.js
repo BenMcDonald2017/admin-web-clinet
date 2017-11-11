@@ -85,10 +85,16 @@ const fetchDocuSign = (path, defaults = {}) =>
     if (fetchParams[1].body && !isString(fetchParams[1].body)) {
       fetchParams[1].body = JSON.stringify(fetchParams[1].body)
     }
+
     const res = await fetch(...fetchParams)
+
     if (!res.ok) {
+      if (res && (res.errorCode || res.message)) {
+        console.error(`${res.errorCode}: ${res.message}`)
+      }
       throw new Error(`Docusign API Error: ${res.statusText} ${fetchParams[0]}`)
     }
+
     if (fetchParams[1].format === 'base64') {
       const buffer = await res.buffer()
       return buffer.toString('base64')
@@ -117,7 +123,7 @@ export const getDocusignAuth = async () => {
 }
 
 export const createEnvelope = fetchDocuSign(
-  '/envelopes/',
+  '/envelopes',
   { method: 'POST' },
 )
 

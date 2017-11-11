@@ -3,12 +3,22 @@ import { map } from 'lodash'
 
 import { createEnvelope, getEnvelopes, createEmbeddedEnvelope } from './docusign-api'
 import { getDocuSignCustomFieldData } from '../controllers'
-import { saveCart, getCart, getFamily, getHealthBundle, getPrimarySigner } from '../resources'
-import { getSigners, getApplicationPersons } from '../resources/family'
+import {
+  getApplicationPersons,
+  getCart,
+  getDocuSignApplicationTemplate,
+  getFamily,
+  getHealthBundle,
+  getPrimarySigner,
+  getSigners,
+  saveCart,
+} from '../resources'
 
 const isBoolean = value => typeof value === typeof true
 const isNumber = value => !!(value === 0 || (!Number.isNaN(value) && Number(value)))
 const isSomething = value => isBoolean(value) || isNumber(value) || (value && value != null)
+const revertToType = content => ((isBoolean(content) || isNumber(content)) ? content : `${content}`)
+const formatted = content => (isSomething(content) ? revertToType(content) : ' ')
 
 const getTemplateJSON = (user, templateId, fields) => ({
   templateId,
@@ -18,17 +28,14 @@ const getTemplateJSON = (user, templateId, fields) => ({
     tabs: {
       textTabs: map(fields, (value, tabLabel) => ({
         tabLabel: `\\*${tabLabel}`,
-        value: isSomething(value) ? `${value}` : ' ', // coercing value to string
-        locked: true,
+        value: formatted(value),
       })),
     },
   }],
 })
 
-function envelopeIsCompleted(e) {
-  const status = e && `${e.status}`.toLowerCase()
-  return status === 'completed'
-}
+const status = thing => text => !!thing.match(new RegExp(`^${text}$`, 'i'))
+const isComplete = status('completed')
 
 export const setDocuSignEnvelopeSigningStatus = async (event) => {
   const { envelopeId, employeePublicKey, personPublicKey } = event.body
@@ -101,31 +108,8 @@ export const getDocuSignEnvelope = async (event) => {
 
   const { envelopes: envelopesExist } = event.result
 
-  const allEnvelopesAreSigned = (envelopesExist && envelopes.every(envelopeIsCompleted))
+  const allEnvelopesAreSigned = (envelopesExist && envelopes.every(isComplete))
   event.result.completed = (envelopesExist && allEnvelopesAreSigned)
-}
-
-function getDocuSignTemplateId(healthPlanId) {
-  switch (process.env.STAGE) {
-    case 'prod':
-      switch (healthPlanId) {
-        case '123':
-        case '456':
-        case '789':
-          return '99999999-9999-9999-9999-999999999999'
-        default:
-          // everything in 'prod' will fall through to default template:
-          return 'b9bcbb3e-ad06-480f-8639-02e3d5e6acfb'
-      }
-    case 'int':
-    case 'dev':
-    default:
-      switch (healthPlanId) {
-        default:
-          // everything in 'int' and 'dev' will fall through to default template:
-          return 'a56ec5bc-5a0b-4d65-b225-dc81378f9650'
-      }
-  }
 }
 
 export const createDocuSignEnvelope = async (benefit, worker, family, signers, event) => {
@@ -150,12 +134,13 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
 
   const body = getTemplateJSON(
     boilerplate,
-    getDocuSignTemplateId(benefit.HealthPlanId),
+    // await getDocuSignApplicationTemplate(benefit.HealthPlanId),
+    process.env.STAGE === 'prod' ? 'b9bcbb3e-ad06-480f-8639-02e3d5e6acfb' : 'a56ec5bc-5a0b-4d65-b225-dc81378f9650',
     getDocuSignCustomFieldData({
       benefit,
-      worker,
       family,
       signers,
+      worker,
     }),
   )
 
