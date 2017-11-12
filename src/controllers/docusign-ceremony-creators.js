@@ -20,17 +20,48 @@ const isSomething = value => isBoolean(value) || isNumber(value) || (value && va
 const revertToType = content => ((isBoolean(content) || isNumber(content)) ? content : `${content}`)
 const formatted = content => (isSomething(content) ? revertToType(content) : ' ')
 
-const getTemplateJSON = (user, templateId, fields) => ({
+const getTabsData = (fields = {}) => {
+  const textTabs = map(fields, (value, tabLabel) => {
+    tabLabel = `\\*${tabLabel}`
+    // const valueLabel = /checkbox/i.test(tabLabel) ? 'selected' : 'value'
+    const valueLabel = 'value'
+    const data = {}
+    data.tabLabel = tabLabel
+    data[valueLabel] = formatted(value)
+    data.locked = true
+
+    return data
+  })
+
+  return {
+    textTabs,
+  }
+}
+
+// GET SIGNATURES
+const getSignatureTabs = signers => signers.map((signer) => {
+  // if (signer.clientUserId === personPublicKey) {
+  //   return {
+  //     Id: signer.clientUserId,
+  //     Signed: true,
+  //   }
+  // }
+  // return {
+  //   Id: signer.clientUserId,
+  //   Signed: false,
+  // }
+  if (true) {
+    return {}
+  }
+  return {}
+})
+
+const getTemplateJSON = (user, templateId, fields, signers) => ({
   templateId,
   templateRoles: [{
     roleName: 'Worker',
     ...user,
-    tabs: {
-      textTabs: map(fields, (value, tabLabel) => ({
-        tabLabel: `\\*${tabLabel}`,
-        value: formatted(value),
-      })),
-    },
+    tabs: Object.assign({}, getTabsData(fields), getSignatureTabs(signers)),
   }],
 })
 
@@ -57,7 +88,7 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
   }
 
   event.healthBundle.Benefits = await Promise.all(event.healthBundle.Benefits.map(async (benefit) => {
-    // if the item in the cart has no docusignID, then give it one!
+    // check if the benefit has an envelopeId
     if (benefit.DocuSignEnvelopeId) {
       const applicants = getApplicationPersons(benefit.Persons, event.primary, event.family)
       const signers = getSigners(applicants)
@@ -135,13 +166,16 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
   const body = getTemplateJSON(
     boilerplate,
     // await getDocuSignApplicationTemplate(benefit.HealthPlanId),
-    process.env.STAGE === 'prod' ? 'b9bcbb3e-ad06-480f-8639-02e3d5e6acfb' : 'a56ec5bc-5a0b-4d65-b225-dc81378f9650',
+    process.env.STAGE === 'prod' ?
+      'b9bcbb3e-ad06-480f-8639-02e3d5e6acfb' : // prod
+      '0b1c81d0-703d-49bb-861a-c0e2509ba142', // int
     getDocuSignCustomFieldData({
       benefit,
       family,
       signers,
       worker,
     }),
+    signers,
   )
 
   body.emailSubject = `Signature Request: ${name}`

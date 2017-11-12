@@ -14,14 +14,19 @@ const defaultResponseConfig = {
 }
 
 function responseController(
-  getResults = ({ result }) => (
+  getResults = ({ result }) => {
     /* eslint-disable no-nested-ternary */
-    typeof result === 'string'
-      ? { result }
-      : Array.isArray(result)
-        ? result
-        : { ...result }
-  ),
+    switch (typeof result) {
+      case 'string':
+        return { result }
+      case 'object':
+        return Array.isArray(result) ? result : { ...result }
+      case 'undefined':
+        return { message: 'something went wrong; please try again.' }
+      default:
+        return { ...result }
+    }
+  },
   config = {},
 ) {
   return (event, context, done) => {
