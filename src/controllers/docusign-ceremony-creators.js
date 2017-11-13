@@ -165,12 +165,22 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
     returnUrl,
   }
 
+  const template = await getDocuSignApplicationTemplate(benefit.HealthPlanId)
+  const isValidTemplate = template && Array.isArray(template)
+  const returnTemplateId = () => {
+    switch (process.env.STAGE) {
+      case 'prod':
+        return isValidTemplate ? template[0].TemplateId : 'b9bcbb3e-ad06-480f-8639-02e3d5e6acfb'
+      case 'int':
+      case 'dev':
+      default:
+        return '0b1c81d0-703d-49bb-861a-c0e2509ba142'
+    }
+  }
+
   const body = getTemplateJSON(
     boilerplate,
-    // await getDocuSignApplicationTemplate(benefit.HealthPlanId),
-    process.env.STAGE === 'prod' ?
-      'b9bcbb3e-ad06-480f-8639-02e3d5e6acfb' : // prod
-      '0b1c81d0-703d-49bb-861a-c0e2509ba142', // int
+    returnTemplateId(),
     getDocuSignCustomFieldData({
       benefit,
       family,
