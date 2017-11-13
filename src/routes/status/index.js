@@ -74,14 +74,8 @@ export const getCartWithApplicationStatus = ware(
       return
     }
 
-    // data.healthBundle.Benefits is an array of .... benefits!
-    // data.healthBundle.NotIncluded is an array of people
-
-    // NOTE: these are/were things that the frontend needs or needed at one point
-    // PdfApplicationIsManual
-    // PdfSignatures
-    // UnsignedPdfApplication
-    // DocuSignEnvelopeId
+    // data.healthBundle.Benefits           ... is an array of benefits
+    // data.healthBundle.NotIncluded        ... is an array of people
 
     data.healthBundle = await createEnvelopes(data.healthBundle, data.primary, data.family, event)
     const { healthBundle: { Benefits = [] } = {} } = data
@@ -108,11 +102,12 @@ export const getCartWithApplicationStatus = ware(
 )
 
 async function createEnvelopes(healthIns, primary, family, event) {
+  // iterate through health insurance benefits and create docusign envelopes for each
   healthIns.Benefits = await Promise.all(healthIns.Benefits.map(async (benefit) => {
     const { queryStringParameters: { force = false } = {} } = event
     const forceFlagIsSet = queryStringIsTrue(force)
 
-    // if the item in the cart has no docusignID, then give it one!
+    // if the item in the cart has no docusignID or force flag is set, generate new one!
     if (!benefit.DocuSignEnvelopeId || forceFlagIsSet) {
       const coveredPeople = benefit.Persons.filter(b => b.BenefitStatus === 'Included')
       const applicants = getApplicationPersons(coveredPeople, primary, family)

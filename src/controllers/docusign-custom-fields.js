@@ -1,23 +1,22 @@
 import { get } from 'delver'
-import { times as iterate } from 'lodash'
+import { times as iterate, find, matchesProperty } from 'lodash'
 import moment from 'moment'
 import us from 'us'
 
 export const getDocuSignCustomFieldData = (data) => {
-  const { benefit, worker } = data
-  let { family = [], spouse = {} } = data
+  const { benefit } = data
+  let { family = [], spouse = {}, worker = {} } = data
+  const { Persons: personsCovered = [] } = benefit
 
-  spouse = family.find((person) => {
-    const relation = get(person, 'Relationship')
-    return get(person, 'IncludedInMedical') === true &&
-      (relation === 'Spouse' || relation === 'Domestic Partner')
-  })
+  const workerToUse = personsCovered.find(person => (/employee/i.test(person.Relationship) && /included/i.test(person.BenefitStatus)))
+  const spouseToUse = personsCovered.find(person => (/(?:spouse|domestic\s*partner)/i.test(person.Relationship) && /included/i.test(person.BenefitStatus)))
+  const familyMembersToUse = personsCovered.filter(person => (!/(?:employee|spouse|domestic\s*partner)/i.test(person.Relationship) && /included/i.test(person.BenefitStatus)))
 
-  family = family.filter((person) => {
-    const relation = get(person, 'Relationship')
-    return get(person, 'IncludedInMedical') === true &&
-      (relation !== 'Employee' && relation !== 'Spouse' && relation !== 'Domestic Partner')
-  })
+  worker = family.find(w => w.Id === get(workerToUse || {}, 'Id'))
+  // worker = find([worker], matchesProperty('Id', workerToUse && workerToUse.Id))
+  spouse = family.find(s => s.Id === get(spouseToUse || {}, 'Id'))
+  // spouse = find([spouse], matchesProperty('Id', spouseToUse && spouseToUse.Id))
+  family = family.filter(member => familyMembersToUse.some(person => person && person.Id === get(member, 'Id')))
 
   const formFieldData = {}
 
@@ -31,6 +30,26 @@ export const getDocuSignCustomFieldData = (data) => {
   formFieldData.generic_checkbox_yes = true
 
   const getFamilyMember = index => get({ family }, `family[${index}]`, {})
+
+  // if worker doesn't exist
+  if (!worker || !Object.keys(worker || {}).length) {
+    // if spouse exists
+    if (spouse || Object.keys(spouse || {}).length) {
+      // if no 'worker', make 'worker' the 'spouse' instead
+      worker = spouse
+      // and then assign 'spouse' to first element in 'family' array
+      const [firstFamilyMember] = family
+      spouse = firstFamilyMember
+      // remove first family member
+      family.shift()
+    } else {
+      // set 'worker' and 'spouse' to the two first elements in 'family'
+      [worker, spouse] = family
+      // then remove those two from the 'family' array
+      family.shift()
+      family.shift()
+    }
+  }
 
   // add worker and spouse to formFieldData
   Object.assign(
