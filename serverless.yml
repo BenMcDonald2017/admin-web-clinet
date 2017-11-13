@@ -140,9 +140,11 @@ custom:
         - >-
           arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-carrier-application-documents*
         - >-
-          arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-carrier-applications*
+          arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-carrier-application*
         - >-
           arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-carrier-applications*
+        - >-
+          arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-carrier-application-hios*
     - Effect: Allow
       Action:
         - 'lambda:InvokeFunction'
