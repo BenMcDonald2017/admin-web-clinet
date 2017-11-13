@@ -1,5 +1,5 @@
 import { get } from 'delver'
-import { times as iterate, find, matchesProperty } from 'lodash'
+import { times as iterate } from 'lodash'
 import moment from 'moment'
 import us from 'us'
 
@@ -13,9 +13,7 @@ export const getDocuSignCustomFieldData = (data) => {
   const familyMembersToUse = personsCovered.filter(person => (!/(?:employee|spouse|domestic\s*partner)/i.test(person.Relationship) && /included/i.test(person.BenefitStatus)))
 
   worker = family.find(w => w.Id === get(workerToUse || {}, 'Id'))
-  // worker = find([worker], matchesProperty('Id', workerToUse && workerToUse.Id))
   spouse = family.find(s => s.Id === get(spouseToUse || {}, 'Id'))
-  // spouse = find([spouse], matchesProperty('Id', spouseToUse && spouseToUse.Id))
   family = family.filter(member => familyMembersToUse.some(person => person && person.Id === get(member, 'Id')))
 
   const formFieldData = {}
@@ -49,6 +47,10 @@ export const getDocuSignCustomFieldData = (data) => {
       family.shift()
       family.shift()
     }
+  } else if (!spouse || !Object.keys(spouse || {}).length) {
+    // if there's a `worker`, but NO `spouse`, then make `family[0]` the `spouse`
+    [spouse] = family
+    family.shift()
   }
 
   // add worker and spouse to formFieldData

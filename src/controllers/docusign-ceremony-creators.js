@@ -40,6 +40,8 @@ const getTabsData = (fields = {}) => {
 
 // GET SIGNATURES
 const getSignatureTabs = signers => signers.map((signer) => {
+  // const payload = {
+  // }
   // if (signer.clientUserId === personPublicKey) {
   //   return {
   //     Id: signer.clientUserId,
@@ -182,7 +184,9 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
   body.status = 'sent' // indicates to DS that this _isn't_ a draft
   body.fromDate = new Date()
 
+  // call out to docusign and create the envelope
   const envelope = await createEnvelope({ body: JSON.stringify(body) })
+
   const { envelopeId } = envelope
 
   event.envelope = {
