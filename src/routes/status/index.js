@@ -117,8 +117,8 @@ async function createEnvelopes(healthIns, primary, family, event) {
 
       await createDocuSignEnvelope(benefit, primary, family, signers, event)
 
-      benefit.DocumentLocation = ''
-      benefit.UnsignedPdfApplication = ''
+      benefit.DocumentLocation = ' '
+      benefit.UnsignedPdfApplication = ' '
       benefit.DocuSignEnvelopeId = event.envelope && event.envelope.envelopeId
 
       // handle multiple signatures
