@@ -39,33 +39,33 @@ const getTabsData = (fields = {}) => {
 }
 
 // GET SIGNATURES
-const getSignatureTabs = signers => signers.map((signer) => {
-  // const payload = {
-  // }
-  // if (signer.clientUserId === personPublicKey) {
-  //   return {
-  //     Id: signer.clientUserId,
-  //     Signed: true,
-  //   }
-  // }
-  // return {
-  //   Id: signer.clientUserId,
-  //   Signed: false,
-  // }
-  if (true) {
-    return {}
-  }
-  return {}
-})
+const signingRoles = ['Worker', 'Spouse', 'Dep1', 'Dep2', 'Dep3', 'Dep4', 'Dep5', 'Dep6']
+const getSignatureRoles = signers => signers.map((signer, i) => ({
+  roleName: `${signingRoles[i + 1]}`, // +1 so that we skip over choosing 'Worker'
+  // ...signer,
+  name: `${signer.name}`,
+  email: `${signer.email}`.toLowerCase(),
+  clientUserId: `${signer.clientUserId}`,
+  recipientId: `${i + 2}`, // i = 0 at first; so we add 1; and then another 1, since 'Worker' is already id '1'
+}))
 
-const getTemplateJSON = (user, templateId, fields, signers) => ({
-  templateId,
-  templateRoles: [{
+const getTemplateJSON = ({
+  fields, signers, templateId, userData,
+}) => {
+  const templateRoles = [{
     roleName: 'Worker',
-    ...user,
-    tabs: Object.assign({}, getTabsData(fields), getSignatureTabs(signers)),
-  }],
-})
+    ...userData,
+    tabs: getTabsData(fields),
+  }]
+
+  signers = signers.filter(signer => (signer.clientUserId !== userData.clientUserId))
+  if (signers.length) { templateRoles.push(...getSignatureRoles(signers)) }
+
+  return {
+    templateId,
+    templateRoles,
+  }
+}
 
 const status = thing => text => !!thing.match(new RegExp(`^${text}$`, 'i'))
 const isComplete = status('completed')
@@ -152,25 +152,19 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
   }
   // 'worker' is 'primary'
   const { employeePublicKey, returnUrl } = request
-  const clientUserId = event.isOffline ? '123' : employeePublicKey
+  const clientUserId = `${employeePublicKey}`
   const email = `${worker.HixmeEmailAlias}`.toLowerCase()
   const name = [worker.FirstName, worker.MiddleName, worker.LastName].filter(e => e && e != null).join(' ')
   const recipientId = '1'
 
-  const boilerplate = {
-    clientUserId,
-    email,
-    name,
-    recipientId,
-    returnUrl,
-  }
+  const { HealthPlanId = '' } = benefit
+  const [template = {}] = await getDocuSignApplicationTemplate(HealthPlanId)
+  const { TemplateId = null } = template
 
-  const template = await getDocuSignApplicationTemplate(benefit.HealthPlanId)
-  const isValidTemplate = template && Array.isArray(template)
-  const returnTemplateId = () => {
+  const getTemplateId = () => {
     switch (process.env.STAGE) {
       case 'prod':
-        return isValidTemplate ? template[0].TemplateId : 'b9bcbb3e-ad06-480f-8639-02e3d5e6acfb'
+        return TemplateId || 'b9bcbb3e-ad06-480f-8639-02e3d5e6acfb'
       case 'int':
       case 'dev':
       default:
@@ -178,17 +172,18 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
     }
   }
 
-  const body = getTemplateJSON(
-    boilerplate,
-    returnTemplateId(),
-    getDocuSignCustomFieldData({
-      benefit,
-      family,
-      signers,
-      worker,
-    }),
-    signers,
-  )
+  const fields = getDocuSignCustomFieldData({
+    benefit, family, signers, worker,
+  })
+  const templateId = getTemplateId()
+  const userData = {
+    clientUserId, email, name, recipientId, returnUrl,
+  }
+  const body = getTemplateJSON({
+    fields, signers, templateId, userData,
+  })
+
+  /* eslint-disable no-debugger */ debugger
 
   body.emailSubject = `Signature Request: ${name}`
   body.status = 'sent' // indicates to DS that this _isn't_ a draft
@@ -197,10 +192,11 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
   // call out to docusign and create the envelope
   const envelope = await createEnvelope({ body: JSON.stringify(body) })
 
-  const { envelopeId } = envelope
+  // grab 'envelopeId' from 'envelope'
+  const { envelopeId = null } = envelope
 
   event.envelope = {
-    created: true,
+    created: !!envelopeId,
     envelopeId,
     clientUserId,
   }
@@ -219,6 +215,10 @@ export const createDocuSignEmbeddedEnvelope = async (event) => {
     envelopeId,
     returnUrl,
   } = request
+  let {
+    clientUserId,
+    recipientId,
+  } = request
 
   const [theFamily, { Item: theCart }] = await Promise.all([
     getFamily(employeePublicKey),
@@ -233,11 +233,15 @@ export const createDocuSignEmbeddedEnvelope = async (event) => {
     data.primary = getPrimarySigner(data.healthBundle, data.family)
   }
 
-  const { primary: worker } = data
-  const clientUserId = event.isOffline ? '123' : employeePublicKey
+  const { primary: worker = {} } = data
   const email = `${worker.HixmeEmailAlias}`.toLowerCase()
   const name = [worker.FirstName, worker.MiddleName, worker.LastName].filter(e => e && e != null).join(' ')
-  const recipientId = '1'
+  // const email = 'mary.jonest/own@hixmeusers.com'
+  // const name = 'Mary Jonestown'
+  clientUserId = clientUserId || `${employeePublicKey}`
+  recipientId = recipientId || '1'
+
+  // https://www.docusign.com/p/RESTAPIGuide/RESTAPIGuide.htm#REST%20API%20References/Post%20Recipient%20View.htm
 
   const payload = {
     params: {
@@ -245,13 +249,12 @@ export const createDocuSignEmbeddedEnvelope = async (event) => {
     },
     body: JSON.stringify({
       ...request,
-      authenticationMethod: 'email',
+      authenticationMethod: 'password',
       clientUserId,
       email,
       recipientId,
       returnUrl,
-      userName: name, // when creating, we passed in 'name'; but, when fetching,
-      // one must pass in 'userName'.  So silly.
+      userName: name, // notice that ww're passing 'userName'; not 'user'
     }),
   }
 

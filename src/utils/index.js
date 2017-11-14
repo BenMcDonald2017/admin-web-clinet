@@ -47,14 +47,17 @@ function responseController(
 const errorHandler = (error, event, context, done) => {
   if (isError(error)) {
     const { statusCode, type, message } = getFormattedError(error, event)
-    const isInDebugMode = process.env.SLS_DEBUG === '*'
-    const isDevOrInt = ['dev', 'int'].some(env => process.env.STAGE.toLowerCase() === env)
+    const isInDebugMode = /^\*$/.test(process.env.SLS_DEBUG) // check for '*'
+    const isDevOrInt = /^(?:int|dev)$/i.test(process.env.STAGE) // check for 'dev' or 'int'
     const shouldPrintStack = isInDebugMode && isDevOrInt
     // add stack trace if running in 'dev' or 'int, and have opted-in
     const stack = shouldPrintStack ? error.stack : undefined
 
     done(null, {
       ...defaultResponseConfig,
+      headers: {
+        ...defaultResponseConfig.headers,
+      },
       statusCode,
       body: JSON.stringify({
         status: statusCode,

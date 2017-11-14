@@ -116,6 +116,9 @@ export const getDocusignAuth = async () => {
     fetchParams,
   )
   if (!res.ok) {
+    if (res && (res.errorCode || res.message)) {
+      console.error(`${res.errorCode}: ${res.message}`)
+    }
     throw new Error(`Docusign API Error: ${res.statusText}`)
   }
 
