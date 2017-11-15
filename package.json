@@ -1,9 +1,11 @@
 {
   "name": "application-service",
-  "version": "2.10.0",
+  "version": "2.11.0",
   "description": "Application Service",
   "author": "Hixme.com",
   "contributors": [
+    "Bill Barnes <bill.barnes@hixme.com> (https://hixme.com)",
+    "Bill Tran <bill.tran@hixme.com> (https://hixme.com)",
     "Greg Cardoni <greg@cardoni.net> (https://cardoni.net)"
   ],
   "homepage": "https://hixme.com",
