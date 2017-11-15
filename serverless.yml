@@ -369,6 +369,11 @@ functions:
                   application/json: ErrorResponse
             requestModels:
               application/json: SaveSignatureStatus
+
+  getBenefits:
+    description: >-
+      ${self:custom.documentation.summary} | Get Employee Benefits
+      
 resources:
   Resources: null
   Outputs: null
