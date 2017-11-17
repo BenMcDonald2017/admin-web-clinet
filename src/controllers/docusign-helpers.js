@@ -26,14 +26,15 @@ function getRoleName(role = 0, returnCapitalizedRoleName = true) {
 
 export const format = content => (isSomething(content) ? revertToType(content) : ' ')
 
-export const generateSigners = (signers = []) => signers.map((signer, index) => ({
-  roleName: getRoleName(index + 1),
-  // +1 so that we skip over choosing 'Worker'
-  // ...signer,
-  name: `${signer.name}`,
-  email: `${signer.email}`.toLowerCase(),
+export const generateSigners = (signers = [], fields = {}) => signers.map((signer, index) => ({
+  roleName: getRoleName(index),
+  name: `${signer.name ? signer.name : [signer.FirstName, signer.MiddleName, signer.LastName].filter(e => e && e != null).join(' ')}`,
+  email: `${signer.email ? signer.email : signer.HixmeEmailAlias}`.toLowerCase(),
   clientUserId: `${signer.clientUserId}`,
-  recipientId: `${index + 2}`, // i = 0 at first; so we add 1; and then another 1, since 'Worker' is already id '1'
+  userId: `${signer.clientUserId}`,
+  recipientId: `${signer.clientUserId}`,
+  tabs: generateAllTabData(fields),
+  // recipientId: `${index + 1}`, // i = 0 at first; so we add 1
 }))
 
 const tabName = (name = 'text') => camelCase(`${name}Tabs`)

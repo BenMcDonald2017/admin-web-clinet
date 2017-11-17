@@ -7,12 +7,12 @@ import {
 } from './docusign-api'
 import {
   allCheckBoxNames,
-  getChangeForms,
   getDocuSignCustomFieldData,
 } from '../controllers'
 import {
   getApplicationPersons,
   getCart,
+  getChangeForms,
   getDocuSignApplicationTemplate,
   getFamily,
   getHealthBundle,
@@ -23,7 +23,7 @@ import {
 import {
   generateAllTabData,
   generateSigners,
-  generateComposedTemplates
+  generateComposedTemplates,
 } from './docusign-helpers'
 
 const getTemplateJSON = ({
@@ -133,7 +133,7 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
   // 'Int'  DS: https://appdemo.docusign.com [docusign@hixme.com]
   const cancelationForms = await getChangeForms({
     employeePublicKey: `${employeePublicKey}`,
-    HIOS: `${}`,
+    HIOS: `${HealthPlanId}`,
   })
   const defaultForms = {
     application: isProd ? 'b9bcbb3e-ad06-480f-8639-02e3d5e6acfb' : '0b1c81d0-703d-49bb-861a-c0e2509ba142',
@@ -163,13 +163,9 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
     fields,
     signers,
     compositeTemplates: generateComposedTemplates(
+      // [applicationFormId, cancelationForms],
       [applicationFormId],
-      [{
-        roleName: 'Worker',
-        ...userData,
-        tabs: generateAllTabData(fields),
-        recipientId: '1',
-      }],
+      generateSigners(signers, fields),
     ),
     userData,
   })
@@ -230,12 +226,8 @@ export const createDocuSignEmbeddedEnvelope = async (event) => {
   const { primary: worker = {} } = data
   email = email || `${worker.HixmeEmailAlias}`.toLowerCase()
   name = name || [worker.FirstName, worker.MiddleName, worker.LastName].filter(e => e && e != null).join(' ')
-  // const email = 'mary.jonest/own@hixmeusers.com'
-  // const name = 'Mary Jonestown'
   clientUserId = clientUserId || `${employeePublicKey}`
   recipientId = recipientId || '1'
-
-  // https://www.docusign.com/p/RESTAPIGuide/RESTAPIGuide.htm#REST%20API%20References/Post%20Recipient%20View.htm
 
   const payload = {
     params: {
@@ -243,7 +235,7 @@ export const createDocuSignEmbeddedEnvelope = async (event) => {
     },
     body: JSON.stringify({
       ...request,
-      authenticationMethod: 'password',
+      authenticationMethod: 'email',
       clientUserId,
       email,
       recipientId,
