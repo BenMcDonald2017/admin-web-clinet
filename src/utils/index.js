@@ -3,6 +3,11 @@ import circular from 'circular-json'
 import http from 'http'
 import ware from 'warewolf'
 
+export const isProd = /^prod$/i.test(process.env && (process.env.STAGE || process.env.stage))
+
+export const getStatus = thing => text => !!thing.match(new RegExp(`^${text}$`, 'i'))
+export const isComplete = getStatus('completed')
+
 const defaultResponseConfig = {
   headers: {
     'Access-Control-Allow-Credentials': true,

@@ -1,8 +1,15 @@
 /* eslint-disable no-param-reassign */
-import { map } from 'lodash'
-
-import { createEnvelope, getEnvelopes, createEmbeddedEnvelope } from './docusign-api'
-import { getDocuSignCustomFieldData } from '../controllers'
+import { isProd } from '../utils'
+import {
+  createEmbeddedEnvelope,
+  createEnvelope,
+  getEnvelopes,
+} from './docusign-api'
+import {
+  allCheckBoxNames,
+  getChangeForms,
+  getDocuSignCustomFieldData,
+} from '../controllers'
 import {
   getApplicationPersons,
   getCart,
@@ -13,62 +20,30 @@ import {
   getSigners,
   saveCart,
 } from '../resources'
-
-const isBoolean = value => typeof value === typeof true
-const isNumber = value => !!(value === 0 || (!Number.isNaN(value) && Number(value)))
-const isSomething = value => isBoolean(value) || isNumber(value) || (value && value != null)
-const revertToType = content => ((isBoolean(content) || isNumber(content)) ? content : `${content}`)
-const formatted = content => (isSomething(content) ? revertToType(content) : ' ')
-
-const getTabsData = (fields = {}) => {
-  const textTabs = map(fields, (value, tabLabel) => {
-    tabLabel = `\\*${tabLabel}`
-    // const valueLabel = /checkbox/i.test(tabLabel) ? 'selected' : 'value'
-    const valueLabel = 'value'
-    const data = {}
-    data.tabLabel = tabLabel
-    data[valueLabel] = formatted(value)
-    data.locked = true
-
-    return data
-  })
-
-  return {
-    textTabs,
-  }
-}
-
-// GET SIGNATURES
-const signingRoles = ['Worker', 'Spouse', 'Dep1', 'Dep2', 'Dep3', 'Dep4', 'Dep5', 'Dep6']
-const getSignatureRoles = signers => signers.map((signer, i) => ({
-  roleName: `${signingRoles[i + 1]}`, // +1 so that we skip over choosing 'Worker'
-  // ...signer,
-  name: `${signer.name}`,
-  email: `${signer.email}`.toLowerCase(),
-  clientUserId: `${signer.clientUserId}`,
-  recipientId: `${i + 2}`, // i = 0 at first; so we add 1; and then another 1, since 'Worker' is already id '1'
-}))
+import {
+  generateAllTabData,
+  generateSigners,
+  generateComposedTemplates
+} from './docusign-helpers'
 
 const getTemplateJSON = ({
-  fields, signers, templateId, userData,
+  fields,
+  signers,
+  compositeTemplates,
+  userData,
 }) => {
-  const templateRoles = [{
-    roleName: 'Worker',
-    ...userData,
-    tabs: getTabsData(fields),
-  }]
+  const templateRoles = [{ roleName: 'Worker', ...userData, tabs: generateAllTabData(fields) }]
 
   signers = signers.filter(signer => (signer.clientUserId !== userData.clientUserId))
-  if (signers.length) { templateRoles.push(...getSignatureRoles(signers)) }
+  if (signers.length) {
+    templateRoles.push(...generateSigners(signers))
+  }
 
   return {
-    templateId,
+    compositeTemplates,
     templateRoles,
   }
 }
-
-const status = thing => text => !!thing.match(new RegExp(`^${text}$`, 'i'))
-const isComplete = status('completed')
 
 export const setDocuSignEnvelopeSigningStatus = async (event) => {
   const { envelopeId, employeePublicKey, personPublicKey } = event.body
@@ -127,22 +102,16 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
 }
 
 export const getDocuSignEnvelope = async (event) => {
-  const { envelopeId } = event.params
-  event.envelopeId = envelopeId
+  const { envelopeId: envelope_ids } = event.params
 
-  event.result = await getEnvelopes({
-    query: {
-      envelope_ids: `${event.envelopeId}`,
-    },
-  })
+  const { envelopes } = await getEnvelopes({ query: { envelope_ids } })
 
-  const { envelopes } = event.result
-  event.result.exists = !!(envelopes && envelopes.length)
-
-  const { envelopes: envelopesExist } = event.result
-
-  const allEnvelopesAreSigned = (envelopesExist && envelopes.every(isComplete))
-  event.result.completed = (envelopesExist && allEnvelopesAreSigned)
+  event.result = {
+    ...event.result,
+    envelopes,
+    exists: !!envelopes.length,
+    completed: envelopes.every(e => /^completed$/i.test(e.status)),
+  }
 }
 
 export const createDocuSignEnvelope = async (benefit, worker, family, signers, event) => {
@@ -159,34 +128,56 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
 
   const { HealthPlanId = '' } = benefit
   const [template = {}] = await getDocuSignApplicationTemplate(HealthPlanId)
-  const { TemplateId = null } = template
-
-  const getTemplateId = () => {
-    switch (process.env.STAGE) {
-      case 'prod':
-        return TemplateId || 'b9bcbb3e-ad06-480f-8639-02e3d5e6acfb'
-      case 'int':
-      case 'dev':
-      default:
-        return '0b1c81d0-703d-49bb-861a-c0e2509ba142'
-    }
+  const { TemplateId: matchedTemplateId = null } = template
+  // 'Prod' DS: https://app.docusign.com     [services@hixme.com]
+  // 'Int'  DS: https://appdemo.docusign.com [docusign@hixme.com]
+  const cancelationForms = await getChangeForms({
+    employeePublicKey: `${employeePublicKey}`,
+    HIOS: `${}`,
+  })
+  const defaultForms = {
+    application: isProd ? 'b9bcbb3e-ad06-480f-8639-02e3d5e6acfb' : '0b1c81d0-703d-49bb-861a-c0e2509ba142',
+    cancelation: isProd ? 'b59a56bd-4990-488e-a43f-bf37ad00a63b' : '79a9dad3-011c-4094-9c01-7244b9303338',
   }
+  // in PROD: we attempt to match HIOS w/ its relevant (docusign) templateId
+  // if match found, use that templateId; otherwise, default to 'base' application form template
+  // in INT / DEV: we default to using the 'base' appplication form template for everyone;
+  // to test other templates in INT, they must each be copied over from Hix' PROD-docusign account
+  const applicationFormId = isProd ? (matchedTemplateId || defaultForms.application) : defaultForms.application
 
   const fields = getDocuSignCustomFieldData({
-    benefit, family, signers, worker,
+    benefit,
+    family,
+    signers,
+    worker,
   })
-  const templateId = getTemplateId()
   const userData = {
-    clientUserId, email, name, recipientId, returnUrl,
+    clientUserId,
+    email,
+    name,
+    recipientId,
+    returnUrl,
   }
+
   const body = getTemplateJSON({
-    fields, signers, templateId, userData,
+    fields,
+    signers,
+    compositeTemplates: generateComposedTemplates(
+      [applicationFormId],
+      [{
+        roleName: 'Worker',
+        ...userData,
+        tabs: generateAllTabData(fields),
+        recipientId: '1',
+      }],
+    ),
+    userData,
   })
 
-  /* eslint-disable no-debugger */ debugger
-
+  body.EmailBlurb = `Signature Request: ${name}`
+  body.Subject = `Signature Request: ${name}`
   body.emailSubject = `Signature Request: ${name}`
-  body.status = 'sent' // indicates to DS that this _isn't_ a draft
+  body.status = 'sent' // indicates it's _NOT_ a draft
   body.fromDate = new Date()
 
   // call out to docusign and create the envelope
@@ -218,6 +209,9 @@ export const createDocuSignEmbeddedEnvelope = async (event) => {
   let {
     clientUserId,
     recipientId,
+    // TODO: REMOVE THE TWO BELOW!!
+    email,
+    name,
   } = request
 
   const [theFamily, { Item: theCart }] = await Promise.all([
@@ -234,8 +228,8 @@ export const createDocuSignEmbeddedEnvelope = async (event) => {
   }
 
   const { primary: worker = {} } = data
-  const email = `${worker.HixmeEmailAlias}`.toLowerCase()
-  const name = [worker.FirstName, worker.MiddleName, worker.LastName].filter(e => e && e != null).join(' ')
+  email = email || `${worker.HixmeEmailAlias}`.toLowerCase()
+  name = name || [worker.FirstName, worker.MiddleName, worker.LastName].filter(e => e && e != null).join(' ')
   // const email = 'mary.jonest/own@hixmeusers.com'
   // const name = 'Mary Jonestown'
   clientUserId = clientUserId || `${employeePublicKey}`

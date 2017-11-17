@@ -1,7 +1,9 @@
-import { get } from 'delver'
-import { times as iterate } from 'lodash'
 import moment from 'moment'
 import us from 'us'
+
+import { get } from 'delver'
+import { times as iterate } from 'lodash'
+import { DOCUSIGN_ROLE_NAMES } from './docusign-helpers'
 
 export const getDocuSignCustomFieldData = (data) => {
   const { benefit } = data
@@ -22,12 +24,20 @@ export const getDocuSignCustomFieldData = (data) => {
   // first, let's add some generic plan-related data to our DocuSign formFieldData
   formFieldData.carrier_company_name = get(benefit, 'CarrierName')
   formFieldData.carrier_plan_hios_id = get(benefit, 'HealthPlanId')
-  formFieldData.carrier_plan_name    = get(benefit, 'PlanName')
+  formFieldData.carrier_plan_name = get(benefit, 'PlanName')
   // the below two are used to check generic 'yes' and 'no' boxes where applicable
-  formFieldData.generic_checkbox_no = false
-  formFieldData.generic_checkbox_yes = true
+  // formFieldData.generic_checkbox_no = false
+  // formFieldData.generic_checkbox_yes = true
 
   const getFamilyMember = index => get({ family }, `family[${index}]`, {})
+  // NOTE: —————————————————————————————————————————————————————————————————————
+  // The logic below re-organizes the *order* of how we're sending DocuSign the
+  // actual signer- and template-data.  Consider the following example:  If a
+  // `worker` chooses a plan for their `spouse`, and the `spouse` is the only
+  // one covered by that plan, the `spouse` needs to be bumped into the `worker`
+  // "data-space", for lack of a better term, so that the DocuSign populates the
+  // `spouse`'s information into the 'Worker'/'Primary Applicant' field(s)
+  // ———————————————————————————————————————————————————————————————————————————
 
   // if worker doesn't exist
   if (!worker || !Object.keys(worker || {}).length) {
@@ -132,3 +142,36 @@ function fetchAndFillDataFor(person = {}, label = '') {
     [`${label}_smoker_checkbox`]:                  isPerson && isSmoker,
   }
 }
+
+function generateRoleSpecificCheckBoxNames(roleName = '') {
+  roleName = (roleName && roleName != null) ? `${roleName}_` : ''
+  return [
+    `${roleName}checkbox_is_daughter`,
+    `${roleName}checkbox_is_domestic_partner`,
+    `${roleName}checkbox_is_married`,
+    `${roleName}checkbox_is_single`,
+    `${roleName}checkbox_is_son`,
+    `${roleName}gender_checkbox_female`,
+    `${roleName}gender_checkbox_male`,
+    `${roleName}smoker_checkbox`,
+  ]
+}
+
+const allGenericCheckBoxNames = [
+  'generic_checkbox_no',
+  'generic_checkbox_yes',
+  'insurance_individual',
+  'insurance_individual_spouse',
+  'insurance_child_only',
+  'insurance_family',
+  'insurance_individual_child',
+  'insurance_individual_children',
+  'insurance_individual_domestic_partner',
+  'insurance_individual_domestic_partner_children',
+]
+
+export const allRoleSpecificCheckBoxNames = DOCUSIGN_ROLE_NAMES.reduce((acc, value) => (
+  acc.concat(generateRoleSpecificCheckBoxNames(value))
+), [])
+
+export const allCheckBoxNames = [...allGenericCheckBoxNames, ...allRoleSpecificCheckBoxNames]
