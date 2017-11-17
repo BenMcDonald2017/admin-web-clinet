@@ -16,7 +16,6 @@ custom:
         - dynamodb:UpdateItem
         # - dynamodb:DeleteItem
       Resource:
-        - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-benefits/index/EmployeePublicKey-index
         - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-benefits*
         - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-carrier-application-documents*
         - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-carrier-application-hios*
