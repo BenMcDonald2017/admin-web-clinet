@@ -23,9 +23,9 @@ const genericCancelation = 'b59a56bd-4990-488e-a43f-bf37ad00a63b'
 //   }],
 // };
 
-export async function getChangeForms({ employeePublicKey = '', HIOS = '' /* , members  = [] */ }) {
+export async function getChangeForms({ employeePublicKey = ' ', HIOS = ' ' /* , members  = [] */ }) {
   const { Items: benefits = [] } = await docClient.query({
-    TableName: 'int-benefits',
+    TableName: `${process.env.STAGE}-benefits`,
     IndexName: 'EmployeePublicKey-index',
     FilterExpression: 'IsActive = :isActive AND BenefitType = :benefitType',
     KeyConditionExpression: 'EmployeePublicKey = :employeePublicKey',
