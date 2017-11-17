@@ -132,6 +132,10 @@ custom:
         - 'dynamodb:UpdateItem'
       Resource:
         - >-
+          arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-benefits/index/*
+        - >-
+          arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-benefits/index/EmployeePublicKey-index
+        - >-
           arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-benefits*
         - >-
           arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-carrier-application-documents*
