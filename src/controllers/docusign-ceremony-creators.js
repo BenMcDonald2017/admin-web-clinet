@@ -232,10 +232,7 @@ export const createDocuSignEmbeddedEnvelope = async (event) => {
   // if someone's `id` was found in the querystring (for `id` param) of the `returnUrl`, then...
   if (parsedUserId) {
     // `signer` can be undefined/null if `returnUrl` contains `id` param but itsn't valid match during `.find()`
-    signer = data.family.find((familyMember) => {
-      console.dir(familyMember)
-      return familyMember.Id === parsedUserId
-    })
+    signer = data.family.find(familyMember => familyMember.Id === parsedUserId)
   }
 
   // NOTE: there are many other unhandled states of error ...should fix.
