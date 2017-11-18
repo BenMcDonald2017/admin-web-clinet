@@ -47,7 +47,7 @@ const getTemplateJSON = ({
 }
 
 export const setDocuSignEnvelopeSigningStatus = async (event) => {
-  const { envelopeId, employeePublicKey, personPublicKey } = event.body
+  const { envelopeId = '', employeePublicKey = '', personPublicKey = '' } = event.body
 
   const [theFamily, { Item: theCart }] = await Promise.all([
     getFamily(employeePublicKey),
@@ -73,13 +73,15 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
 
       if (benefit.DocuSignEnvelopeId === envelopeId) {
         benefit.PdfSignatures = signers.map((signer) => {
-          if (signer.clientUserId === personPublicKey) {
+          if (!signer.Signed && signer.clientUserId === personPublicKey) {
             return {
+              ...signer,
               Id: signer.clientUserId,
               Signed: true,
             }
           }
           return {
+            ...signer,
             Id: signer.clientUserId,
             Signed: false,
           }
