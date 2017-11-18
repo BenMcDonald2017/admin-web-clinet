@@ -1,4 +1,5 @@
 /* eslint-disable no-param-reassign */
+import QS from 'qs'
 import { isProd } from '../utils'
 import {
   createEmbeddedEnvelope,
@@ -137,6 +138,8 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
     HIOS: `${HealthPlanId}`,
   })
 
+  console.dir(cancelationForms)
+
   const defaultForms = {
     application: isProd ? 'b9bcbb3e-ad06-480f-8639-02e3d5e6acfb' : '0b1c81d0-703d-49bb-861a-c0e2509ba142',
     cancelation: isProd ? 'b59a56bd-4990-488e-a43f-bf37ad00a63b' : '79a9dad3-011c-4094-9c01-7244b9303338',
@@ -198,51 +201,29 @@ export const createDocuSignEmbeddedEnvelope = async (event) => {
   }
   // const { authorizer } = event.requestContext
   // const { claims } = authorizer
-  const data = {}
+
+  // const data = {}
   const {
     employeePublicKey,
     envelopeId,
     returnUrl,
-  } = request
-  let {
-    clientUserId,
-    recipientId,
-    // TODO: REMOVE THE TWO BELOW!!
-    email,
-    name,
+    userId,
   } = request
 
-  const [theFamily, { Item: theCart }] = await Promise.all([
-    getFamily(employeePublicKey),
-    getCart(employeePublicKey),
-  ])
-
-  data.family = theFamily
-  data.cart = theCart
-
-  if (data.cart) {
-    data.healthBundle = getHealthBundle(data.cart.Cart)
-    data.primary = getPrimarySigner(data.healthBundle, data.family)
-  }
-
-  const { primary: worker = {} } = data
-  email = email || `${worker.HixmeEmailAlias}`.toLowerCase()
-  name = name || [worker.FirstName, worker.MiddleName, worker.LastName].filter(e => e && e != null).join(' ')
-  clientUserId = clientUserId || `${employeePublicKey}`
-  recipientId = recipientId || '1'
+  const { id: parsedUserId } = QS.parse(decodeURIComponent(`${returnUrl}`), { delimiter: /[?&]/ })
 
   const payload = {
     params: {
       envelopeId,
     },
     body: JSON.stringify({
-      ...request,
-      authenticationMethod: 'email',
-      clientUserId,
-      email,
-      recipientId,
-      returnUrl,
-      userName: name, // notice that ww're passing 'userName'; not 'user'
+      authenticationMethod: 'password',
+      clientUserId: parsedUserId || userId,
+      recipientId: parsedUserId || userId,
+      returnUrl: returnUrl || undefined,
+      userId: parsedUserId || userId,
+      // email: email || undefined,
+      // userName: name, // notice that ww're passing 'userName'; not 'user'
     }),
   }
 

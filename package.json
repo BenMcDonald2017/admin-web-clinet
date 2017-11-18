@@ -60,6 +60,8 @@
     "start:run:80": "npm run build && concurrently --kill-others --prefix='{name} {time}' --names='worker,web   ' --timestamp-format='HH:mm:ss' -c bgBlue,bgMagenta 'npm run build:watch -- --skip-initial-build' 'npm run offline:80'",
     "start:run": "npm run build && concurrently --kill-others --prefix='{name} {time}' --names='worker,web   ' --timestamp-format='HH:mm:ss' -c bgBlue,bgMagenta 'npm run build:watch -- --skip-initial-build' 'npm run offline'",
     "start": "cross-env AP_PORT=\"8000\" npm run start:run",
+    "fullstart": "npm run package && npm run start",
+    "fullstart:80": "npm run package && npm run start:80",
     "tag": "git tag -am $npm_package_version $npm_package_version && git push --tags",
     "test:wip": "jest -t wip",
     "test": "jest"
