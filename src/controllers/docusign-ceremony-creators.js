@@ -68,28 +68,24 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
   event.healthBundle.Benefits = await Promise.all(event.healthBundle.Benefits.map(async (benefit) => {
     // check if the benefit has an envelopeId
     if (benefit.DocuSignEnvelopeId) {
-      const applicants = getApplicationPersons(benefit.Persons, event.primary, event.family)
-      const signers = getSigners(applicants)
-
       if (benefit.DocuSignEnvelopeId === envelopeId) {
-        benefit.PdfSignatures = signers.map((signer) => {
-          if (signer.Signed || signer.clientUserId === personPublicKey) {
+        benefit.PdfSignatures = benefit.PdfSignatures.map(({ Signed = false, Id = '' }) => {
+          if (Signed || Id === personPublicKey) {
             return {
-              ...signer,
-              Id: signer.clientUserId,
+              Id,
               Signed: true,
             }
           }
           return {
-            ...signer,
-            Id: signer.clientUserId,
+            Id,
             Signed: false,
           }
         })
       }
 
+      const { PdfSignatures } = benefit
       // if all signers have signed, then mark envelope as COMPLETE!
-      if (benefit.PdfSignatures && benefit.PdfSignatures.every(signer => (signer.Signed === true))) {
+      if (PdfSignatures && PdfSignatures.every(signer => (signer.Signed === true))) {
         benefit.EnvelopeComplete = true
       }
 
