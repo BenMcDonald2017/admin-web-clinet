@@ -223,21 +223,38 @@ export const createDocuSignEmbeddedEnvelope = async (event) => {
     data.primary = getPrimarySigner(data.healthBundle, data.family)
   }
 
-  const { primary: worker = {} } = data
+  const { primary: worker = {}, healthBundle } = data
   const { id: parsedUserId } = QS.parse(decodeURIComponent(`${returnUrl}`), { delimiter: /[?&]/ })
 
+  // set the signer to the primary worker by default
+  let signer = worker
+
+  // if someone's `id` was found in the querystring (for `id` param) of the `returnUrl`, then...
+  if (parsedUserId) {
+    // `signer` can be undefined/null if `returnUrl` contains `id` param but itsn't valid match during `.find()`
+    signer = data.family.find((familyMember) => {
+      console.dir(familyMember)
+      return familyMember.Id === parsedUserId
+    })
+  }
+
+  // NOTE: there are many other unhandled states of error ...should fix.
+  if (!signer || signer == null) throw new Error('could not parse out a valid, necessary param. try again.')
+
+  const { Id: id } = signer // || parsedUserId || employeePublicKey || userId
   const payload = {
     params: {
       envelopeId,
     },
     body: JSON.stringify({
       authenticationMethod: 'password',
-      clientUserId: employeePublicKey || parsedUserId || employeePublicKey || userId,
-      recipientId: employeePublicKey || parsedUserId || userId,
+      clientUserId: id || undefined,
+      recipientId: id || undefined,
       returnUrl: returnUrl || undefined,
       // userId: parsedUserId || userId,
-      email: `${worker.HixmeEmailAlias}`.toLowerCase(),
-      userName: [worker.FirstName, worker.MiddleName, worker.LastName].filter(e => e && e != null).join(' '), // notice that ww're passing 'userName'; not 'user'
+      email: `${signer.HixmeEmailAlias}`.toLowerCase(),
+      // v— notice here, using 'userName'; not 'user' —v
+      userName: [signer.FirstName, signer.MiddleName, signer.LastName].filter(e => e && e != null).join(' '),
     }),
   }
 
