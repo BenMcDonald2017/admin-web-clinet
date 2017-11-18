@@ -232,8 +232,8 @@ export const createDocuSignEmbeddedEnvelope = async (event) => {
     },
     body: JSON.stringify({
       authenticationMethod: 'password',
-      clientUserId: parsedUserId || employeePublicKey || userId,
-      recipientId: parsedUserId || userId,
+      clientUserId: employeePublicKey || parsedUserId || employeePublicKey || userId,
+      recipientId: employeePublicKey || parsedUserId || userId,
       returnUrl: returnUrl || undefined,
       userId: parsedUserId || userId,
       email: `${worker.HixmeEmailAlias}`.toLowerCase(),
