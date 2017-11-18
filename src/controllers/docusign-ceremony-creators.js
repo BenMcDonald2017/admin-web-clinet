@@ -202,7 +202,7 @@ export const createDocuSignEmbeddedEnvelope = async (event) => {
   // const { authorizer } = event.requestContext
   // const { claims } = authorizer
 
-  // const data = {}
+  const data = {}
   const {
     employeePublicKey,
     envelopeId,
@@ -210,6 +210,20 @@ export const createDocuSignEmbeddedEnvelope = async (event) => {
     userId,
   } = request
 
+  const [theFamily, { Item: theCart }] = await Promise.all([
+    getFamily(employeePublicKey),
+    getCart(employeePublicKey),
+  ])
+
+  data.family = theFamily
+  data.cart = theCart
+
+  if (data.cart) {
+    data.healthBundle = getHealthBundle(data.cart.Cart)
+    data.primary = getPrimarySigner(data.healthBundle, data.family)
+  }
+
+  const { primary: worker = {} } = data
   const { id: parsedUserId } = QS.parse(decodeURIComponent(`${returnUrl}`), { delimiter: /[?&]/ })
 
   const payload = {
@@ -218,12 +232,12 @@ export const createDocuSignEmbeddedEnvelope = async (event) => {
     },
     body: JSON.stringify({
       authenticationMethod: 'password',
-      clientUserId: parsedUserId || userId,
+      clientUserId: parsedUserId || employeePublicKey || userId,
       recipientId: parsedUserId || userId,
       returnUrl: returnUrl || undefined,
       userId: parsedUserId || userId,
-      // email: email || undefined,
-      // userName: name, // notice that ww're passing 'userName'; not 'user'
+      email: `${worker.HixmeEmailAlias}`.toLowerCase(),
+      userName: [worker.FirstName, worker.MiddleName, worker.LastName].filter(e => e && e != null).join(' '), // notice that ww're passing 'userName'; not 'user'
     }),
   }
 
