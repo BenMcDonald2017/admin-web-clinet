@@ -73,7 +73,7 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
 
       if (benefit.DocuSignEnvelopeId === envelopeId) {
         benefit.PdfSignatures = signers.map((signer) => {
-          if (!signer.Signed && signer.clientUserId === personPublicKey) {
+          if (signer.Signed || signer.clientUserId === personPublicKey) {
             return {
               ...signer,
               Id: signer.clientUserId,
