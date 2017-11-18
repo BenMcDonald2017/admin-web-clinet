@@ -235,7 +235,7 @@ export const createDocuSignEmbeddedEnvelope = async (event) => {
       clientUserId: employeePublicKey || parsedUserId || employeePublicKey || userId,
       recipientId: employeePublicKey || parsedUserId || userId,
       returnUrl: returnUrl || undefined,
-      userId: parsedUserId || userId,
+      // userId: parsedUserId || userId,
       email: `${worker.HixmeEmailAlias}`.toLowerCase(),
       userName: [worker.FirstName, worker.MiddleName, worker.LastName].filter(e => e && e != null).join(' '), // notice that ww're passing 'userName'; not 'user'
     }),
