@@ -121,14 +121,14 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
   const name = [worker.FirstName, worker.MiddleName, worker.LastName].filter(e => e && e != null).join(' ')
   const recipientId = `${employeePublicKey}`
 
-  const { HealthPlanId = '' } = benefit
-  const [template = {}] = await getDocuSignApplicationTemplate(HealthPlanId)
+  const { HealthPlanId: HIOS = '' } = benefit
+  const [template = {}] = await getDocuSignApplicationTemplate(HIOS)
   const { TemplateId: matchedTemplateId = null } = template
 
-  const cancelationForms = await getChangeForms({
-    employeePublicKey: `${employeePublicKey}`,
-    HIOS: `${HealthPlanId}`,
-  }) || []
+  const changeOrCancelationForms = await getChangeForms({
+    employeePublicKey,
+    HIOS,
+  })
 
   // in PROD: we attempt to match HIOS w/ its relevant (docusign) templateId
   // if match found, use that templateId; otherwise, default to 'base' application form template
@@ -136,12 +136,12 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
   // to test other templates in INT, they must each be copied over from Hix' PROD-docusign account
 
   const baseApplicationForm = isProd ? 'b9bcbb3e-ad06-480f-8639-02e3d5e6acfb' : '0b1c81d0-703d-49bb-861a-c0e2509ba142'
-  const baseApplicationFormId = isProd ? (matchedTemplateId || baseApplicationForm) : baseApplicationForm
+  const applicationFormId = isProd ? (matchedTemplateId || baseApplicationForm) : baseApplicationForm
 
-  console.warn(`is Prod? - ${isProd}`)
-  console.warn(`cancelation form id(s) returned from 'get-change-forms': ${cancelationForms}`)
-  console.warn(`base application id returned from 'prod-carrier-application-hios': ${matchedTemplateId}`)
-  console.warn(`base application form id used:': ${baseApplicationFormId}`)
+  console.warn(`${employeePublicKey}: is Prod? - ${isProd}`)
+  console.warn(`${employeePublicKey}: cancelation form id(s) returned from 'get-change-forms': ${changeOrCancelationForms}`)
+  console.warn(`${employeePublicKey}: base application id returned from 'prod-carrier-application-hios': ${matchedTemplateId}`)
+  console.warn(`${employeePublicKey}: base application form id used:': ${applicationFormId}`)
 
   const fields = await getDocuSignCustomFieldData({
     benefit,
@@ -160,11 +160,11 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
 
   const formattedSignersArray = await generateSigners(signers, fields)
   const compositeTemplates = await generateComposedTemplates(
-    [...cancelationForms, baseApplicationFormId],
+    [...changeOrCancelationForms, applicationFormId],
     formattedSignersArray,
   )
 
-  console.warn(`FINAL composite templates being used:': ${[...cancelationForms, baseApplicationFormId]}`)
+  console.warn(`${employeePublicKey}: FINAL composite templates being used:': ${[...changeOrCancelationForms, applicationFormId]}`)
 
   const body = await getTemplateJSON({
     fields,

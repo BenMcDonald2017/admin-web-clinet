@@ -9,7 +9,7 @@ const healthNetCarriers = ['99110CA', '67138CA']
 const kaiserChangeForm = isProd ? '31c1ad8c-0ac6-4f0f-9676-277a23f3452e' : '5a450cb3-da73-44d9-8eba-e0902073fc00'
 const genericCancelation = isProd ? 'b59a56bd-4990-488e-a43f-bf37ad00a63b' : '79a9dad3-011c-4094-9c01-7244b9303338'
 
-export async function getChangeForms({ employeePublicKey = ' ', HIOS = ' ' /* , members  = [] */ }) {
+export async function getChangeForms({ employeePublicKey = ' ', HIOS = ' ' }) {
   const { Items: benefits = [] } = await docClient.query({
     TableName: `${process.env.STAGE}-benefits`,
     IndexName: 'EmployeePublicKey-index',
@@ -27,12 +27,12 @@ export async function getChangeForms({ employeePublicKey = ' ', HIOS = ' ' /* , 
     moment(health.BenefitEndDate), 'days', '[]',
   ))
 
-  return getNecessaryForms({ currentPlans, HIOS /* , members */ })
+  return getNecessaryForms({ currentPlans, HIOS })
 }
 
-const getNecessaryForms = ({ curretPlans = [], HIOS = '' /* , members  = [] */ }) => {
+const getNecessaryForms = ({ currentPlans = [], HIOS = '' }) => {
   const forms = []
-  const issuers = curretPlans.map(plan => plan.HealthPlanId.slice(0, 7))
+  const issuers = currentPlans.map(plan => plan.HealthPlanId.slice(0, 7))
   const hadKaiser = issuers.some(c => kaiserCarriers.includes(c))
   const hadHealthNet = issuers.some(c => healthNetCarriers.includes(c))
   const willHaveKaiser = kaiserCarriers.includes(HIOS.slice(0, 7))
