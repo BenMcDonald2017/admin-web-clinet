@@ -119,7 +119,7 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
   const clientUserId = `${employeePublicKey}`
   const email = `${worker.HixmeEmailAlias}`.toLowerCase()
   const name = [worker.FirstName, worker.MiddleName, worker.LastName].filter(e => e && e != null).join(' ')
-  const recipientId = '1'
+  const recipientId = `${employeePublicKey}`
 
   const { HealthPlanId = '' } = benefit
   const [template = {}] = await getDocuSignApplicationTemplate(HealthPlanId)
@@ -153,13 +153,16 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
     returnUrl,
   }
 
+  const formattedSignersArray = await generateSigners(signers, fields)
+  const compositeTemplates = await generateComposedTemplates(
+    [...cancelationForms, baseApplicationFormId],
+    formattedSignersArray,
+  )
+
   const body = await getTemplateJSON({
     fields,
     signers,
-    compositeTemplates: generateComposedTemplates(
-      [...cancelationForms, baseApplicationFormId],
-      generateSigners(signers, fields),
-    ),
+    compositeTemplates,
     userData,
   })
 

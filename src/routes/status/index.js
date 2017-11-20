@@ -101,7 +101,7 @@ export const getCartWithApplicationStatus = ware(
   after,
 )
 
-async function createEnvelopes(healthIns, primary, family, event) {
+const createEnvelopes = async (healthIns, primary, family, event) => {
   // iterate through health insurance benefits and create docusign envelopes for each
   healthIns.Benefits = await Promise.all(healthIns.Benefits.map(async (benefit) => {
     const { queryStringParameters: { force = false } = {} } = event

@@ -27,7 +27,7 @@ function getRoleName(role = 0, returnCapitalizedRoleName = true) {
 export const format = content => (isSomething(content) ? revertToType(content) : ' ')
 
 export const generateSigners = (signers = [], fields = {}) => signers.map((signer, index) => ({
-  roleName: getRoleName(index + 1), // worker/primary is already set, so advance by 1
+  roleName: getRoleName(index),
   name: `${signer.name ? signer.name : [signer.FirstName, signer.MiddleName, signer.LastName].filter(e => e && e != null).join(' ')}`,
   email: `${signer.email ? signer.email : signer.HixmeEmailAlias}`.toLowerCase(),
   clientUserId: `${signer.clientUserId}`,
