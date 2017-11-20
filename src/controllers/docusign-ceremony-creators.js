@@ -34,7 +34,7 @@ const getTemplateJSON = ({
   signers = signers.filter(signer => (signer.clientUserId !== userData.clientUserId))
 
   if (signers.length) {
-    templateRoles.push(...generateSigners(signers))
+    templateRoles.push(...generateSigners(signers, fields))
   }
 
   return {
@@ -156,9 +156,9 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
   const body = await getTemplateJSON({
     fields,
     signers,
-    compositeTemplates: await generateComposedTemplates(
+    compositeTemplates: generateComposedTemplates(
       [...cancelationForms, baseApplicationFormId],
-      await generateSigners(signers, fields),
+      generateSigners(signers, fields),
     ),
     userData,
   })

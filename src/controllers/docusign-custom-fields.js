@@ -7,7 +7,7 @@ import { effectiveAge } from '../resources/family'
 import { getDocuSignApplicationTemplate } from '../resources/hios'
 
 export const getDocuSignCustomFieldData = async ({
-  benefit, family, worker,
+  benefit, family, signers, worker,
 }) => {
   const { Persons: personsCovered = [] } = benefit
   const workerToUse = personsCovered.find(person => (/employee/i.test(person.Relationship) && /included/i.test(person.BenefitStatus)))
@@ -26,16 +26,17 @@ export const getDocuSignCustomFieldData = async ({
   formFieldData.carrier_plan_hios_id = get(benefit, 'HealthPlanId')
   formFieldData.carrier_plan_name = get(benefit, 'PlanName')
 
-  const { carrier_plan_hios_id: HIOS = '' } = formFieldData
-  const [template = {}] = await getDocuSignApplicationTemplate(HIOS)
+  const [template = {}] = await getDocuSignApplicationTemplate(get(formFieldData, 'carrier_plan_hios_id'))
   const { InputElement: planChoiceCheckBox = null } = template
 
   if (planChoiceCheckBox) {
     formFieldData[`${planChoiceCheckBox}`] = true
   }
 
-  const getFamilyMember = index => get({ family }, `family[${index}]`, {})
-  // NOTE: —————————————————————————————————————————————————————————————————————
+  function getFamilyMember(index) {
+    return get({ family }, `family[${index}]`, {})
+  }
+
   // The logic below re-organizes the *order* of how we're sending DocuSign the
   // actual signer- and template-data.  Consider the following example:  If a
   // `worker` chooses a plan for their `spouse`, and the `spouse` is the only
