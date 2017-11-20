@@ -1,27 +1,13 @@
 import aws from 'aws-sdk'
 import moment from 'moment'
+import { isProd } from '../utils'
 
 const docClient = new aws.DynamoDB.DocumentClient({ region: 'us-west-2' })
 
 const kaiserCarriers = ['40513CA']
 const healthNetCarriers = ['99110CA', '67138CA']
-const kaiserChangeForm = 'cbeeae49-56de-4065-95b8-97b6fafb2189'
-const genericCancelation = 'b59a56bd-4990-488e-a43f-bf37ad00a63b'
-
-// const bundle = {
-//   employeePublicKey: '50c1c8f7-d07f-455e-909c-68a3070607e3',
-//   hios: '40512CA0120001',
-//   members: [{
-//     RatingArea: 16,
-//     FirstName: 'Ron',
-//     StateProvince: 'CA',
-//     Relationship: 'Employee',
-//     BenefitStatus: 'Included',
-//     PostalCode: '90405',
-//     Id: '50c1c8f7-d07f-455e-909c-68a3070607e3',
-//     LastName: 'Jonestown',
-//   }],
-// };
+const kaiserChangeForm = isProd ? 'cbeeae49-56de-4065-95b8-97b6fafb2189' : '5a450cb3-da73-44d9-8eba-e0902073fc00'
+const genericCancelation = isProd ? 'b59a56bd-4990-488e-a43f-bf37ad00a63b' : '79a9dad3-011c-4094-9c01-7244b9303338'
 
 export async function getChangeForms({ employeePublicKey = ' ', HIOS = ' ' /* , members  = [] */ }) {
   const { Items: benefits = [] } = await docClient.query({

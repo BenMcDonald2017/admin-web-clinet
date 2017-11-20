@@ -109,17 +109,20 @@ async function createEnvelopes(healthIns, primary, family, event) {
 
     // if the item in the cart has no docusignID or force flag is set, generate new one!
     if (!benefit.DocuSignEnvelopeId || forceFlagIsSet) {
-      const coveredPeople = benefit.Persons.filter(b => b.BenefitStatus === 'Included')
+      const coveredPeople = benefit.Persons.filter(b => /included/i.test(b.BenefitStatus))
       const applicants = getApplicationPersons(coveredPeople, primary, family)
       const signers = getSigners(applicants)
 
-      benefit.EnvelopeComplete = false
-
+      // this puppy kicks off all the docusign creation code
       await createDocuSignEnvelope(benefit, primary, family, signers, event)
 
+      // destructuring 'event.envelope.envelopeId' and setting defaults if none
+      const { envelope: { envelopeId = '' } = {} } = event
+
+      benefit.EnvelopeComplete = false
       benefit.DocumentLocation = ' '
       benefit.UnsignedPdfApplication = ' '
-      benefit.DocuSignEnvelopeId = event.envelope && event.envelope.envelopeId
+      benefit.DocuSignEnvelopeId = envelopeId
 
       // handle multiple signatures
       benefit.PdfSignatures = signers.map(signer => ({

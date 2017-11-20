@@ -1,4 +1,4 @@
-import { capitalize, map, camelCase } from 'lodash'
+import { capitalize, camelCase } from 'lodash'
 
 export const DOCUSIGN_ROLE_NAMES = [
   'worker', 'spouse', 'dep1', 'dep2', 'dep3', 'dep4', 'dep5', 'dep6',
@@ -27,7 +27,7 @@ function getRoleName(role = 0, returnCapitalizedRoleName = true) {
 export const format = content => (isSomething(content) ? revertToType(content) : ' ')
 
 export const generateSigners = (signers = [], fields = {}) => signers.map((signer, index) => ({
-  roleName: getRoleName(index),
+  roleName: getRoleName(index + 1), // worker/primary is already set, so advance by 1
   name: `${signer.name ? signer.name : [signer.FirstName, signer.MiddleName, signer.LastName].filter(e => e && e != null).join(' ')}`,
   email: `${signer.email ? signer.email : signer.HixmeEmailAlias}`.toLowerCase(),
   clientUserId: `${signer.clientUserId}`,
@@ -38,7 +38,6 @@ export const generateSigners = (signers = [], fields = {}) => signers.map((signe
 }))
 
 const tabName = (name = 'text') => camelCase(`${name}Tabs`)
-const generateTabData = (type = 'text', data = {}) => ({ [tabName(type)]: [data] })
 
 const addTabToCollection = (tabCollection = {}, type = 'text', data = {}) => {
   const existing = tabCollection[tabName(type)] || []
@@ -53,7 +52,10 @@ export const generateAllTabData = (fields = {}) => {
   }
 
   Object.keys(fields).map((key) => {
-    const isCheckbox = /checkbox/i.test(key)
+    // we have some generic checkboxes that don't contain 'checkbox' in their
+    // name, but they do contain 'insurance'.
+    // ALSO, depending on the plan chosen, we will have one additional checkbox
+    const isCheckbox = /(?:checkbox|insurance|\s{1})/i.test(key)
     const tabLabel = `\\*${key}`
     const type = isCheckbox ? 'checkbox' : 'text'
     const value = fields[key]

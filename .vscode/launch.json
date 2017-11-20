@@ -11,13 +11,13 @@
         "sourceMaps": true,
         "type": "node"
     }, {
+        "name": "Debug Entire Service",
         "args": ["offline", "start", "--port", "8000"],
         "cwd": "${workspaceRoot}",
         "env": {
             "SLS_DEBUG": "*"
         },
         "internalConsoleOptions": "openOnSessionStart",
-        "name": "Debug Entire Service",
         "outFiles": ["${workspaceRoot}/build/**/*"],
         "preLaunchTask": "build",  /* "build:watch" (might be a better one?) */
         "program": "${workspaceRoot}/node_modules/serverless/bin/serverless",
@@ -28,6 +28,7 @@
         "sourceMaps": true,
         "type": "node"
     }, {
+        "name": "Debug Function",
         "args": ["invoke", "local", "-f", "get-bundles", "-p", "src/routes/bundles/event.json"],
         // "args": ["invoke", "local", "-f", "get-joined-health-plans", "-p", "src/routes/plans/get/event.json"],
         // "args": ["invoke", "local", "-f", "get-rating-areas", "-p", "src/routes/ratingareas/get/event.json"],
@@ -39,7 +40,6 @@
             "SLS_DEBUG": "*"
         },
         "internalConsoleOptions": "openOnSessionStart",
-        "name": "Debug Function",
         "outFiles": ["${workspaceRoot}/build/**/*"],
         "preLaunchTask": "build",
         "program": "${workspaceRoot}/node_modules/serverless/bin/serverless",

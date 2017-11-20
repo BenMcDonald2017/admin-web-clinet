@@ -139,7 +139,7 @@ export function getApplicationPersons(persons, primary, family) {
     }
   }
   if (!signerMap.Primary) {
-    signerMap.Guardian = primary
+    signerMap.Spouse = primary
     signerMap.Primary = children.pop()
   }
   if (children.length) {

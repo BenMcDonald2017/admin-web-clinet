@@ -7,18 +7,15 @@ import {
   getEnvelopes,
 } from './docusign-api'
 import {
-  allCheckBoxNames,
   getDocuSignCustomFieldData,
 } from '../controllers'
 import {
-  getApplicationPersons,
   getCart,
   getChangeForms,
   getDocuSignApplicationTemplate,
   getFamily,
   getHealthBundle,
   getPrimarySigner,
-  getSigners,
   saveCart,
 } from '../resources'
 import {
@@ -34,8 +31,8 @@ const getTemplateJSON = ({
   userData,
 }) => {
   const templateRoles = [{ roleName: 'Worker', ...userData, tabs: generateAllTabData(fields) }]
-
   signers = signers.filter(signer => (signer.clientUserId !== userData.clientUserId))
+
   if (signers.length) {
     templateRoles.push(...generateSigners(signers))
   }
@@ -118,7 +115,6 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
     ...(event.body || {}),
     ...(event.params || {}),
   }
-  // 'worker' is 'primary'
   const { employeePublicKey, returnUrl } = request
   const clientUserId = `${employeePublicKey}`
   const email = `${worker.HixmeEmailAlias}`.toLowerCase()
@@ -128,32 +124,27 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
   const { HealthPlanId = '' } = benefit
   const [template = {}] = await getDocuSignApplicationTemplate(HealthPlanId)
   const { TemplateId: matchedTemplateId = null } = template
-  // 'Prod' DS: https://app.docusign.com     [services@hixme.com]
-  // 'Int'  DS: https://appdemo.docusign.com [docusign@hixme.com]
 
   const cancelationForms = await getChangeForms({
     employeePublicKey: `${employeePublicKey}`,
     HIOS: `${HealthPlanId}`,
-  })
+  }) || []
 
-  console.dir(cancelationForms)
-
-  const defaultForms = {
-    application: isProd ? 'b9bcbb3e-ad06-480f-8639-02e3d5e6acfb' : '0b1c81d0-703d-49bb-861a-c0e2509ba142',
-    cancelation: isProd ? 'b59a56bd-4990-488e-a43f-bf37ad00a63b' : '79a9dad3-011c-4094-9c01-7244b9303338',
-  }
   // in PROD: we attempt to match HIOS w/ its relevant (docusign) templateId
   // if match found, use that templateId; otherwise, default to 'base' application form template
   // in INT / DEV: we default to using the 'base' appplication form template for everyone;
   // to test other templates in INT, they must each be copied over from Hix' PROD-docusign account
-  const applicationFormId = isProd ? (matchedTemplateId || defaultForms.application) : defaultForms.application
 
-  const fields = getDocuSignCustomFieldData({
+  const baseApplicationForm = isProd ? 'b9bcbb3e-ad06-480f-8639-02e3d5e6acfb' : '0b1c81d0-703d-49bb-861a-c0e2509ba142'
+  const baseApplicationFormId = isProd ? (matchedTemplateId || baseApplicationForm) : baseApplicationForm
+
+  const fields = await getDocuSignCustomFieldData({
     benefit,
     family,
     signers,
     worker,
   })
+
   const userData = {
     clientUserId,
     email,
@@ -162,13 +153,12 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
     returnUrl,
   }
 
-  const body = getTemplateJSON({
+  const body = await getTemplateJSON({
     fields,
     signers,
-    compositeTemplates: generateComposedTemplates(
-      // [applicationFormId, cancelationForms],
-      [applicationFormId],
-      generateSigners(signers, fields),
+    compositeTemplates: await generateComposedTemplates(
+      [...cancelationForms, baseApplicationFormId],
+      await generateSigners(signers, fields),
     ),
     userData,
   })
