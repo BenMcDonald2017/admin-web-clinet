@@ -6,7 +6,7 @@ const docClient = new aws.DynamoDB.DocumentClient({ region: 'us-west-2' })
 
 const kaiserCarriers = ['40513CA']
 const healthNetCarriers = ['99110CA', '67138CA']
-const kaiserChangeForm = isProd ? 'cbeeae49-56de-4065-95b8-97b6fafb2189' : '5a450cb3-da73-44d9-8eba-e0902073fc00'
+const kaiserChangeForm = isProd ? '31c1ad8c-0ac6-4f0f-9676-277a23f3452e' : '5a450cb3-da73-44d9-8eba-e0902073fc00'
 const genericCancelation = isProd ? 'b59a56bd-4990-488e-a43f-bf37ad00a63b' : '79a9dad3-011c-4094-9c01-7244b9303338'
 
 export async function getChangeForms({ employeePublicKey = ' ', HIOS = ' ' /* , members  = [] */ }) {
