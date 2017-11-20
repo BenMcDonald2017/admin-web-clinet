@@ -56,7 +56,7 @@ const getNecessaryForms = ({ currentPlans = [], HIOS = '' }) => {
 
   // if person _doesn't_ have a plan with an identical HIOS carrier ID (meaning,
   // person chose same plan again)—AND—they don't already have `genericCancelation` form
-  if (!issuers.includes(HIOS.slice(0, 7)) && !forms.includes(genericCancelation)) {
+  if (issuers.length && !issuers.includes(HIOS.slice(0, 7)) && !forms.includes(genericCancelation)) {
     forms.push(genericCancelation)
   }
 
