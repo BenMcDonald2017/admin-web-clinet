@@ -138,6 +138,11 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
   const baseApplicationForm = isProd ? 'b9bcbb3e-ad06-480f-8639-02e3d5e6acfb' : '0b1c81d0-703d-49bb-861a-c0e2509ba142'
   const baseApplicationFormId = isProd ? (matchedTemplateId || baseApplicationForm) : baseApplicationForm
 
+  console.warn(`is Prod? - ${isProd}`)
+  console.warn(`cancelation form id(s) returned from 'get-change-forms': ${cancelationForms}`)
+  console.warn(`base application id returned from 'prod-carrier-application-hios': ${matchedTemplateId}`)
+  console.warn(`base application form id used:': ${baseApplicationFormId}`)
+
   const fields = await getDocuSignCustomFieldData({
     benefit,
     family,
@@ -158,6 +163,8 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
     [...cancelationForms, baseApplicationFormId],
     formattedSignersArray,
   )
+
+  console.warn(`FINAL composite templates being used:': ${[...cancelationForms, baseApplicationFormId]}`)
 
   const body = await getTemplateJSON({
     fields,
