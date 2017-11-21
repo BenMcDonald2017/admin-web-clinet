@@ -140,8 +140,8 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
   let applicationFormId = isProd ? (matchedTemplateId || baseApplicationForm) : baseApplicationForm
 
   // if the user was given the kaiser change form, then remove the otherwise-selected base form
-  if (kaiserChangeForms.includes(applicationFormId)) {
-    console.warn(`${employeePublicKey}: kaiser change form detected. removing base form in preference to the change form!`)
+  console.warn(`${employeePublicKey}: kaiser change form detected. removing base form in preference to the change form!`)
+  if (changeOrCancelationForms.some(formId => kaiserChangeForms.includes(formId))) {
     applicationFormId = ''
   }
 
