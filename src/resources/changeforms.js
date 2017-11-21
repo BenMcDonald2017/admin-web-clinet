@@ -43,8 +43,6 @@ export async function getPreviousPlanPolicyNumber(employeePublicKey = ' ') {
     },
   }).promise()
 
-  console.dir(benefits)
-
   const currentPlans = benefits.filter(health => moment().isBetween(
     moment(health.BenefitEffectiveDate),
     moment(health.BenefitEndDate), 'days', '[]',
