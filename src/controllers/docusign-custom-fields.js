@@ -29,6 +29,7 @@ export const getDocuSignCustomFieldData = async ({
   formFieldData.carrier_plan_hios_id = get(benefit, 'HealthPlanId')
   formFieldData.carrier_plan_name = get(benefit, 'PlanName')
   formFieldData.previous_carrier_plan_policy_number = (await getPreviousPlanPolicyNumber(get(worker || {}, 'EmployeePublicKey'))) || ' '
+  formFieldData.enrollmentPublicKey = `${worker.Id}`
 
   const [template = {}] = await getDocuSignApplicationTemplate(get(formFieldData, 'carrier_plan_hios_id'))
   const { InputElement: planChoiceCheckBox = null } = template
@@ -98,7 +99,7 @@ function fetchAndFillDataFor(person = {}, label = '') {
   return {
     [`${label}_address_city`]:                      get(person, 'City'),
     [`${label}_address_county`]:                    get(person, 'County'),
-    [`${label}_address_full`]:                      [get(person, 'StreetAddress'), get(person, 'StreetAddressExt')].filter(e => e && e != null).join(','),
+    [`${label}_address_full`]:                      [get(person, 'StreetAddress'), get(person, 'StreetAddressExt')].filter(e => e && e != null).join(', '),
     [`${label}_address_line_1`]:                    get(person, 'StreetAddress'),
     [`${label}_address_line_2_apartment`]:          get(person, 'StreetAddressExt'),
     [`${label}_address_state_full`]:                get(person, 'StateProvince') && us.lookup(get(person, 'StateProvince')) && us.lookup(get(person, 'StateProvince')).name,

@@ -58,15 +58,19 @@ export const generateAllTabData = (fields = {}) => {
     const isCheckbox = /(?:checkbox|insurance|\s{1})/i.test(key)
     const tabLabel = `\\*${key}`
     const type = isCheckbox ? 'checkbox' : 'text'
-    const value = fields[key]
+    const value = format(fields[key])
     const valueLabel = isCheckbox ? 'selected' : 'value'
+    // regex below matches empty lines, blank strings, a single space, and the word 'enrollmentPublicKey'
+    const show = !/(?:^enrollmentPublicKey$|^\s+$|^$)/.test(value)
     // ALSO: 'required', 'senderRequired', 'templateRequired', 'templateLocked'
 
     return addTabToCollection(tabs, type, {
-      [valueLabel]: format(value),
-      tabLabel,
+      [valueLabel]: value,
       locked: true,
+      required: false,
       shared: true,
+      show,
+      tabLabel,
     })
   })
 
