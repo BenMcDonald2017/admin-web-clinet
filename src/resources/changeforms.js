@@ -9,7 +9,7 @@ const healthNetCarriers = ['99110CA', '67138CA']
 const kaiserChangeForm = isProd ? '31c1ad8c-0ac6-4f0f-9676-277a23f3452e' : '5a450cb3-da73-44d9-8eba-e0902073fc00'
 const genericCancelation = isProd ? 'b59a56bd-4990-488e-a43f-bf37ad00a63b' : '79a9dad3-011c-4094-9c01-7244b9303338'
 
-export async function getChangeForms({ employeePublicKey = ' ', HIOS = ' ' }) {
+export async function getChangeOrCancelationForms({ employeePublicKey = ' ', HIOS = ' ' }) {
   const { Items: benefits = [] } = await docClient.query({
     TableName: `${process.env.STAGE}-benefits`,
     IndexName: 'EmployeePublicKey-index',
@@ -28,6 +28,29 @@ export async function getChangeForms({ employeePublicKey = ' ', HIOS = ' ' }) {
   ))
 
   return getNecessaryForms({ currentPlans, HIOS })
+}
+
+export async function getPreviousPlanPolicyNumber(employeePublicKey = ' ') {
+  const { Items: benefits = [] } = await docClient.query({
+    TableName: `${process.env.STAGE}-benefits`,
+    IndexName: 'EmployeePublicKey-index',
+    FilterExpression: 'IsActive = :isActive AND BenefitType = :benefitType',
+    KeyConditionExpression: 'EmployeePublicKey = :employeePublicKey',
+    ExpressionAttributeValues: {
+      ':employeePublicKey': employeePublicKey,
+      ':benefitType': 'HealthBundle',
+      ':isActive': true,
+    },
+  }).promise()
+
+  console.dir(benefits)
+
+  const currentPlans = benefits.filter(health => moment().isBetween(
+    moment(health.BenefitEffectiveDate),
+    moment(health.BenefitEndDate), 'days', '[]',
+  ))
+
+  return currentPlans.length ? ((currentPlans[0] && currentPlans[0].PlanPolicyNumber) || '') : ''
 }
 
 const getNecessaryForms = ({ currentPlans = [], HIOS = '' }) => {

@@ -3,8 +3,11 @@ import { times as iterate } from 'lodash'
 import moment from 'moment'
 import us from 'us'
 
-import { effectiveAge } from '../resources/family'
-import { getDocuSignApplicationTemplate } from '../resources/hios'
+import {
+  effectiveAge,
+  getPreviousPlanPolicyNumber,
+  getDocuSignApplicationTemplate,
+} from '../resources'
 
 export const getDocuSignCustomFieldData = async ({
   benefit, family, signers, worker,
@@ -25,6 +28,7 @@ export const getDocuSignCustomFieldData = async ({
   formFieldData.carrier_company_name = get(benefit, 'CarrierName')
   formFieldData.carrier_plan_hios_id = get(benefit, 'HealthPlanId')
   formFieldData.carrier_plan_name = get(benefit, 'PlanName')
+  formFieldData.previous_carrier_plan_policy_number = (await getPreviousPlanPolicyNumber(get(worker || {}, 'EmployeePublicKey'))) || ' '
 
   const [template = {}] = await getDocuSignApplicationTemplate(get(formFieldData, 'carrier_plan_hios_id'))
   const { InputElement: planChoiceCheckBox = null } = template

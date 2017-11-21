@@ -11,7 +11,7 @@ import {
 } from '../controllers'
 import {
   getCart,
-  getChangeForms,
+  getChangeOrCancelationForms,
   getDocuSignApplicationTemplate,
   getFamily,
   getHealthBundle,
@@ -125,7 +125,7 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
   const [template = {}] = await getDocuSignApplicationTemplate(HIOS)
   const { TemplateId: matchedTemplateId = null } = template
 
-  const changeOrCancelationForms = await getChangeForms({
+  const changeOrCancelationForms = await getChangeOrCancelationForms({
     employeePublicKey,
     HIOS,
   })
@@ -135,8 +135,15 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
   // in INT / DEV: we default to using the 'base' appplication form template for everyone;
   // to test other templates in INT, they must each be copied over from Hix' PROD-docusign account
 
+  const kaiserChangeForms = ['31c1ad8c-0ac6-4f0f-9676-277a23f3452e', '5a450cb3-da73-44d9-8eba-e0902073fc00']
   const baseApplicationForm = isProd ? 'b9bcbb3e-ad06-480f-8639-02e3d5e6acfb' : '0b1c81d0-703d-49bb-861a-c0e2509ba142'
-  const applicationFormId = isProd ? (matchedTemplateId || baseApplicationForm) : baseApplicationForm
+  let applicationFormId = isProd ? (matchedTemplateId || baseApplicationForm) : baseApplicationForm
+
+  // if the user was given the kaiser change form, then remove the otherwise-selected base form
+  if (kaiserChangeForms.includes(applicationFormId)) {
+    console.warn(`${employeePublicKey}: kaiser change form detected. removing base form in preference to the change form!`)
+    applicationFormId = ''
+  }
 
   console.warn(`${employeePublicKey}: is Prod? - ${isProd}`)
   console.warn(`${employeePublicKey}: cancelation form id(s) returned from 'get-change-forms': ${changeOrCancelationForms}`)
@@ -158,13 +165,15 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
     returnUrl,
   }
 
+  const formsToUse = [...changeOrCancelationForms, applicationFormId].filter(form => form && form != null)
+
   const formattedSignersArray = await generateSigners(signers, fields)
   const compositeTemplates = await generateComposedTemplates(
-    [...changeOrCancelationForms, applicationFormId],
+    formsToUse,
     formattedSignersArray,
   )
 
-  console.warn(`${employeePublicKey}: FINAL composite templates being used:': ${[...changeOrCancelationForms, applicationFormId]}`)
+  console.warn(`${employeePublicKey}: FINAL composite templates being used:': ${formsToUse}`)
 
   const body = await getTemplateJSON({
     fields,
