@@ -28,43 +28,6 @@ export const invokeLambda = async (functionName = '', payload = {}, options = {}
   return response
 }
 
-export const saveDocuSignEnvelopeToEnrollment = (event) => {
-  if (!event || !event.result || !event.result.created) {
-    const error = new Error('DocuSign Envelope Could Not Be Found')
-    error.statusCode = 400
-    throw error
-  }
-
-  const { authorizer } = event.requestContext
-  const { claims } = authorizer
-
-  invokeLambda('bundle-signatures-put', {
-    pathParameters: {
-      // EnrollmentPublicKey: '10908a4c-5ca8-4c69-82a1-788fd6416239',
-      EnrollmentPublicKey: event.enrollmentPublicKey,
-    },
-    body: {
-      Signatures: [{
-        // BundlePublicKey: 'b041a93e-7a1c-46cc-aaf4-e0ef7877f418',
-        BundlePublicKey: event.bundlePublicKey,
-        // DocuSignEnvelopeId: '785b91c7-756b-443e-8971-65d20e0ebaee',
-        DocuSignEnvelopeId: event.result.docuSignEnvelopeId,
-        ClientUserId: event.result.clientUserId,
-      }],
-    },
-    requestContext: {
-      authorizer: {
-        claims,
-        // claims: {
-        //   'custom:user-role': 'PlatformEmployee',
-        //   'cognito:username': 'b6c4e54b-66a6-4807-8436-bfab0ace2b60',
-        //   email: 'c.bumstead@hixme.com',
-        // },
-      },
-    },
-  })
-}
-
 export const getBenefitsEffectiveDate = employeePublicKey =>
   invokeLambda('get-client-enrollment-settings', {
     EmployeePublicKey: employeePublicKey,

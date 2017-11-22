@@ -155,6 +155,7 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
     family,
     signers,
     worker,
+    event,
   })
 
   const userData = {

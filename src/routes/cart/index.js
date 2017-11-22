@@ -4,10 +4,6 @@ import { isObject, noop } from 'lodash'
 import AWS from 'aws-sdk'
 import fetch from 'node-fetch'
 import moment from 'moment'
-import ware from 'warewolf'
-
-import { before, after } from '../../utils'
-import getConfig from './config'
 
 const docClient = new AWS.DynamoDB.DocumentClient({ region: 'us-west-2' })
 const lambda = new AWS.Lambda({ region: 'us-west-2' })
@@ -18,99 +14,6 @@ const CHECK_TIME = false
 /* eslint-disable no-console */
 const markTime = CHECK_TIME ? console.time.bind(console) : noop
 const markTimeEnd = CHECK_TIME ? console.timeEnd.bind(console) : noop
-
-// POST
-export const fetchCart = ware(
-  before,
-
-  async (event) => {
-    event.stage = event.stage || process.env.STAGE
-    event.config = getConfig(event.stage)
-  },
-
-  async (event) => {
-    const { employeePublicKey, stage, config } = event
-    if (!stage) {
-      const err = new Error('could not determine stage')
-      err.statusCode = 400
-      throw err
-    }
-
-    const [family, { Item: cart }] = await Promise.all([
-      getFamily(employeePublicKey, config),
-      getCart(employeePublicKey, config.cartTable),
-    ])
-
-    let healthIns = getHealthIns(cart.Cart, config)
-
-    if (!healthIns) {
-      event.result = cart.Cart
-      return
-    }
-
-    const primary = getPrimarySigner(healthIns, family)
-    healthIns = await checkApplicationsAvailable(healthIns, config)
-
-    markTime('create-envelope')
-    healthIns = await createEnvelopes(healthIns, primary, family, config)
-    markTimeEnd('create-envelope')
-
-    cart.Cart = cart.Cart.map(product =>
-      (product.BenefitType === config.HEALTH_BUNDLE ? healthIns : product))
-
-    await saveCart(cart, config.cartTable)
-
-    event.result = cart.Cart
-  },
-
-  after,
-)
-
-async function createEnvelopes(healthIns, primary, family, config) {
-  healthIns.Benefits = await Promise.all(healthIns.Benefits.map(async (benefit, i) => {
-    if (!benefit.DocuSignEnvelopeId && benefit.PdfApplicationAvailable === true) {
-      const hasTransmerica = benefit.hasTransmerica || true
-      const applicants = getApplicationPersons(benefit.Persons, primary, family)
-      let signers = getSigners(applicants, config)
-      markTime(`doc-${i}`)
-      const documents = await getDocuments(benefit, applicants, primary, hasTransmerica, config)
-      markTimeEnd(`doc-${i}`)
-
-      benefit.EnvelopeComplete = false
-      if (benefit.HealthPlanId.substring(0, 7) === '10544CA' ||
-        benefit.HealthPlanId.substring(0, 7) === '59763MA') {
-        signers = []
-        signers.push(getSignerObject({
-          email: applicants.Primary.HixmeEmailAlias,
-          first: applicants.Primary.FirstName,
-          last: applicants.Primary.LastName,
-          id: applicants.Primary.Id,
-          firstAnchor: 'PrimaryGuardian_Hixme_1',
-          secondAnchor: 'PrimaryGuardian_Hixme_2',
-          thirdAnchor: 'PrimaryGuardian_Hixme_3',
-        }))
-      }
-      benefit.DocumentLocation = documents[0].documentLocation
-      markTime(`doc-create-${i}`)
-      /* eslint-disable max-len */
-      benefit.DocuSignEnvelopeId = await createEnvelope(applicants, signers, documents, primary, config)
-      markTimeEnd(`doc-create-${i}`)
-      benefit.PdfSignatures = signers.map(signer => ({
-        Id: signer.clientUserId,
-        Signed: false,
-      }))
-    }
-
-    if (benefit.DocumentLocation) {
-      benefit.UnsignedPdfApplication = await s3.getSignedUrl('getObject', {
-        Bucket: benefit.DocumentLocation.bucket,
-        Key: benefit.DocumentLocation.key,
-      })
-    }
-    return benefit
-  }))
-  return healthIns
-}
 
 async function createEnvelope(applicants, signers, documents, primary, config) {
   const body = {
@@ -221,31 +124,12 @@ function getSigners(family, config) {
   return signers
 }
 
-function getSignerObject(params) {
+function getSignerObject(person) {
   return {
-    email: params.email,
-    name: `${params.first} ${params.last}`,
-    clientUserId: params.id,
-    recipientId: params.id,
-    tabs: {
-      signHereTabs: [
-        {
-          recipientId: params.id,
-          anchorString: params.firstAnchor,
-          anchorIgnoreIfNotPresent: true,
-        },
-        {
-          recipientId: params.id,
-          anchorString: params.secondAnchor,
-          anchorIgnoreIfNotPresent: true,
-        },
-        {
-          recipientId: params.id,
-          anchorString: params.thirdAnchor,
-          anchorIgnoreIfNotPresent: true,
-        },
-      ],
-    },
+    clientUserId: `${person.id}`,
+    email: `${person.email}`,
+    name: `${person.first} ${person.last}`,
+    recipientId: `${person.id}`,
   }
 }
 

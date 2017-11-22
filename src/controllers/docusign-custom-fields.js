@@ -5,13 +5,20 @@ import us from 'us'
 
 import {
   effectiveAge,
-  getPreviousPlanPolicyNumber,
+  getCart,
   getDocuSignApplicationTemplate,
+  getPreviousPlanPolicyNumber,
 } from '../resources'
 
-export const getDocuSignCustomFieldData = async ({
-  benefit, family, signers, worker,
-}) => {
+export const getDocuSignCustomFieldData = async (event) => {
+  const { event: { params: { employeePublicKey = ' ' } = {} } = {} } = event
+  const { Item: Cart = {} } = await getCart(employeePublicKey)
+
+  const benefit = get(event, 'benefit', {})
+  const signers = get(event, 'signers', [])
+  let family = get(event, 'family', [])
+  let worker = get(event, 'worker', {})
+
   const { Persons: personsCovered = [] } = benefit
   const workerToUse = personsCovered.find(person => (/employee/i.test(person.Relationship) && /included/i.test(person.BenefitStatus)))
   const spouseToUse = personsCovered.find(person => (/(?:spouse|domestic\s*partner)/i.test(person.Relationship) && /included/i.test(person.BenefitStatus)))
@@ -20,18 +27,30 @@ export const getDocuSignCustomFieldData = async ({
   let spouse = family.find(s => s.Id === get(spouseToUse || {}, 'Id'))
   worker = family.find(w => w.Id === get(workerToUse || {}, 'Id'))
   family = family.filter(member => familyMembersToUse.some(person => person && person.Id === get(member, 'Id')))
+  const HIOS = get(benefit, 'HealthPlanId')
 
-  const formFieldData = {}
+  /* eslint-disable no-multi-spaces, key-spacing */
+  const formFieldData = {
+    carrier_company_name:                           get(benefit, 'CarrierName'),
+    carrier_plan_hios_id:                           `${HIOS}`,
+    carrier_plan_name:                              get(benefit, 'PlanName'),
+    enrollmentPublicKey:                            get(Cart, 'EnrollmentPublicKey'),
+    previous_carrier_plan_policy_number:            await getPreviousPlanPolicyNumber(get(worker || {}, 'EmployeePublicKey')) || ' ',
+    generic_checkbox_no:                            true,
+    generic_checkbox_yes:                           false,
+    // need more information that what I have in here to mark the below correctly
+    insurance_individual:                           false,
+    insurance_individual_spouse:                    false,
+    insurance_child_only:                           false,
+    insurance_family:                               false,
+    insurance_individual_child:                     false,
+    insurance_individual_children:                  false,
+    insurance_individual_domestic_partner:          false,
+    insurance_individual_domestic_partner_children: false,
+  }
 
-  /* eslint-disable no-multi-spaces */
   // first, let's add some generic plan-related data to our DocuSign formFieldData
-  formFieldData.carrier_company_name = get(benefit, 'CarrierName')
-  formFieldData.carrier_plan_hios_id = get(benefit, 'HealthPlanId')
-  formFieldData.carrier_plan_name = get(benefit, 'PlanName')
-  formFieldData.previous_carrier_plan_policy_number = (await getPreviousPlanPolicyNumber(get(worker || {}, 'EmployeePublicKey'))) || ' '
-  formFieldData.enrollmentPublicKey = `${worker.Id}`
-
-  const [template = {}] = await getDocuSignApplicationTemplate(get(formFieldData, 'carrier_plan_hios_id'))
+  const [template = {}] = await getDocuSignApplicationTemplate(`${HIOS}`)
   const { InputElement: planChoiceCheckBox = null } = template
 
   if (planChoiceCheckBox) {
@@ -95,7 +114,6 @@ function fetchAndFillDataFor(person = {}, label = '') {
   const SSN = get(person, 'SSN', '')
   const status = get(person, 'MarriageStatus', '')
 
-  /* eslint-disable key-spacing */
   return {
     [`${label}_address_city`]:                      get(person, 'City'),
     [`${label}_address_county`]:                    get(person, 'County'),
@@ -153,16 +171,5 @@ function fetchAndFillDataFor(person = {}, label = '') {
     [`${label}_gender_checkbox_female`]:            isPerson && /^female$/i.test(gender),
     [`${label}_gender_checkbox_male`]:              isPerson && /^male$/i.test(gender),
     [`${label}_smoker_checkbox`]:                   isPerson && isSmoker,
-    generic_checkbox_no:                            true,
-    generic_checkbox_yes:                           false,
-    // need more information that what I have in here to mark the below correctly
-    insurance_individual:                           false,
-    insurance_individual_spouse:                    false,
-    insurance_child_only:                           false,
-    insurance_family:                               false,
-    insurance_individual_child:                     false,
-    insurance_individual_children:                  false,
-    insurance_individual_domestic_partner:          false,
-    insurance_individual_domestic_partner_children: false,
   }
 }
