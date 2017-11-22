@@ -12,7 +12,7 @@ import {
 
 export const getDocuSignCustomFieldData = async (event) => {
   const { event: { params: { employeePublicKey = ' ' } = {} } = {} } = event
-  const { Item: Cart = {} } = await getCart(employeePublicKey)
+  const { Item: cart = {} } = await getCart(employeePublicKey)
 
   const benefit = get(event, 'benefit', {})
   const signers = get(event, 'signers', [])
@@ -34,19 +34,21 @@ export const getDocuSignCustomFieldData = async (event) => {
     carrier_company_name:                           get(benefit, 'CarrierName'),
     carrier_plan_hios_id:                           `${HIOS}`,
     carrier_plan_name:                              get(benefit, 'PlanName'),
-    enrollmentPublicKey:                            get(Cart, 'EnrollmentPublicKey'),
+    employee_benefit_public_key:                    get(benefit, 'EmployeeBenefitPublicKey'),
+    enrollment_public_key:                          get(cart, 'EnrollmentPublicKey'),
+    hios_id:                                        `${HIOS}`,
     previous_carrier_plan_policy_number:            await getPreviousPlanPolicyNumber(get(worker || {}, 'EmployeePublicKey')) || ' ',
     generic_checkbox_no:                            true,
     generic_checkbox_yes:                           false,
     // need more information that what I have in here to mark the below correctly
-    insurance_individual:                           false,
-    insurance_individual_spouse:                    false,
     insurance_child_only:                           false,
     insurance_family:                               false,
     insurance_individual_child:                     false,
     insurance_individual_children:                  false,
-    insurance_individual_domestic_partner:          false,
     insurance_individual_domestic_partner_children: false,
+    insurance_individual_domestic_partner:          false,
+    insurance_individual_spouse:                    false,
+    insurance_individual:                           false,
   }
 
   // first, let's add some generic plan-related data to our DocuSign formFieldData
