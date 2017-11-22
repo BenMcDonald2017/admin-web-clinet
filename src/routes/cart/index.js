@@ -8,6 +8,10 @@ import moment from 'moment'
 const docClient = new AWS.DynamoDB.DocumentClient({ region: 'us-west-2' })
 const lambda = new AWS.Lambda({ region: 'us-west-2' })
 const s3 = new AWS.S3()
+const {
+  EFFECTIVE_DATE = '20180101',
+  HEALTH_BUNDLE = 'HealthBundle',
+} = process.env
 
 const CHECK_TIME = false
 
@@ -103,7 +107,7 @@ function getSigners(family, config) {
 
   if (applicants.Children && applicants.Children.length > 0) {
     /* eslint-disable max-len */
-    const kids = applicants.Children.filter(kid => effectiveAge(kid.DateOfBirth, config.EFFECTIVE_DATE) >= 18)
+    const kids = applicants.Children.filter(kid => effectiveAge(kid.DateOfBirth, EFFECTIVE_DATE) >= 18)
 
     /* eslint-disable no-plusplus */
     for (let i = 0; i < kids.length; i++) {
@@ -309,7 +313,7 @@ async function applicationAvailable(hiosId, config) {
 }
 
 function getHealthIns(cart, config) {
-  return cart.find(benefit => benefit.BenefitType === config.HEALTH_BUNDLE)
+  return cart.find(benefit => benefit.BenefitType === HEALTH_BUNDLE)
 }
 
 async function getCart(Id, tableName) {

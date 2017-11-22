@@ -4,7 +4,7 @@ import moment from 'moment'
 
 const {
   STAGE: stage,
-  EFFECTIVE_DATE = '20180101',
+  EFFECTIVE_DATE = '2018-01-01',
   HEALTH_BUNDLE = 'HealthBundle',
 } = process.env
 

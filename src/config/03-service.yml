@@ -16,16 +16,12 @@ custom:
         - dynamodb:UpdateItem
         # - dynamodb:DeleteItem
       Resource:
-        - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-benefits/index/*
-        - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-benefits/index/EmployeePublicKey-index
         - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-benefits*
-        - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-carrier-application-documents*
-        - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-carrier-application-hios*
         - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-carrier-application*
-        - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-carrier-applications*
         - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-cart*
         - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-employee-documents*
         - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-persons*
+        - arn:aws:dynamodb:us-west-2:409076796536:table/prod-carrier-application*  # bill tran's db is in prod only, for now
     - Effect: Allow
       Action:
         - lambda:InvokeFunction

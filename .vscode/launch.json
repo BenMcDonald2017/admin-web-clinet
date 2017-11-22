@@ -2,31 +2,40 @@
     "version": "0.2.0",
     "configurations": [{
         "name": "Attach to (an Existing) Node Process",
+        "protocol": "inspector",
+        "type": "node",
         "port": 9229,
         // "processId": "${command:PickProcess}", // enables you to select the process
-        "protocol": "inspector",
         "request": "attach",
         "restart": true,
         "smartStep": true,
         "sourceMaps": true,
-        "type": "node"
+        "showAsyncStacks": true,
+        "internalConsoleOptions": "neverOpen",
+        "skipFiles": [
+          "${workspaceFolder}/node_modules/**/*.js",
+          "${workspaceFolder}/build/**/*.js",
+          "<node_internals>/**/*.js"
+        ],
+        "timeout": 500000 // 8.33 minutes
     }, {
         "name": "Debug Entire Service",
+        "request": "launch",
+        "type": "node",
         "args": ["offline", "start", "--port", "8000"],
         "cwd": "${workspaceRoot}",
         "env": {
             "SLS_DEBUG": "*"
         },
-        "internalConsoleOptions": "openOnSessionStart",
         "outFiles": ["${workspaceRoot}/build/**/*"],
         "preLaunchTask": "build",  /* "build:watch" (might be a better one?) */
         "program": "${workspaceRoot}/node_modules/serverless/bin/serverless",
-        "request": "launch",
         "restart": true,
         // "skipFiles": [ "${workspaceRoot}/node_modules/**/*"],
         "smartStep": true,
         "sourceMaps": true,
-        "type": "node"
+        "showAsyncStacks": true,
+        "internalConsoleOptions": "openOnSessionStart"
     }, {
         "name": "Debug Function",
         "args": ["invoke", "local", "-f", "get-bundles", "-p", "src/routes/bundles/event.json"],
