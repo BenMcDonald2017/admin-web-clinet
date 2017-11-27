@@ -123,32 +123,40 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
 
   const { HealthPlanId: HIOS = '' } = benefit
   const [template = {}] = await getDocuSignApplicationTemplate(HIOS)
-  const { TemplateId: matchedTemplateId = null } = template
+  const { TemplateId: matchedDocuSignTemplateId = null } = template
 
-  const changeOrCancelationForms = await getChangeOrCancelationForms({
+  const changeOrCancelationFormDocuSignIds = await getChangeOrCancelationForms({
     employeePublicKey,
     HIOS,
   })
 
-  // in PROD: we attempt to match HIOS w/ its relevant (docusign) templateId
-  // if match found, use that templateId; otherwise, default to 'base' application form template
-  // in INT / DEV: we default to using the 'base' appplication form template for everyone;
-  // to test other templates in INT, they must each be copied over from Hix' PROD-docusign account
+  const isCaliforniaPlan = /\d{5}(?:CA)/.test(HIOS)
 
-  const kaiserChangeForms = ['31c1ad8c-0ac6-4f0f-9676-277a23f3452e', '5a450cb3-da73-44d9-8eba-e0902073fc00']
-  const baseApplicationForm = isProd ? 'b9bcbb3e-ad06-480f-8639-02e3d5e6acfb' : '0b1c81d0-703d-49bb-861a-c0e2509ba142'
-  let applicationFormId = isProd ? (matchedTemplateId || baseApplicationForm) : baseApplicationForm
+  // in PROD: we attempt to match HIOS w/ its relevant DocuSign `templateId`
+  // if match found, use that `templateId`; otherwise, default to the Hixme, Inc-
+  // created, 'base' application form DocuSign `templateId`. ##################
+  // in INT / DEV: we default to using the 'base' appplication form template for everyone;
+  // to test other templates in INT, they must each be copied over from Hix' PROD-DocuSign account
+  const kaiserChangeFormDocuSignIds = ['31c1ad8c-0ac6-4f0f-9676-277a23f3452e', '5a450cb3-da73-44d9-8eba-e0902073fc00']
+  const baseHixmeAppFormDocuSignId = isProd ? 'b9bcbb3e-ad06-480f-8639-02e3d5e6acfb' : '0b1c81d0-703d-49bb-861a-c0e2509ba142'
+  let appFormToUseDocuSignId = isProd ?
+    // prod is set to their matched template, or else, the hixme base form:
+    ((!isCaliforniaPlan ? matchedDocuSignTemplateId : null) || baseHixmeAppFormDocuSignId) :
+    // non-prod environments ALWAYS receive hixme base form(, for now ...
+    // and until we copy over confirmed, tested, anx verified forms from
+    // DocuSign-prod over to DocuSign-int):
+    baseHixmeAppFormDocuSignId
 
   // if the user was given the kaiser change form, then remove the otherwise-selected base form
   console.warn(`${employeePublicKey}: kaiser change form detected. removing base form in preference to the change form!`)
-  if (changeOrCancelationForms.some(formId => kaiserChangeForms.includes(formId))) {
-    applicationFormId = ''
+  if (changeOrCancelationFormDocuSignIds.some(formId => kaiserChangeFormDocuSignIds.includes(formId))) {
+    appFormToUseDocuSignId = ''
   }
 
   console.warn(`${employeePublicKey}: is Prod? - ${isProd}`)
-  console.warn(`${employeePublicKey}: cancelation form id(s) returned from 'get-change-forms': ${changeOrCancelationForms}`)
-  console.warn(`${employeePublicKey}: base application id returned from 'prod-carrier-application-hios': ${matchedTemplateId}`)
-  console.warn(`${employeePublicKey}: base application form id used:': ${applicationFormId}`)
+  console.warn(`${employeePublicKey}: cancelation form id(s) returned from 'get-change-forms': ${changeOrCancelationFormDocuSignIds}`)
+  console.warn(`${employeePublicKey}: base application id returned from 'prod-carrier-application-hios': ${matchedDocuSignTemplateId}`)
+  console.warn(`${employeePublicKey}: base application form id used:': ${appFormToUseDocuSignId}`)
 
   const fields = await getDocuSignCustomFieldData({
     benefit,
@@ -166,7 +174,7 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
     returnUrl,
   }
 
-  const formsToUse = [...changeOrCancelationForms, applicationFormId].filter(form => form && form != null)
+  const formsToUse = [...changeOrCancelationFormDocuSignIds, appFormToUseDocuSignId].filter(form => form && form != null)
 
   const formattedSignersArray = await generateSigners(signers, fields)
   const compositeTemplates = await generateComposedTemplates(
@@ -189,7 +197,7 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
   body.status = 'sent' // indicates it's _NOT_ a draft
   body.fromDate = new Date()
 
-  // call out to docusign and create the envelope
+  // call out to DocuSign and create the envelope
   const envelope = await createEnvelope({ body: JSON.stringify(body) })
 
   // grab 'envelopeId' from 'envelope'

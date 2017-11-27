@@ -21,10 +21,10 @@ export const getDocuSignCustomFieldData = async (event) => {
   // const signers = get(event, 'signers', [])
   // let worker = get(event, 'worker', {})
 
-  const { Persons: personsCovered = [] } = benefit
-  const workerToUse = personsCovered.find(person => /employee/i.test(person.Relationship) && /included/i.test(person.BenefitStatus))
-  const spouseToUse = personsCovered.find(person => (/(?:spouse|domestic\s*partner)/i.test(person.Relationship) && /included/i.test(person.BenefitStatus)))
-  const familyMembersToUse = personsCovered.filter(person => (!/(?:employee|spouse|domestic\s*partner)/i.test(person.Relationship) && /included/i.test(person.BenefitStatus)))
+  const { Persons: personsCoveredInThisBenefit = [] } = benefit
+  const workerToUse = personsCoveredInThisBenefit.find(person => /employee/i.test(person.Relationship) && /included/i.test(person.BenefitStatus))
+  const spouseToUse = personsCoveredInThisBenefit.find(person => (/(?:spouse|domestic\s*partner)/i.test(person.Relationship) && /included/i.test(person.BenefitStatus)))
+  const familyMembersToUse = personsCoveredInThisBenefit.filter(person => (!/(?:employee|spouse|domestic\s*partner)/i.test(person.Relationship) && /included/i.test(person.BenefitStatus)))
 
   let spouse = family.find(s => s.Id === get(spouseToUse || {}, 'Id'))
   let worker = family.find(w => w.Id === get(workerToUse || {}, 'Id'))
@@ -33,10 +33,6 @@ export const getDocuSignCustomFieldData = async (event) => {
 
   const isThis = (insuranceType = '') => {
     switch (`${insuranceType}`) {
-      case 'insurance_individual':
-        return false
-      case 'insurance_individual_spouse':
-        return false
       case 'insurance_child_only':
         return false
       case 'insurance_family':
@@ -45,9 +41,15 @@ export const getDocuSignCustomFieldData = async (event) => {
         return false
       case 'insurance_individual_children':
         return false
+      case 'insurance_individual_domestic_partner_children':
+        return false
       case 'insurance_individual_domestic_partner':
         return false
-      case 'insurance_individual_domestic_partner_children':
+      case 'insurance_individual_spouse':
+        return false
+      case 'insurance_individual':
+        return false
+      case 'spouse_is_spouse':
         return false
       default:
         return false
@@ -66,14 +68,15 @@ export const getDocuSignCustomFieldData = async (event) => {
     generic_checkbox_no:                            true,
     generic_checkbox_yes:                           false,
     // need more information that what I have in here to mark the below correctly
-    insurance_individual:                           isThis('insurance_individual'),
-    insurance_individual_spouse:                    isThis('insurance_individual_spouse'),
     insurance_child_only:                           isThis('insurance_child_only'),
     insurance_family:                               isThis('insurance_family'),
     insurance_individual_child:                     isThis('insurance_individual_child'),
     insurance_individual_children:                  isThis('insurance_individual_children'),
-    insurance_individual_domestic_partner:          isThis('insurance_individual_domestic_partner'),
     insurance_individual_domestic_partner_children: isThis('insurance_individual_domestic_partner_children'),
+    insurance_individual_domestic_partner:          isThis('insurance_individual_domestic_partner'),
+    insurance_individual_spouse:                    isThis('insurance_individual_spouse'),
+    insurance_individual:                           isThis('insurance_individual'),
+    spouse_is_spouse:                               isThis('spouse_is_spouse'),
   }
 
   // first, let's add some generic plan-related data to our DocuSign formFieldData

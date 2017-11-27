@@ -8,20 +8,21 @@ custom:
   iamRoleStatements:
     - Effect: Allow
       Action:
+        # - dynamodb:DeleteItem # off by default, because you likely lack iam permissions anyhow
         - dynamodb:DescribeTable
-        - dynamodb:Query
-        - dynamodb:Scan
         - dynamodb:GetItem
         - dynamodb:PutItem
+        - dynamodb:Query
+        - dynamodb:Scan
         - dynamodb:UpdateItem
-        # - dynamodb:DeleteItem
       Resource:
         - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-benefits*
         - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-carrier-application*
+        # above is an example of how we should refactor the line below, which calls `prod` table directly
         - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-cart*
         - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-employee-documents*
         - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-persons*
-        - arn:aws:dynamodb:us-west-2:409076796536:table/prod-carrier-application*  # bill tran's db is in prod only, for now
+        - arn:aws:dynamodb:us-west-2:409076796536:table/prod-carrier-application*  # at present, and because we haven't transfered over the templates, the data store for HIOS->to->docusignTemplateId is in prod only
     - Effect: Allow
       Action:
         - lambda:InvokeFunction
