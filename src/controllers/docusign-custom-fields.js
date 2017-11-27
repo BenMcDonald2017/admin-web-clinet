@@ -34,23 +34,23 @@ export const getDocuSignCustomFieldData = async (event) => {
   const isThis = (insuranceType = '') => {
     switch (`${insuranceType}`) {
       case 'insurance_child_only':
-        return false
+        return !spouse && !worker && family && family.length === 1
       case 'insurance_family':
-        return false
+        return worker && spouse && family.length
       case 'insurance_individual_child':
-        return false
+        return !spouse && !worker && family && family.length === 1
       case 'insurance_individual_children':
-        return false
+        return !spouse && !worker && family && family.length > 1
       case 'insurance_individual_domestic_partner_children':
-        return false
+        return !spouse && !worker && family && family.length === 1
       case 'insurance_individual_domestic_partner':
-        return false
+        return !spouse && !worker && !family
       case 'insurance_individual_spouse':
-        return false
+        return !!spouse && !family && !family.length
       case 'insurance_individual':
-        return false
-      case 'spouse_is_spouse':
-        return false
+        return !family || !family.length
+      case 'spouse_checkbox_is_spouse':
+        return !!spouse
       default:
         return false
     }
