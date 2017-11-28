@@ -137,7 +137,7 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
   // created, 'base' application form DocuSign `templateId`. ##################
   // in INT / DEV: we default to using the 'base' appplication form template for everyone;
   // to test other templates in INT, they must each be copied over from Hix' PROD-DocuSign account
-  const kaiserChangeFormDocuSignIds = ['31c1ad8c-0ac6-4f0f-9676-277a23f3452e', '5a450cb3-da73-44d9-8eba-e0902073fc00']
+  const kaiserChangeFormDocuSignIds = ['cbeeae49-56de-4065-95b8-97b6fafb2189', '5a450cb3-da73-44d9-8eba-e0902073fc00']
   const baseHixmeAppFormDocuSignId = isProd ? 'b9bcbb3e-ad06-480f-8639-02e3d5e6acfb' : '0b1c81d0-703d-49bb-861a-c0e2509ba142'
   let appFormToUseDocuSignId = isProd ?
     // prod is set to their matched template, or else, the hixme base form:
