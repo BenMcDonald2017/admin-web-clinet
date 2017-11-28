@@ -2,14 +2,16 @@
 import QS from 'qs'
 import { isProd } from '../utils'
 import {
-  createEnvelope,
   createEmbeddedEnvelope,
+  createEnvelope,
   getEnvelopes,
 } from './docusign-api'
 import {
   getDocuSignCustomFieldData,
 } from '../controllers'
 import {
+  EFFECTIVE_DATE,
+  effectiveAge,
   getCart,
   getChangeOrCancelationForms,
   getDocuSignApplicationTemplate,
@@ -19,23 +21,18 @@ import {
   saveCart,
 } from '../resources'
 import {
-  generateAllTabData,
-  generateSigners,
   generateComposedTemplates,
+  generateSigners,
 } from './docusign-helpers'
 
 const getTemplateJSON = ({
+  compositeTemplates,
   fields,
   signers,
-  compositeTemplates,
   userData,
 }) => {
-  const templateRoles = [{ roleName: 'Worker', ...userData, tabs: generateAllTabData(fields) }]
-  signers = signers.filter(signer => (signer.clientUserId !== userData.clientUserId))
-
-  if (signers.length) {
-    templateRoles.push(...generateSigners(signers, fields))
-  }
+  const templateRoles = []
+  templateRoles.push(...generateSigners(signers, fields))
 
   return {
     compositeTemplates,
@@ -175,6 +172,9 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
   }
 
   const formsToUse = [...changeOrCancelationFormDocuSignIds, appFormToUseDocuSignId].filter(form => form && form != null)
+
+  const minorChildrenIds = family.filter(person => effectiveAge(`${person.DateOfBirth}`, `${EFFECTIVE_DATE}`) < 18).map(mc => mc.Id)
+  signers = signers.filter(signer => !minorChildrenIds.includes(signer.clientUserId))
 
   const formattedSignersArray = await generateSigners(signers, fields)
   const compositeTemplates = await generateComposedTemplates(

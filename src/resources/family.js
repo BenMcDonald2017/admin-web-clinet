@@ -2,7 +2,7 @@ import { isObject } from 'lodash'
 import AWS from 'aws-sdk'
 import moment from 'moment'
 
-const {
+export const {
   STAGE: stage,
   EFFECTIVE_DATE = '2018-01-01',
   HEALTH_BUNDLE = 'HealthBundle',
@@ -93,25 +93,6 @@ export function getSignerObject(params) {
     name: `${params.first} ${params.last}`,
     clientUserId: params.id,
     recipientId: params.id,
-    tabs: {
-      signHereTabs: [
-        {
-          recipientId: params.id,
-          anchorString: params.firstAnchor,
-          anchorIgnoreIfNotPresent: true,
-        },
-        {
-          recipientId: params.id,
-          anchorString: params.secondAnchor,
-          anchorIgnoreIfNotPresent: true,
-        },
-        {
-          recipientId: params.id,
-          anchorString: params.thirdAnchor,
-          anchorIgnoreIfNotPresent: true,
-        },
-      ],
-    },
   }
 }
 

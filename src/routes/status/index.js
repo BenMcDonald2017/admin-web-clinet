@@ -49,7 +49,7 @@ export const getCartWithApplicationStatus = ware(
       console.warn(`${'*'.repeat(10)}  Health Bundle: NOT FOUND`)
 
       // set result to cart
-      const { Cart: cart } = data.cart
+      const { Cart: cart = {} } = data.cart || {}
       event.result = cart
       event.workerHasNoHealthBundle = true
       return

@@ -34,7 +34,6 @@ export const generateSigners = (signers = [], fields = {}) => signers.map((signe
   userId: `${signer.clientUserId}`,
   recipientId: `${signer.clientUserId}`,
   tabs: generateAllTabData(fields),
-  // recipientId: `${index + 1}`, // i = 0 at first; so we add 1
 }))
 
 const tabName = (name = 'text') => camelCase(`${name}Tabs`)
