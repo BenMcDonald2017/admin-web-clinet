@@ -123,7 +123,7 @@ const createEnvelopes = async (healthIns, primary, family, event) => {
       benefit.DocumentLocation = ' '
       benefit.UnsignedPdfApplication = ' '
       benefit.DocuSignEnvelopeId = envelopeId
-      benefit.DocuSignEnvelopeCreatedOn = new Date()
+      benefit.DocuSignEnvelopeCreatedOn = new Date().toISOString()
 
       // handle multiple signatures
       benefit.PdfSignatures = signers.map(signer => ({
