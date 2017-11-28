@@ -173,8 +173,14 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
 
   const formsToUse = [...changeOrCancelationFormDocuSignIds, appFormToUseDocuSignId].filter(form => form && form != null)
 
-  const minorChildrenIds = family.filter(person => effectiveAge(`${person.DateOfBirth}`, `${EFFECTIVE_DATE}`) < 18).map(mc => mc.Id)
-  signers = signers.filter(signer => !minorChildrenIds.includes(signer.clientUserId))
+  const under18Ids = family.filter(person => effectiveAge(`${person.DateOfBirth}`, `${EFFECTIVE_DATE}`) < 18).map(mc => mc.Id)
+  signers = signers.filter(signer => !under18Ids.includes(signer.clientUserId))
+
+  // if benefit have only dependents, and none of those dependents are under 18, then remove the worker from the signatures list—they don't need to sign
+  if (benefit.Persons && benefit.Persons.every(person => /child/i.test(person.Relationship) && !under18Ids.includes(person.Id))) {
+    signers = signers.filter(signer => signer.clientUserId !== `${employeePublicKey}`)
+    console.dir(signers)
+  }
 
   const formattedSignersArray = await generateSigners(signers, fields)
   const compositeTemplates = await generateComposedTemplates(
