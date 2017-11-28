@@ -60,28 +60,26 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
   }
 
   event.healthBundle.Benefits = await Promise.all(event.healthBundle.Benefits.map(async (benefit) => {
-    // check if the benefit has an envelopeId
-    if (benefit.DocuSignEnvelopeId) {
-      if (benefit.DocuSignEnvelopeId === envelopeId) {
-        benefit.PdfSignatures = benefit.PdfSignatures.map(({ Signed = false, Id = '' }) => {
-          if (Signed || Id === personPublicKey) {
-            return {
-              Id,
-              Signed: true,
-            }
-          }
+    // check if the benefit has an envelopeId, and if it has the correct one
+    const { PdfSignatures: signers = [] } = benefit
+    const { DocuSignEnvelopeId = '' } = signers
+
+    if (DocuSignEnvelopeId && DocuSignEnvelopeId === envelopeId) {
+      benefit.PdfSignatures = benefit.PdfSignatures.map(({ Signed = false, Id = '' }) => {
+        if (Signed || Id === personPublicKey) {
           return {
             Id,
-            Signed: false,
+            Signed: true,
           }
-        })
-      }
+        }
+        return {
+          Id,
+          Signed: false,
+        }
+      })
 
-      const { PdfSignatures } = benefit
-      // if all signers have signed, then mark envelope as COMPLETE!
-      if (PdfSignatures && PdfSignatures.every(signer => (signer.Signed === true))) {
-        benefit.EnvelopeComplete = true
-      }
+      // if all signers have signed, then mark envelope as true (a.k.a., COMPLETE)!
+      benefit.EnvelopeComplete = signers.every(signer => (signer.Signed === true))
 
       event.result = { success: true }
       return benefit
@@ -179,7 +177,6 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
   // if benefit have only dependents, and none of those dependents are under 18, then remove the worker from the signatures list—they don't need to sign
   if (benefit.Persons && benefit.Persons.every(person => /child/i.test(person.Relationship) && !under18Ids.includes(person.Id))) {
     signers = signers.filter(signer => signer.clientUserId !== `${employeePublicKey}`)
-    console.dir(signers)
   }
 
   const formattedSignersArray = await generateSigners(signers, fields)

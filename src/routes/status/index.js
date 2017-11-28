@@ -2,13 +2,15 @@ import ware from 'warewolf'
 import { get } from 'delver'
 
 import {
-  getCart,
-  saveCart,
-  getFamily,
-  getSigners,
+  EFFECTIVE_DATE,
+  effectiveAge,
   getApplicationPersons,
-  getPrimarySigner,
+  getCart,
+  getFamily,
   getHealthBundle,
+  getPrimarySigner,
+  getSigners,
+  saveCart,
 } from '../../resources'
 import { before, after, queryStringIsTrue } from '../../utils'
 import { createDocuSignEnvelope } from '../../controllers'
@@ -111,7 +113,7 @@ const createEnvelopes = async (healthIns, primary, family, event) => {
     if (!benefit.DocuSignEnvelopeId || forceFlagIsSet) {
       const coveredPeople = benefit.Persons.filter(b => /included/i.test(b.BenefitStatus))
       const applicants = getApplicationPersons(coveredPeople, primary, family)
-      const signers = getSigners(applicants)
+      let signers = getSigners(applicants)
 
       // this puppy kicks off all the docusign creation code
       await createDocuSignEnvelope(benefit, primary, family, signers, event)
@@ -124,6 +126,15 @@ const createEnvelopes = async (healthIns, primary, family, event) => {
       benefit.UnsignedPdfApplication = ' '
       benefit.DocuSignEnvelopeId = envelopeId
       benefit.DocuSignEnvelopeCreatedOn = new Date().toISOString()
+
+      // filter out signers that are under 18
+      const under18Ids = family.filter(person => effectiveAge(`${person.DateOfBirth}`, `${EFFECTIVE_DATE}`) < 18).map(mc => mc.Id)
+      signers = signers.filter(signer => !under18Ids.includes(signer.clientUserId))
+
+      // if benefit have only dependents, and none of those dependents are under 18, then remove the worker from the signatures list—they don't need to sign
+      if (benefit.Persons && benefit.Persons.every(person => /child/i.test(person.Relationship) && !under18Ids.includes(person.Id))) {
+        signers = signers.filter(signer => signer.clientUserId !== `${primary.Id}`)
+      }
 
       // handle multiple signatures
       benefit.PdfSignatures = signers.map(signer => ({
