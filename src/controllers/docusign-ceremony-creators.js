@@ -129,7 +129,7 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
   const baseHixmeAppFormDocuSignId = isProd ? 'b9bcbb3e-ad06-480f-8639-02e3d5e6acfb' : '0b1c81d0-703d-49bb-861a-c0e2509ba142'
   let appFormToUseDocuSignId = isProd ?
     // prod is set to their matched template, or else, the hixme base form:
-    ((!isCaliforniaPlan ? matchedDocuSignTemplateId : null) || baseHixmeAppFormDocuSignId) :
+    ((isCaliforniaPlan ? matchedDocuSignTemplateId : null) || baseHixmeAppFormDocuSignId) :
     // non-prod environments ALWAYS receive hixme base form(, for now ...
     // and until we copy over confirmed, tested, anx verified forms from
     // DocuSign-prod over to DocuSign-int):

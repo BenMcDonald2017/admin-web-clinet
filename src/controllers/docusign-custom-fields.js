@@ -178,10 +178,10 @@ function fetchAndFillDataFor(person = {}, label = '') {
     [`${label}_preferred_language`]:                isPerson ? 'English' : '',
     [`${label}_relationship_to_primary`]:           relation.match(/^employee/i) ? 'Self' : relation,
     [`${label}_signature`]:                         ' ',
-    [`${label}_signature_date_dd`]:                 (isPerson && isAtLeast18YearsOld) ? moment().format('DD') : ' ',
-    [`${label}_signature_date_mm`]:                 (isPerson && isAtLeast18YearsOld) ? moment().format('MM') : ' ',
-    [`${label}_signature_date_yyyy`]:               (isPerson && isAtLeast18YearsOld) ? moment().format('YYYY') : ' ',
-    [`${label}_signature_date_mm_dd_yyyy`]:         (isPerson && isAtLeast18YearsOld) ? moment().format('MM / DD / YYYY') : ' ',
+    [`${label}_signature_date_dd`]:                 isPerson ? moment().format('DD') : ' ',
+    [`${label}_signature_date_mm`]:                 isPerson ? moment().format('MM') : ' ',
+    [`${label}_signature_date_yyyy`]:               isPerson ? moment().format('YYYY') : ' ',
+    [`${label}_signature_date_mm_dd_yyyy`]:         isPerson ? moment().format('MM / DD / YYYY') : ' ',
     [`${label}_smoker_y_n`]:                        (isPerson && (isSmoker ? 'Y' : 'N')) || ' ',
     [`${label}_smoker_yes_no`]:                     (isPerson && (isSmoker ? 'YES' : 'NO')) || ' ',
     [`${label}_ssn_full_all_numbers_only`]:         `${SSN}`,
@@ -199,5 +199,6 @@ function fetchAndFillDataFor(person = {}, label = '') {
     [`${label}_gender_checkbox_female`]:            isPerson && /^female$/i.test(gender),
     [`${label}_gender_checkbox_male`]:              isPerson && /^male$/i.test(gender),
     [`${label}_smoker_checkbox`]:                   isPerson && isSmoker,
+    [`${label}_is_at_least_18_years_old_checkbox`]: isPerson && isAtLeast18YearsOld,
   }
 }
