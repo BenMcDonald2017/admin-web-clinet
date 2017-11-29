@@ -61,7 +61,7 @@ export const getDocuSignCustomFieldData = async (event) => {
     carrier_company_name:                           get(benefit, 'CarrierName'),
     carrier_plan_hios_id:                           `${HIOS}`,
     carrier_plan_name:                              get(benefit, 'PlanName'),
-    employee_benefit_public_key:                    get(benefit, 'EmployeeBenefitPublicKey'),
+    employee_benefit_public_key:                    get(benefit, 'BenefitPublicKey'),
     enrollment_public_key:                          get(cart, 'EnrollmentPublicKey'),
     hios_id:                                        `${HIOS}`,
     previous_carrier_plan_policy_number:            await getPreviousPlanPolicyNumber(get(worker || {}, 'EmployeePublicKey')) || ' ',
