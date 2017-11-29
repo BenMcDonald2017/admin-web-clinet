@@ -81,7 +81,6 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
 
     event.result = { success: true }
     return benefit
-    // }
   })
 }
 
@@ -163,6 +162,21 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
   }
 
   const formsToUse = [...changeOrCancelationFormDocuSignIds, appFormToUseDocuSignId].filter(form => form && form != null)
+
+  const isUsingBaseAppTemplate = appFormToUseDocuSignId === baseHixmeAppFormDocuSignId
+
+  const [{ Item: theCart }] = await Promise.all([
+    getCart(employeePublicKey),
+  ])
+
+  event.cart = theCart
+
+  if (event.cart) {
+    event.healthBundle = getHealthBundle(event.cart.Cart)
+    event.healthBundle.isUsingBaseAppTemplate = Boolean(isUsingBaseAppTemplate)
+  }
+
+  await saveCart(event.cart)
 
   const under18Ids = family.filter(person => effectiveAge(`${person.DateOfBirth}`, `${EFFECTIVE_DATE}`) < 18).map(mc => mc.Id)
   signers = signers.filter(signer => !under18Ids.includes(signer.clientUserId))
