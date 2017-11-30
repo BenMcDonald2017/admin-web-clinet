@@ -207,8 +207,27 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
   body.status = 'sent' // indicates it's _NOT_ a draft
   body.fromDate = new Date()
 
+  const payload = {
+    ...body,
+    ...{
+      notification: {
+        useAccountDefaults: false,
+        reminders: {
+          reminderEnabled: true,
+          reminderDelay: 0,
+          reminderFrequency: 0,
+        },
+        expirations: {
+          expireEnabled: true,
+          expireAfter: 120,
+          expireWarn: 0,
+        },
+      },
+    },
+  }
+
   // call out to DocuSign and create the envelope
-  const envelope = await createEnvelope({ body: JSON.stringify(body) })
+  const envelope = await createEnvelope({ body: JSON.stringify(payload) })
 
   // grab 'envelopeId' from 'envelope'
   const { envelopeId = null } = envelope
@@ -277,7 +296,7 @@ export const createDocuSignEmbeddedEnvelope = async (event) => {
       // userId: parsedUserId || userId,
       email: `${signer.HixmeEmailAlias}`.toLowerCase(),
       // v— notice here, using 'userName'; not 'user' —v
-      userName: [signer.FirstName, /* signer.MiddleName,*/ signer.LastName].filter(e => e && e != null).join(' '),
+      userName: `${signer.name ? signer.name : [signer.FirstName, signer.LastName].filter(e => e && e != null).join(' ')}`,
     }),
   }
 

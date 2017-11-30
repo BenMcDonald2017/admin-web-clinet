@@ -28,7 +28,7 @@ export const format = content => (isSomething(content) ? revertToType(content) :
 
 export const generateSigners = (signers = [], fields = {}) => signers.map((signer, index) => ({
   roleName: getRoleName(index),
-  name: `${signer.name ? signer.name : [signer.FirstName, signer.MiddleName, signer.LastName].filter(e => e && e != null).join(' ')}`,
+  name: `${signer.name ? signer.name : [signer.FirstName, signer.LastName].filter(e => e && e != null).join(' ')}`,
   email: `${signer.email ? signer.email : signer.HixmeEmailAlias}`.toLowerCase(),
   clientUserId: `${signer.clientUserId}`,
   userId: `${signer.clientUserId}`,
