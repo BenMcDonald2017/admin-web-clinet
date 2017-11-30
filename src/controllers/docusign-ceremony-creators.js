@@ -194,34 +194,31 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
 
   console.warn(`${employeePublicKey}: FINAL composite templates being used:': ${formsToUse}`)
 
-  const body = await getTemplateJSON({
+  const documentData = await getTemplateJSON({
     fields,
     signers,
     compositeTemplates,
     userData,
   })
 
-  body.EmailBlurb = `Signature Request: ${name}`
-  body.Subject = `Signature Request: ${name}`
-  body.emailSubject = `Signature Request: ${name}`
-  body.status = 'sent' // indicates it's _NOT_ a draft
-  body.fromDate = new Date()
-
   const payload = {
-    ...body,
-    ...{
-      notification: {
-        useAccountDefaults: false,
-        reminders: {
-          reminderEnabled: true,
-          reminderDelay: 0,
-          reminderFrequency: 0,
-        },
-        expirations: {
-          expireEnabled: true,
-          expireAfter: 120,
-          expireWarn: 0,
-        },
+    ...documentData,
+    EmailBlurb:   `Signature Request: ${name}`,
+    emailSubject: `Signature Request: ${name}`,
+    fromDate:     new Date(),
+    status:       'sent', // indicates it's _NOT_ a draft
+    Subject:      `Signature Request: ${name}`,
+    notification: {
+      useAccountDefaults:  false,
+      reminders: {
+        reminderEnabled:   true,
+        reminderDelay:     0,
+        reminderFrequency: 0,
+      },
+      expirations: {
+        expireEnabled:     true,
+        expireAfter:       120,
+        expireWarn:        0,
       },
     },
   }

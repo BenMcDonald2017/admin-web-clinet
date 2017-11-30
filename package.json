@@ -135,6 +135,8 @@
     ],
     "root": true,
     "rules": {
+      "no-multi-spaces": 0,
+      "key-spacing": 0,
       "semi": [
         2,
         "never"

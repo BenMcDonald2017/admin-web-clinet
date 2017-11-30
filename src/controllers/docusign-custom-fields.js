@@ -56,7 +56,6 @@ export const getDocuSignCustomFieldData = async (event) => {
     }
   }
 
-  /* eslint-disable no-multi-spaces, key-spacing */
   const formFieldData = {
     carrier_company_name:                           get(benefit, 'CarrierName'),
     carrier_plan_hios_id:                           `${HIOS}`,
