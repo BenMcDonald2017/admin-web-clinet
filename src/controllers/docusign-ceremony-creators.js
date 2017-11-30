@@ -277,7 +277,7 @@ export const createDocuSignEmbeddedEnvelope = async (event) => {
       // userId: parsedUserId || userId,
       email: `${signer.HixmeEmailAlias}`.toLowerCase(),
       // v— notice here, using 'userName'; not 'user' —v
-      userName: [signer.FirstName, signer.MiddleName, signer.LastName].filter(e => e && e != null).join(' '),
+      userName: [signer.FirstName, /* signer.MiddleName,*/ signer.LastName].filter(e => e && e != null).join(' '),
     }),
   }
 
