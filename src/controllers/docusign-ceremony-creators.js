@@ -66,10 +66,10 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
 
     if (DocuSignEnvelopeId === envelopeId) {
       benefit.PdfSignatures = PdfSignatures.map((signer) => {
-        signer.Signed = Boolean(signer.Signed || signer.Id === personPublicKey)
+        signer.Signed = signer.Id === personPublicKey
         return signer
       })
-      // if all signers have signed, then mark envelope as true (a.k.a., COMPLETE)!
+      // envelope is considered complete when all signers have 'Signed' === true
       benefit.EnvelopeComplete = benefit.PdfSignatures.every(s => s.Signed === true)
     }
 
