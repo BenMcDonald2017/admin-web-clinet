@@ -7,7 +7,7 @@ import {
   effectiveAge,
   getCart,
   getDocuSignApplicationTemplate,
-  getPreviousPlanPolicyNumber,
+  getPreviousPlanAttribute,
 } from '../resources'
 
 const { EFFECTIVE_DATE = '2018-01-01' } = process.env
@@ -22,14 +22,15 @@ export const getDocuSignCustomFieldData = async (event) => {
   // let worker = get(event, 'worker', {})
 
   const { Persons: personsCoveredInThisBenefit = [] } = benefit
-  const workerToUse = personsCoveredInThisBenefit.find(person => /employee/i.test(person.Relationship) && /included/i.test(person.BenefitStatus))
-  const spouseToUse = personsCoveredInThisBenefit.find(person => (/(?:spouse|domestic\s*partner)/i.test(person.Relationship) && /included/i.test(person.BenefitStatus)))
-  const familyMembersToUse = personsCoveredInThisBenefit.filter(person => (!/(?:employee|spouse|domestic\s*partner)/i.test(person.Relationship) && /included/i.test(person.BenefitStatus)))
+  const workerToUse = personsCoveredInThisBenefit.find(person => /employee/i.test(person.Relationship) && /included/i.test(person.BenefitStatus)) || {}
+  const spouseToUse = personsCoveredInThisBenefit.find(person => (/(?:spouse|domestic\s*partner)/i.test(person.Relationship) && /included/i.test(person.BenefitStatus))) || {}
+  const familyMembersToUse = personsCoveredInThisBenefit.filter(person => (!/(?:employee|spouse|domestic\s*partner)/i.test(person.Relationship) && /included/i.test(person.BenefitStatus))) || []
 
-  let spouse = family.find(s => s.Id === get(spouseToUse || {}, 'Id'))
-  let worker = family.find(w => w.Id === get(workerToUse || {}, 'Id'))
-  family = family.filter(member => familyMembersToUse.some(person => person && person.Id === get(member, 'Id')))
+  let spouse = family.find(s => s.Id === get(spouseToUse, 'Id')) || {}
+  let worker = family.find(w => w.Id === get(workerToUse, 'Id')) || {}
+  family = family.filter(member => familyMembersToUse.some(person => person && person.Id === get(member, 'Id'))) || []
   const HIOS = get(benefit, 'HealthPlanId')
+  const previousCarrierPlanPolicyNumber = await getPreviousPlanAttribute(employeePublicKey, 'PlanPolicyNumber')
 
   const isThis = (insuranceType = '') => {
     switch (`${insuranceType}`) {
@@ -62,11 +63,9 @@ export const getDocuSignCustomFieldData = async (event) => {
     carrier_plan_name:                              get(benefit, 'PlanName'),
     employee_benefit_public_key:                    get(benefit, 'BenefitPublicKey'),
     enrollment_public_key:                          get(cart, 'EnrollmentPublicKey'),
-    hios_id:                                        `${HIOS}`,
-    previous_carrier_plan_policy_number:            await getPreviousPlanPolicyNumber(get(worker || {}, 'EmployeePublicKey')) || ' ',
     generic_checkbox_no:                            true,
     generic_checkbox_yes:                           false,
-    // need more information that what I have in here to mark the below correctly
+    hios_id:                                        `${HIOS}`,
     insurance_child_only:                           isThis('insurance_child_only'),
     insurance_family:                               isThis('insurance_family'),
     insurance_individual_child:                     isThis('insurance_individual_child'),
@@ -75,6 +74,7 @@ export const getDocuSignCustomFieldData = async (event) => {
     insurance_individual_domestic_partner:          isThis('insurance_individual_domestic_partner'),
     insurance_individual_spouse:                    isThis('insurance_individual_spouse'),
     insurance_individual:                           isThis('insurance_individual'),
+    previous_carrier_plan_policy_number:            `${previousCarrierPlanPolicyNumber}`,
     spouse_is_spouse:                               isThis('spouse_is_spouse'),
   }
 
@@ -95,9 +95,9 @@ export const getDocuSignCustomFieldData = async (event) => {
   // ———————————————————————————————————————————————————————————————————————————
 
   // if worker doesn't exist
-  if (!worker || !Object.keys(worker || {}).length) {
+  if (!worker || !Object.keys(worker).length) {
     // if spouse exists
-    if (spouse || Object.keys(spouse || {}).length) {
+    if (spouse || Object.keys(spouse).length) {
       // if no 'worker', make 'worker' the 'spouse' instead
       worker = spouse
       // and then assign 'spouse' to first element in 'family' array
@@ -112,7 +112,7 @@ export const getDocuSignCustomFieldData = async (event) => {
       family.shift()
       family.shift()
     }
-  } else if (!spouse || !Object.keys(spouse || {}).length) {
+  } else if (!spouse || !Object.keys(spouse).length) {
     // if there's a `worker`, but NO `spouse`, then make `family[0]` the `spouse`
     [spouse] = family
     family.shift()

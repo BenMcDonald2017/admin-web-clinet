@@ -1,4 +1,5 @@
 import aws from 'aws-sdk'
+import { get } from 'delver'
 import moment from 'moment'
 import { isProd } from '../utils'
 
@@ -30,7 +31,7 @@ export async function getChangeOrCancelationForms({ employeePublicKey = ' ', HIO
   return getNecessaryForms({ currentPlans, HIOS })
 }
 
-export async function getPreviousPlanPolicyNumber(employeePublicKey = ' ') {
+export async function getPreviousPlanAttribute(employeePublicKey = ' ', attribute = ' ') {
   const { Items: benefits = [] } = await docClient.query({
     TableName: `${process.env.STAGE}-benefits`,
     IndexName: 'EmployeePublicKey-index',
@@ -48,7 +49,8 @@ export async function getPreviousPlanPolicyNumber(employeePublicKey = ' ') {
     moment(health.BenefitEndDate), 'days', '[]',
   ))
 
-  return currentPlans.length ? ((currentPlans[0] && currentPlans[0].PlanPolicyNumber) || '') : ''
+  // `currentPlans` can contain multiple entries; we are currently choosing the first
+  return get({ currentPlans }, `currentPlans[0].${attribute}`, '')
 }
 
 const getNecessaryForms = ({ currentPlans = [], HIOS = '' }) => {

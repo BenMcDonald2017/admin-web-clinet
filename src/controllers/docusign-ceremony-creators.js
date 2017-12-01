@@ -1,13 +1,14 @@
 /* eslint-disable no-param-reassign */
+import { get } from 'delver'
 import QS from 'qs'
 import { isProd } from '../utils'
 import {
   createEmbeddedEnvelope,
   createEnvelope,
-  getEnvelopes,
-} from './docusign-api'
-import {
+  generateComposedTemplates,
+  generateSigners,
   getDocuSignCustomFieldData,
+  getEnvelopes,
 } from '../controllers'
 import {
   EFFECTIVE_DATE,
@@ -17,13 +18,10 @@ import {
   getDocuSignApplicationTemplate,
   getFamily,
   getHealthBundle,
+  getPreviousPlanAttribute,
   getPrimarySigner,
   saveCart,
 } from '../resources'
-import {
-  generateComposedTemplates,
-  generateSigners,
-} from './docusign-helpers'
 
 const getTemplateJSON = ({
   compositeTemplates,
@@ -43,13 +41,13 @@ const getTemplateJSON = ({
 export const setDocuSignEnvelopeSigningStatus = async (event) => {
   const { envelopeId = '', employeePublicKey = '', personPublicKey = '' } = event.body
 
-  const [theFamily, { Item: theCart }] = await Promise.all([
-    getFamily(employeePublicKey),
+  const [{ Item: theCart }, theFamily] = await Promise.all([
     getCart(employeePublicKey),
+    getFamily(employeePublicKey),
   ])
 
-  event.family = theFamily
   event.cart = theCart
+  event.family = theFamily
 
   if (event.cart) {
     event.healthBundle = getHealthBundle(event.cart.Cart)
@@ -68,14 +66,12 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
 
     if (DocuSignEnvelopeId === envelopeId) {
       benefit.PdfSignatures = PdfSignatures.map((signer) => {
-        if (personPublicKey === signer.Id) {
-          signer.Signed = true
-        }
+        signer.Signed = Boolean(signer.Signed || signer.Id === personPublicKey)
         return signer
       })
+      // if all signers have signed, then mark envelope as true (a.k.a., COMPLETE)!
+      benefit.EnvelopeComplete = benefit.PdfSignatures.every(s => s.Signed === true)
     }
-    // if all signers have signed, then mark envelope as true (a.k.a., COMPLETE)!
-    benefit.EnvelopeComplete = PdfSignatures.every(signer => signer.Signed === true)
 
     await saveCart(event.cart)
 
@@ -126,24 +122,19 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
   // to test other templates in INT, they must each be copied over from Hix' PROD-DocuSign account
   const kaiserChangeFormDocuSignIds = ['cbeeae49-56de-4065-95b8-97b6fafb2189', '5a450cb3-da73-44d9-8eba-e0902073fc00']
   const baseHixmeAppFormDocuSignId = isProd ? 'b9bcbb3e-ad06-480f-8639-02e3d5e6acfb' : '0b1c81d0-703d-49bb-861a-c0e2509ba142'
-  let appFormToUseDocuSignId = /* isProd ?
+  let appFormToUseDocuSignId = isProd ?
     // prod is set to their matched template, or else, the hixme base form:
+    // NOTE: the `false` below is keeping this from working correctl; on purpose; for now
     (((isCaliforniaPlan && false) ? matchedDocuSignTemplateId : null) || baseHixmeAppFormDocuSignId) :
     // non-prod environments ALWAYS receive hixme base form(, for now ...
     // and until we copy over confirmed, tested, anx verified forms from
-    // DocuSign-prod over to DocuSign-int): */
+    // DocuSign-prod over to DocuSign-int):
     baseHixmeAppFormDocuSignId
 
   // if the user was given the kaiser change form, then remove the otherwise-selected base form
-  console.warn(`${employeePublicKey}: kaiser change form detected. removing base form in preference to the change form!`)
   if (changeOrCancelationFormDocuSignIds.some(formId => kaiserChangeFormDocuSignIds.includes(formId))) {
     appFormToUseDocuSignId = ''
   }
-
-  console.warn(`${employeePublicKey}: is Prod? - ${isProd}`)
-  console.warn(`${employeePublicKey}: cancelation form id(s) returned from 'get-change-forms': ${changeOrCancelationFormDocuSignIds}`)
-  console.warn(`${employeePublicKey}: base application id returned from 'prod-carrier-application-hios': ${matchedDocuSignTemplateId}`)
-  console.warn(`${employeePublicKey}: base application form id used:': ${appFormToUseDocuSignId}`)
 
   const fields = await getDocuSignCustomFieldData({
     benefit,
@@ -161,9 +152,17 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
     returnUrl,
   }
 
+  const workerEmployeePublicKey = get(worker || {}, 'EmployeePublicKey', ' ')
+  const previousPlanHIOS = await getPreviousPlanAttribute(workerEmployeePublicKey, 'HealthPlanId')
+  const currentPlanHIOS = get(benefit, 'HealthPlanId')
+
+  if (currentPlanHIOS === previousPlanHIOS) {
+    console.warn(`${workerEmployeePublicKey}: THE SAME PLAN BEING CHOSEN`)
+  }
+
   const formsToUse = [...changeOrCancelationFormDocuSignIds, appFormToUseDocuSignId].filter(form => form && form != null)
 
-  const isUsingBaseAppTemplate = appFormToUseDocuSignId === baseHixmeAppFormDocuSignId
+  const isUsingBaseAppTemplate = Boolean(appFormToUseDocuSignId === baseHixmeAppFormDocuSignId)
 
   const [{ Item: theCart }] = await Promise.all([
     getCart(employeePublicKey),
@@ -173,7 +172,7 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
 
   if (event.cart) {
     event.healthBundle = getHealthBundle(event.cart.Cart)
-    event.healthBundle.isUsingBaseAppTemplate = Boolean(isUsingBaseAppTemplate)
+    event.healthBundle.isUsingBaseAppTemplate = isUsingBaseAppTemplate
   }
 
   await saveCart(event.cart)
@@ -191,8 +190,6 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
     formsToUse,
     formattedSignersArray,
   )
-
-  console.warn(`${employeePublicKey}: FINAL composite templates being used:': ${formsToUse}`)
 
   const documentData = await getTemplateJSON({
     fields,
