@@ -22,13 +22,17 @@ export const getDocuSignCustomFieldData = async (event) => {
   // let worker = get(event, 'worker', {})
 
   const { Persons: personsCoveredInThisBenefit = [] } = benefit
-  const workerToUse = personsCoveredInThisBenefit.find(person => /employee/i.test(person.Relationship) && /included/i.test(person.BenefitStatus)) || {}
-  const spouseToUse = personsCoveredInThisBenefit.find(person => (/(?:spouse|domestic\s*partner)/i.test(person.Relationship) && /included/i.test(person.BenefitStatus))) || {}
-  const familyMembersToUse = personsCoveredInThisBenefit.filter(person => (!/(?:employee|spouse|domestic\s*partner)/i.test(person.Relationship) && /included/i.test(person.BenefitStatus))) || []
+  const isCovered = person => /included/i.test(person.BenefitStatus)
+  const isEmployee = person => /employee/i.test(person.Relationship)
+  const isSpouseOrPartner = person => /(?:spouse|domestic\s*partner)/i.test(person.Relationship)
 
-  let spouse = family.find(s => s.Id === get(spouseToUse, 'Id')) || {}
-  let worker = family.find(w => w.Id === get(workerToUse, 'Id')) || {}
-  family = family.filter(member => familyMembersToUse.some(person => person && person.Id === get(member, 'Id'))) || []
+  const workerToUse = personsCoveredInThisBenefit.find(p => isEmployee(p) && isCovered(p)) || {}
+  const spouseToUse = personsCoveredInThisBenefit.find(p => isSpouseOrPartner(p) && isCovered(p)) || {}
+  const familyMembersToUse = personsCoveredInThisBenefit.filter(p => !(isEmployee(p) || isSpouseOrPartner(p)) && isCovered(p)) || []
+
+  let spouse = family.find(_spouse => _spouse.Id === get(spouseToUse, 'Id')) || {}
+  let worker = family.find(_worker => _worker.Id === get(workerToUse, 'Id')) || {}
+  family = family.filter(familyMember => familyMembersToUse.some(p => p && p.Id === get(familyMember, 'Id'))) || []
   const HIOS = get(benefit, 'HealthPlanId')
   const previousCarrierPlanPolicyNumber = await getPreviousPlanAttribute(employeePublicKey, 'PlanPolicyNumber')
 
@@ -113,9 +117,9 @@ export const getDocuSignCustomFieldData = async (event) => {
       family.shift()
     }
   } else if (!spouse || !Object.keys(spouse).length) {
-    // if there's a `worker`, but NO `spouse`, then make `family[0]` the `spouse`
-    [spouse] = family
-    family.shift()
+    // // if there's a `worker`, but NO `spouse`, then make `family[0]` the `spouse`
+    // [spouse] = family
+    // family.shift()
   }
 
   const getFamilyMember = index => get({ family }, `family[${index}]`, {})

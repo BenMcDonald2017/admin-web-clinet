@@ -113,7 +113,7 @@ const createEnvelopes = async (healthIns, primary, family, event) => {
     // const cartLastUpdatedDuringDocuSignIssues = moment(benefit.UpdatedDate).isBefore('2017-11-29')
     // const envelopeCreatedDuringDocuSignIssues = moment(benefit.DocuSignEnvelopeCreatedOn).isBefore('2017-11-29')
     const mostRelevantDateToConsider = benefit.DocuSignEnvelopeCreatedOn ? benefit.DocuSignEnvelopeCreatedOn : benefit.UpdatedDate
-    const docsCreatedDuringDocuSignIssues = moment(mostRelevantDateToConsider).isBefore('2017-11-30T18')
+    const docsCreatedDuringDocuSignIssues = moment(mostRelevantDateToConsider).isBefore('2017-12-01T18')
     const docsAreAlreadySigned = benefit.EnvelopeComplete === true
     const allSignersHaveSigned = (benefit.PdfSignatures || []).every(sig => sig.Signed === true)
     const shouldGenerateNewDocuSignEnvelope = (docsCreatedDuringDocuSignIssues && !docsAreAlreadySigned && !allSignersHaveSigned)
@@ -133,12 +133,17 @@ const createEnvelopes = async (healthIns, primary, family, event) => {
       // destructuring 'event.envelope.envelopeId' and setting defaults if none
       const { envelope: { envelopeId = '' } = {} } = event
 
-      benefit.EnvelopeComplete = false
-      benefit.DocumentLocation = ' '
-      benefit.UnsignedPdfApplication = ' '
-      benefit.DocuSignEnvelopeId = envelopeId
-      benefit.DocuSignEnvelopeCreatedOn = new Date().toISOString()
-      benefit.UpdatedDate = new Date().toISOString()
+      const currentDateTime = new Date().toISOString()
+
+      benefit = {
+        ...benefit,
+        // DocumentLocation: ' ',
+        DocuSignEnvelopeCreatedOn: currentDateTime,
+        DocuSignEnvelopeId: envelopeId,
+        EnvelopeComplete: false,
+        // UnsignedPdfApplication: ' ',
+        UpdatedDate: currentDateTime,
+      }
 
       // filter out signers that are under 18
       const under18Ids = family.filter(person => effectiveAge(`${person.DateOfBirth}`, `${EFFECTIVE_DATE}`) < 18).map(mc => mc.Id)

@@ -65,12 +65,25 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
     } = benefit
 
     if (DocuSignEnvelopeId === envelopeId) {
+      const currentDateTime = new Date().toISOString()
+
       benefit.PdfSignatures = PdfSignatures.map((signer) => {
-        signer.Signed = signer.Id === personPublicKey
+        const personHasSignedForm = signer.Id === personPublicKey
+
+        if (personHasSignedForm) {
+          signer.Signed = true
+          signer.SignedDate = currentDateTime
+        }
+
         return signer
       })
       // envelope is considered complete when all signers have 'Signed' === true
       benefit.EnvelopeComplete = benefit.PdfSignatures.every(s => s.Signed === true)
+
+      // when the envelope is completed, add a completed datetime stamp
+      if (benefit.EnvelopeComplete) {
+        benefit.EnvelopeCompletedOn = currentDateTime
+      }
     }
 
     await saveCart(event.cart)
@@ -152,17 +165,16 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
     returnUrl,
   }
 
-  const workerEmployeePublicKey = get(worker || {}, 'EmployeePublicKey', ' ')
-  const previousPlanHIOS = await getPreviousPlanAttribute(workerEmployeePublicKey, 'HealthPlanId')
-  const currentPlanHIOS = get(benefit, 'HealthPlanId')
+  const currentYearPlanHIOS = get(benefit, 'HealthPlanId')
+  const previousYearPlanHIOS = await getPreviousPlanAttribute(employeePublicKey, 'HealthPlanId')
+  const hasElectedSamePlanFromLastYear = currentYearPlanHIOS === previousYearPlanHIOS
 
-  if (currentPlanHIOS === previousPlanHIOS) {
-    console.warn(`${workerEmployeePublicKey}: THE SAME PLAN BEING CHOSEN`)
+  if (hasElectedSamePlanFromLastYear) {
+    console.warn(`${employeePublicKey}: THE SAME PLAN BEING CHOSEN`)
   }
 
   const formsToUse = [...changeOrCancelationFormDocuSignIds, appFormToUseDocuSignId].filter(form => form && form != null)
-
-  const isUsingBaseAppTemplate = Boolean(appFormToUseDocuSignId === baseHixmeAppFormDocuSignId)
+  const isUsingBaseAppTemplate = formsToUse.includes(baseHixmeAppFormDocuSignId)
 
   const [{ Item: theCart }] = await Promise.all([
     getCart(employeePublicKey),
