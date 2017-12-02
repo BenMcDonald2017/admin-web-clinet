@@ -60,23 +60,21 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
   event.healthBundle.Benefits = event.healthBundle.Benefits.map(async (benefit) => {
     // check if the benefit has an envelopeId, and if it has the correct one
     const {
-      PdfSignatures = [],
       DocuSignEnvelopeId = '',
     } = benefit
 
     if (DocuSignEnvelopeId === envelopeId) {
       const currentDateTime = new Date().toISOString()
 
-      benefit.PdfSignatures = PdfSignatures.map((signer) => {
+      benefit.PdfSignatures.forEach((signer, index) => {
         const personHasSignedForm = signer.Id === personPublicKey
 
         if (personHasSignedForm) {
-          signer.Signed = true
-          signer.SignedDate = currentDateTime
+          benefit.PdfSignatures[index].Signed = true
+          benefit.PdfSignatures[index].SignedDate = currentDateTime
         }
-
-        return signer
       })
+
       // envelope is considered complete when all signers have 'Signed' === true
       benefit.EnvelopeComplete = benefit.PdfSignatures.every(s => s.Signed === true)
 
