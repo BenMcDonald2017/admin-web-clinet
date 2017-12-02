@@ -61,22 +61,22 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
     // check if the benefit has an envelopeId, and if it has the correct one
     const {
       DocuSignEnvelopeId = '',
+      PdfSignatures = [],
     } = benefit
 
     if (DocuSignEnvelopeId === envelopeId) {
       const currentDateTime = new Date().toISOString()
 
-      benefit.PdfSignatures.forEach((signer, index) => {
-        const personHasSignedForm = signer.Id === personPublicKey
-
-        if (personHasSignedForm) {
-          benefit.PdfSignatures[index].Signed = true
-          benefit.PdfSignatures[index].SignedDate = currentDateTime
+      benefit.PdfSignatures = PdfSignatures.map((signer) => {
+        if (personPublicKey === signer.Id) {
+          signer.Signed = true
+          signer.SignedDate = currentDateTime
         }
+        return signer
       })
 
       // envelope is considered complete when all signers have 'Signed' === true
-      benefit.EnvelopeComplete = benefit.PdfSignatures.every(s => s.Signed === true)
+      benefit.EnvelopeComplete = PdfSignatures.every(s => s.Signed === true)
 
       // when the envelope is completed, add a completed datetime stamp
       if (benefit.EnvelopeComplete) {
