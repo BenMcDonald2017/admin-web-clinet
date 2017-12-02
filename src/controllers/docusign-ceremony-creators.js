@@ -39,7 +39,17 @@ const getTemplateJSON = ({
 }
 
 export const setDocuSignEnvelopeSigningStatus = async (event) => {
-  const { envelopeId = '', employeePublicKey = '', personPublicKey = '' } = event.body
+  const request = {
+    ...(event.body || {}),
+    ...(event.params || {}),
+  }
+  const {
+    employeePublicKey = '',
+    envelopeId = '',
+    id: signerId = '',
+    personPublicKey = '',
+    returnUrl = '',
+  } = request
 
   const [{ Item: theCart }, theFamily] = await Promise.all([
     getCart(employeePublicKey),
@@ -57,6 +67,8 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
     event.primary = getPrimarySigner(event.healthBundle, event.family)
   }
 
+  const { id: parsedUserId } = QS.parse(decodeURIComponent(`${returnUrl}`), { delimiter: /[?&]/ })
+
   event.healthBundle.Benefits = event.healthBundle.Benefits.map(async (benefit) => {
     // check if the benefit has an envelopeId, and if it has the correct one
     const {
@@ -68,7 +80,7 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
       const currentDateTime = new Date().toISOString()
 
       benefit.PdfSignatures = PdfSignatures.map((signer) => {
-        if (personPublicKey === signer.Id) {
+        if (signer.Id === personPublicKey || signer.Id === parsedUserId || signer.Id === signerId) {
           signer.Signed = true
           signer.SignedDate = currentDateTime
         }
@@ -80,7 +92,7 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
 
       // when the envelope is completed, add a completed datetime stamp
       if (benefit.EnvelopeComplete) {
-        benefit.EnvelopeCompletedOn = currentDateTime
+        benefit.DocuSignEnvelopeCompletedOn = currentDateTime
       }
     }
 
