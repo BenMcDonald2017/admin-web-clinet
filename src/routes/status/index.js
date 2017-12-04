@@ -109,11 +109,9 @@ const createEnvelopes = async (healthIns, primary, family, event) => {
     const { queryStringParameters: { force = false } = {} } = event
     const forceFlagIsSet = queryStringIsTrue(force)
 
-    // The below consts handle figuring out if we should regenerate docusign docs or not
-    // const cartLastUpdatedDuringDocuSignIssues = moment(benefit.UpdatedDate).isBefore('2017-11-29')
-    // const envelopeCreatedDuringDocuSignIssues = moment(benefit.DocuSignEnvelopeCreatedOn).isBefore('2017-11-29')
+    // here, we're figuring out whether or not we should regenerate DocuSign envelopes
     const mostRelevantDateToConsider = benefit.DocuSignEnvelopeCreatedOn ? benefit.DocuSignEnvelopeCreatedOn : benefit.UpdatedDate
-    const docsCreatedDuringDocuSignIssues = moment(mostRelevantDateToConsider).isBefore('2017-12-01T19:20')
+    const docsCreatedDuringDocuSignIssues = moment(mostRelevantDateToConsider).isBefore('2017-12-04T15')
     const docsAreAlreadySigned = benefit.EnvelopeComplete === true
     const allSignersHaveSigned = (benefit.PdfSignatures || []).every(sig => sig.Signed === true)
     const shouldGenerateNewDocuSignEnvelope = (docsCreatedDuringDocuSignIssues && !docsAreAlreadySigned && !allSignersHaveSigned)

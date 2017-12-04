@@ -8,6 +8,8 @@ const isBoolean = value => typeof value === typeof true
 const isNumber = value => !!(value === 0 || (!Number.isNaN(value) && Number(value)))
 const isSomething = value => isBoolean(value) || isNumber(value) || (value && value != null)
 const revertToType = content => ((isBoolean(content) || isNumber(content)) ? content : `${content}`)
+const tabName = (name = 'text') => camelCase(`${name}Tabs`)
+export const format = content => (isSomething(content) ? revertToType(content) : ' ')
 
 function getRoleName(role = 0, returnCapitalizedRoleName = true) {
   function cap(content) {
@@ -24,7 +26,18 @@ function getRoleName(role = 0, returnCapitalizedRoleName = true) {
   }
 }
 
-export const format = content => (isSomething(content) ? revertToType(content) : ' ')
+export function generateComposedTemplates(templateIDs = [], optionalFormattedSignersArray = []) {
+  const composedTemplates = []
+  const recipients = { signers: optionalFormattedSignersArray }
+  templateIDs.map((id, index) => {
+    const sequence = `${index + 1}`
+    return composedTemplates.push({
+      serverTemplates: [{ sequence, templateId: id }],
+      inlineTemplates: [{ sequence, recipients }],
+    })
+  })
+  return composedTemplates
+}
 
 export const generateSigners = (signers = [], fields = {}) => signers.map((signer, index) => ({
   roleName: getRoleName(index),
@@ -35,8 +48,6 @@ export const generateSigners = (signers = [], fields = {}) => signers.map((signe
   recipientId: `${signer.clientUserId}`,
   tabs: generateAllTabData(fields),
 }))
-
-const tabName = (name = 'text') => camelCase(`${name}Tabs`)
 
 const addTabToCollection = (tabCollection = {}, type = 'text', data = {}) => {
   const existing = tabCollection[tabName(type)] || []
@@ -74,17 +85,4 @@ export const generateAllTabData = (fields = {}) => {
   })
 
   return tabs
-}
-
-export function generateComposedTemplates(templateIDs = [], optionalFormattedSignersArray = []) {
-  const composedTemplates = []
-  const recipients = { signers: optionalFormattedSignersArray }
-  templateIDs.map((id, index) => {
-    const sequence = `${index + 1}`
-    return composedTemplates.push({
-      serverTemplates: [{ sequence, templateId: id }],
-      inlineTemplates: [{ sequence, recipients }],
-    })
-  })
-  return composedTemplates
 }
