@@ -137,11 +137,10 @@ const createEnvelopes = async (healthIns, primary, family, event) => {
 
       benefit = {
         ...benefit,
-        // DocumentLocation: ' ',
+        DocuSignEnvelopeCompletedOn: null,
         DocuSignEnvelopeCreatedOn: currentDateTime,
         DocuSignEnvelopeId: envelopeId,
         EnvelopeComplete: false,
-        // UnsignedPdfApplication: ' ',
         UpdatedDate: currentDateTime,
       }
 

@@ -91,9 +91,7 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
       benefit.EnvelopeComplete = PdfSignatures.every(s => s.Signed === true)
 
       // when the envelope is completed, add a completed datetime stamp
-      if (benefit.EnvelopeComplete) {
-        benefit.DocuSignEnvelopeCompletedOn = currentDateTime
-      }
+      benefit.DocuSignEnvelopeCompletedOn = benefit.EnvelopeComplete ? currentDateTime : null
     }
 
     await saveCart(event.cart)
