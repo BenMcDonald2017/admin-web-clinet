@@ -47,7 +47,7 @@ function responseController(
         ? circular.stringify([...result])
         : circular.stringify({ ...result }),
     }
-    done(null, response)
+    return done(null, response)
   }
 }
 
@@ -60,7 +60,7 @@ const errorHandler = (error, event, context, done) => {
     // add stack trace if running in 'dev' or 'int, and have opted-in
     const stack = shouldPrintStack ? error.stack : undefined
 
-    done(null, {
+    return done(null, {
       ...defaultResponseConfig,
       headers: {
         ...defaultResponseConfig.headers,
@@ -74,7 +74,7 @@ const errorHandler = (error, event, context, done) => {
       }),
     })
   }
-  done()
+  return done()
 }
 
 function getFormattedError(error = {}, event = {}) {
@@ -86,8 +86,8 @@ function getFormattedError(error = {}, event = {}) {
     statusCode = error
   }
   statusCode = Number.parseInt(statusCode, 10)
-  const type = http.STATUS_CODES[statusCode] || 'An Error Has Occured'
-  const message = `${statusCode}: ${type}`
+  const type = http.STATUS_CODES[statusCode] || 'An Error Has Occurred'
+  const message = error.message ? error.message : `${statusCode}: ${type}`
 
   return { statusCode, type, message }
 }
@@ -118,16 +118,8 @@ export const after = ware(
   errorHandler,
 )
 
-export const isTrue = (value) => {
-  if (value && (
-    value === 'true' ||
-    value === true ||
-    value === '1' ||
-    value === 1)) {
-    return true
-  }
-  return false
-}
+export const isTrue = value =>
+  value && value != null && [true, 'true', 1, '1', 'yes'].includes(value)
 
 export const stripNonAlphaNumericChars = value => `${value}`.replace(/[^\w\s]*/gi, '')
 
