@@ -65,7 +65,7 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
 
   const { id: parsedUserId } = QS.parse(decodeURIComponent(`${returnUrl}`), { delimiter: /[?&]/ })
 
-  event.healthBundle.Benefits = await Promise.all(event.healthBundle.Benefits.map(async (benefit) => {
+  event.healthBundle.Benefits = event.healthBundle.Benefits.map(async (benefit) => {
     // check if the benefit has an envelopeId, and if it has the correct one
     const {
       DocuSignEnvelopeId = '',
@@ -94,7 +94,7 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
 
     event.result = { success: true }
     return benefit
-  }))
+  })
 }
 
 export const getDocuSignEnvelope = async (event) => {
