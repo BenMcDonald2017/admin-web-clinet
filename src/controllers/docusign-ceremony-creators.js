@@ -45,7 +45,7 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
     id: signerId      = '',
     personPublicKey   = '',
     returnUrl         = '',
-  } = event.params || {}
+  } = (event.params || {})
 
   const [{ Item: theCart }, theFamily] = await Promise.all([
     getCart(employeePublicKey),
@@ -76,7 +76,7 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
       const currentDateTime = new Date().toISOString()
 
       benefit.PdfSignatures = PdfSignatures.map((signer) => {
-        if (signer.Id === personPublicKey || signer.Id === parsedUserId || signer.Id === signerId) {
+        if (signer.Id != null && [parsedUserId, signerId, personPublicKey].includes(signer.Id)) {
           signer.Signed = true
           signer.SignedDate = currentDateTime
         }
@@ -87,7 +87,7 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
       benefit.EnvelopeComplete = PdfSignatures.every(s => s.Signed === true)
 
       // when the envelope is completed, add a completed datetime stamp
-      benefit.DocuSignEnvelopeCompletedOn = benefit.EnvelopeComplete ? currentDateTime : null
+      benefit.DocuSignEnvelopeCompletedOn = benefit.EnvelopeComplete ? currentDateTime : ' '
     }
 
     await saveCart(event.cart)

@@ -25,7 +25,7 @@ function responseController(
       case 'string':
         return { result }
       case 'object':
-        return Array.isArray(result) ? result : { ...result }
+        return Array.isArray(result) ? [...result] : { ...result }
       case 'undefined':
         return { message: 'something went wrong; please try again.' }
       default:
@@ -43,7 +43,9 @@ function responseController(
         ...defaultResponseConfig.headers,
         ...config.headers,
       },
-      body: circular.stringify(result),
+      body: Array.isArray(result)
+        ? circular.stringify([...result])
+        : circular.stringify({ ...result }),
     }
     done(null, response)
   }
