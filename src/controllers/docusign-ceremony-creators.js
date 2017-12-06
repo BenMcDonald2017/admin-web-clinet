@@ -39,17 +39,13 @@ const getTemplateJSON = ({
 }
 
 export const setDocuSignEnvelopeSigningStatus = async (event) => {
-  const request = {
-    ...(event.body || {}),
-    ...(event.params || {}),
-  }
   const {
     employeePublicKey = '',
-    envelopeId = '',
-    id: signerId = '',
-    personPublicKey = '',
-    returnUrl = '',
-  } = request
+    envelopeId        = '',
+    id: signerId      = '',
+    personPublicKey   = '',
+    returnUrl         = '',
+  } = event.params || {}
 
   const [{ Item: theCart }, theFamily] = await Promise.all([
     getCart(employeePublicKey),
@@ -144,12 +140,9 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
   const kaiserChangeFormDocuSignIds = ['cbeeae49-56de-4065-95b8-97b6fafb2189', '5a450cb3-da73-44d9-8eba-e0902073fc00']
   const baseHixmeAppFormDocuSignId = isProd ? 'b9bcbb3e-ad06-480f-8639-02e3d5e6acfb' : '0b1c81d0-703d-49bb-861a-c0e2509ba142'
   let appFormToUseDocuSignId = isProd ?
-    // prod is set to their matched template, or else, the hixme base form:
-    // NOTE: the `false` below is keeping this from working correctl; on purpose; for now
-    (((isCaliforniaPlan && false) ? matchedDocuSignTemplateId : null) || baseHixmeAppFormDocuSignId) :
-    // non-prod environments ALWAYS receive hixme base form(, for now ...
-    // and until we copy over confirmed, tested, anx verified forms from
-    // DocuSign-prod over to DocuSign-int):
+    // if in prod, and if california form, then use actual matched docusign form
+    ((isCaliforniaPlan ? matchedDocuSignTemplateId : null) || baseHixmeAppFormDocuSignId) :
+    // otherwise, in other envs, and/or non-CA plans (for now) use hixme base template
     baseHixmeAppFormDocuSignId
 
   // if the user was given the kaiser change form, then remove the otherwise-selected base form

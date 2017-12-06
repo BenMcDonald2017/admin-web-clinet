@@ -56,14 +56,14 @@ export async function getPreviousPlanAttribute(employeePublicKey = ' ', attribut
 const getNecessaryForms = ({ currentPlans = [], HIOS = '' }) => {
   const forms = []
   const issuers = currentPlans.map(plan => plan.HealthPlanId.slice(0, 7))
-  const hadKaiser = issuers.some(c => kaiserCarriers.includes(c))
-  const hadHealthNet = issuers.some(c => healthNetCarriers.includes(c))
-  const willHaveKaiser = kaiserCarriers.includes(HIOS.slice(0, 7))
-  const willHaveHealthNet = healthNetCarriers.includes(HIOS.slice(0, 7))
+  const workerPreviouslyHadKaiser = issuers.some(carrier => kaiserCarriers.includes(carrier))
+  const workerWillHaveKaiser = kaiserCarriers.includes(HIOS.slice(0, 7))
+  const workerPreviouslyHadHealthNet = issuers.some(carrier => healthNetCarriers.includes(carrier))
+  const workerWillHaveHealthNet = healthNetCarriers.includes(HIOS.slice(0, 7))
 
   // if person used to have a `Kaiser` plan...
-  if (hadKaiser) {
-    if (willHaveKaiser) {
+  if (workerPreviouslyHadKaiser) {
+    if (workerWillHaveKaiser) {
       forms.push(kaiserChangeForm)
     } else {
       forms.push(genericCancelation)
@@ -71,8 +71,8 @@ const getNecessaryForms = ({ currentPlans = [], HIOS = '' }) => {
   }
 
   // if person used to have a `HealthNet` plan...
-  if (hadHealthNet) {
-    if (!willHaveHealthNet && !forms.includes(genericCancelation)) {
+  if (workerPreviouslyHadHealthNet) {
+    if (!workerWillHaveHealthNet && !forms.includes(genericCancelation)) {
       forms.push(genericCancelation)
     }
   }

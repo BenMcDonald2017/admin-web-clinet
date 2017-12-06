@@ -36,6 +36,11 @@ export const getDocuSignCustomFieldData = async (event) => {
   const HIOS = get(benefit, 'HealthPlanId')
   const previousCarrierPlanPolicyNumber = await getPreviousPlanAttribute(employeePublicKey, 'PlanPolicyNumber')
 
+  // sort the family by youngest to oldest (for use later on)
+  if (family) {
+    family = family.sort(familyMember => moment(get(familyMember, 'DateOfBirth')))
+  }
+
   const isThis = (insuranceType = '') => {
     switch (`${insuranceType}`) {
       case 'insurance_child_only':
@@ -98,28 +103,20 @@ export const getDocuSignCustomFieldData = async (event) => {
   // `spouse`'s information into the 'Worker'/'Primary Applicant' field(s)
   // ———————————————————————————————————————————————————————————————————————————
 
-  // if worker doesn't exist
-  if (!worker || !Object.keys(worker).length) {
-    // if spouse exists
-    if (spouse || Object.keys(spouse).length) {
-      // if no 'worker', make 'worker' the 'spouse' instead
-      worker = spouse
-      // and then assign 'spouse' to first element in 'family' array
-      const [firstFamilyMember] = family
-      spouse = firstFamilyMember
-      // remove first family member
+  // if 'worker' doesn't exist
+  if (!Object.keys(worker || {}).length) {
+    // if 'spouse' doesn't exist
+    if (!Object.keys(spouse || {}).length) {
+      // set 'worker' to the first member in 'family'
+      [worker] = family
+      // then remove one member from 'family'
       family.shift()
     } else {
-      // set 'worker' and 'spouse' to the two first elements in 'family'
-      [worker, spouse] = family
-      // then remove those two from the 'family' array
-      family.shift()
-      family.shift()
+      // else, if 'spouse' DOES exists (and we still don't have a 'worker')
+      // make the 'spouse' the 'worker' instead, and set spouse to empty
+      worker = spouse
+      spouse = {}
     }
-  } else if (!spouse || !Object.keys(spouse).length) {
-    // // if there's a `worker`, but NO `spouse`, then make `family[0]` the `spouse`
-    // [spouse] = family
-    // family.shift()
   }
 
   const getFamilyMember = index => get({ family }, `family[${index}]`, {})
@@ -140,7 +137,7 @@ function fetchAndFillDataFor(person = {}, label = '') {
   const gender = get(person, 'Gender', '')
   const isPerson = !!get(person, 'SSN')
   const isSmoker = !!get(person, 'Smoker')
-  const isAtLeast18YearsOld = (effectiveAge(get(person, 'DateOfBirth'), EFFECTIVE_DATE)) >= 18
+  const isAtLeast18YearsOld = effectiveAge(birthdate, EFFECTIVE_DATE) >= 18
   const relation = get(person, 'Relationship', '')
   const SSN = get(person, 'SSN', '')
   const status = get(person, 'MarriageStatus', '')
@@ -195,6 +192,7 @@ function fetchAndFillDataFor(person = {}, label = '') {
     [`${label}_checkbox_is_daughter`]:              isPerson && /^female$/i.test(gender) && /^(?:child|daughter)/i.test(relation),
     [`${label}_checkbox_is_son`]:                   isPerson && /^male$/i.test(gender) && /^(?:child|son)/i.test(relation),
     [`${label}_checkbox_is_domestic_partner`]:      isPerson && /^domestic\s*partner$/i.test(relation),
+    [`${label}_checkbox_is_child`]:                 isPerson && /^(?:child|son|daughter)$/i.test(relation),
     [`${label}_checkbox_is_married`]:               isPerson && /^married$/i.test(status),
     // check 'single' if person exists, and isn't ' married', in a 'domestic partner[ship]',
     // or otherwise has a status of 'single'
