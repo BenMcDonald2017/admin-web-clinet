@@ -141,7 +141,8 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
   const baseHixmeAppFormDocuSignId = isProd ? 'b9bcbb3e-ad06-480f-8639-02e3d5e6acfb' : '0b1c81d0-703d-49bb-861a-c0e2509ba142'
   let appFormToUseDocuSignId = isProd ?
     // if in prod, and if california form, then use actual matched docusign form
-    ((isCaliforniaPlan ? matchedDocuSignTemplateId : null) || baseHixmeAppFormDocuSignId) :
+    // FIXME: REMOVE THE '&& false' BELOW to re-enable california forms!
+    (((isCaliforniaPlan && false) ? matchedDocuSignTemplateId : null) || baseHixmeAppFormDocuSignId) :
     // otherwise, in other envs, and/or non-CA plans (for now) use hixme base template
     baseHixmeAppFormDocuSignId
 
