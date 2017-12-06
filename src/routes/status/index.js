@@ -111,7 +111,7 @@ const createEnvelopes = async (healthIns, primary, family, event) => {
 
     // here, we're figuring out whether or not we should regenerate DocuSign envelopes
     const mostRelevantDateToConsider = benefit.DocuSignEnvelopeCreatedOn ? benefit.DocuSignEnvelopeCreatedOn : benefit.UpdatedDate
-    const docsCreatedDuringDocuSignIssues = moment(mostRelevantDateToConsider).isBefore('2017-12-04T15')
+    const docsCreatedDuringDocuSignIssues = moment(mostRelevantDateToConsider).isBefore('2017-12-05T17')
     const docsAreAlreadySigned = benefit.EnvelopeComplete === true
     const allSignersHaveSigned = (benefit.PdfSignatures || []).every(sig => sig.Signed === true)
     const shouldGenerateNewDocuSignEnvelope = (docsCreatedDuringDocuSignIssues && !docsAreAlreadySigned && !allSignersHaveSigned)
@@ -135,7 +135,7 @@ const createEnvelopes = async (healthIns, primary, family, event) => {
 
       benefit = {
         ...benefit,
-        DocuSignEnvelopeCompletedOn: null,
+        DocuSignEnvelopeCompletedOn: ' ',
         DocuSignEnvelopeCreatedOn: currentDateTime,
         DocuSignEnvelopeId: envelopeId,
         EnvelopeComplete: false,
