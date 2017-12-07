@@ -45,10 +45,7 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
     id: signerId      = ' ',
     personPublicKey   = ' ',
     returnUrl         = ' ',
-  } = event.params
-
-  console.dir(`event:\n\n${event}`)
-  console.dir(`event.params:\n\n${event.params}`)
+  } = event.body
 
   const [{ Item: theCart }, theFamily] = await Promise.all([
     getCart(employeePublicKey),
@@ -60,9 +57,6 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
 
   if (event.cart) {
     event.healthBundle = getHealthBundle(event.cart.Cart)
-
-    console.warn('*'.repeat(80))
-    console.dir(event.healthBundle)
   }
 
   // if (event.healthBundle) {
