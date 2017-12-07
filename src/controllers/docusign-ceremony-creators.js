@@ -73,7 +73,7 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
     return
   }
 
-  event.healthBundle.Benefits = event.healthBundle.Benefits.map(async (benefit) => {
+  event.healthBundle.Benefits = event.healthBundle.Benefits.map((benefit) => {
     // check if the benefit has an envelopeId, and if it has the correct one
     const {
       DocuSignEnvelopeId = '',
@@ -84,13 +84,11 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
       const currentDateTime = new Date().toISOString()
 
       benefit.PdfSignatures = PdfSignatures.map((signer) => {
-        if (signer && !signer.Signed) {
-          if (signer.Id != null && [parsedUserId, signerId, personPublicKey].includes(signer.Id)) {
-            return {
-              ...signer,
-              Signed: true,
-              SignedDate: currentDateTime,
-            }
+        if (!signer.Signed && [parsedUserId, signerId, personPublicKey].includes(signer.Id)) {
+          return {
+            ...signer,
+            Signed: true,
+            SignedDate: currentDateTime,
           }
         }
         return signer
@@ -103,12 +101,19 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
         benefit.DocuSignEnvelopeCompletedOn = currentDateTime
       }
     }
+    return benefit
+  })
 
+  try {
     await saveCart(event.cart)
 
     event.result = { success: true }
-    return benefit
-  })
+  } catch (error) {
+    const err = new Error(error.message)
+
+    err.status = 502
+    throw err
+  }
 }
 
 export const getDocuSignEnvelope = async (event) => {
