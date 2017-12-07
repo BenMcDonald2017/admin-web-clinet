@@ -38,7 +38,7 @@ const getTemplateJSON = ({
   }
 }
 
-export const setDocuSignEnvelopeSigningStatus = async (event) => {
+export const setDocuSignEnvelopeSigningStatus = () => async (event) => {
   const {
     params: {
       employeePublicKey = ' ',
@@ -66,6 +66,14 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
   }
 
   const { id: parsedUserId } = QS.parse(decodeURIComponent(`${returnUrl}`), { delimiter: /[?&]/ })
+
+  if (!event.healthBundle) {
+    event.result = {
+      success: 'false',
+      message: 'Could not find an associated \'HealthBundle\'!',
+    }
+    return
+  }
 
   event.healthBundle.Benefits = event.healthBundle.Benefits.map(async (benefit) => {
     // check if the benefit has an envelopeId, and if it has the correct one
