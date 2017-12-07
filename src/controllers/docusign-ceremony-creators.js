@@ -75,10 +75,15 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
     if (DocuSignEnvelopeId === envelopeId) {
       const currentDateTime = new Date().toISOString()
 
-      benefit.PdfSignatures = PdfSignatures.map((signer) => {
-        if (signer.Id != null && [parsedUserId, signerId, personPublicKey].includes(signer.Id)) {
-          signer.Signed = true
-          signer.SignedDate = currentDateTime
+      benefit.PdfSignatures = benefit.PdfSignatures.map((signer) => {
+        if (signer && !signer.Signed) {
+          if (signer.Id != null && [parsedUserId, signerId, personPublicKey].includes(signer.Id)) {
+            return {
+              ...signer,
+              Signed: true,
+              SignedDate: currentDateTime,
+            }
+          }
         }
         return signer
       })
