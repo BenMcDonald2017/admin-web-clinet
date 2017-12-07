@@ -40,12 +40,14 @@ const getTemplateJSON = ({
 
 export const setDocuSignEnvelopeSigningStatus = async (event) => {
   const {
-    employeePublicKey = '',
-    envelopeId        = '',
-    id: signerId      = '',
-    personPublicKey   = '',
-    returnUrl         = '',
-  } = (event.params || {})
+    params: {
+      employeePublicKey = ' ',
+      envelopeId        = ' ',
+      id: signerId      = ' ',
+      personPublicKey   = ' ',
+      returnUrl         = ' ',
+    } = {},
+  } = event
 
   const [{ Item: theCart }, theFamily] = await Promise.all([
     getCart(employeePublicKey),
@@ -75,7 +77,7 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
     if (DocuSignEnvelopeId === envelopeId) {
       const currentDateTime = new Date().toISOString()
 
-      benefit.PdfSignatures = benefit.PdfSignatures.map((signer) => {
+      benefit.PdfSignatures = PdfSignatures.map((signer) => {
         if (signer && !signer.Signed) {
           if (signer.Id != null && [parsedUserId, signerId, personPublicKey].includes(signer.Id)) {
             return {

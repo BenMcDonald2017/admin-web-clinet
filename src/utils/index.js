@@ -47,7 +47,7 @@ function responseController(
         ? circular.stringify([...result])
         : circular.stringify({ ...result }),
     }
-    return done(null, response)
+    done(null, response)
   }
 }
 
@@ -60,7 +60,7 @@ const errorHandler = (error, event, context, done) => {
     // add stack trace if running in 'dev' or 'int, and have opted-in
     const stack = shouldPrintStack ? error.stack : undefined
 
-    return done(null, {
+    done(null, {
       ...defaultResponseConfig,
       headers: {
         ...defaultResponseConfig.headers,
@@ -73,8 +73,9 @@ const errorHandler = (error, event, context, done) => {
         stack,
       }),
     })
+    return
   }
-  return done()
+  done()
 }
 
 function getFormattedError(error = {}, event = {}) {
