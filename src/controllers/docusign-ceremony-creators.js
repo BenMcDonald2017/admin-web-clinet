@@ -88,11 +88,12 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
         return signer
       })
 
-      // envelope is considered complete when all signers have 'Signed' === true
-      benefit.EnvelopeComplete = PdfSignatures.every(s => s.Signed === true)
-
-      // when the envelope is completed, add a completed datetime stamp
-      benefit.DocuSignEnvelopeCompletedOn = benefit.EnvelopeComplete ? currentDateTime : ' '
+      if (PdfSignatures.every(s => s.Signed === true)) {
+        // envelope is considered complete when all signers have 'Signed' === true
+        benefit.EnvelopeComplete = true
+        // when the envelope is completed, add a completed datetime stamp
+        benefit.DocuSignEnvelopeCompletedOn = currentDateTime
+      }
     }
 
     await saveCart(event.cart)
