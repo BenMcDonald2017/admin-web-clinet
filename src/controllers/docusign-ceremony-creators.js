@@ -94,7 +94,7 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
         return signer
       })
 
-      if (PdfSignatures.every(s => s.Signed === true)) {
+      if (benefit.PdfSignatures.every(s => s.Signed === true)) {
         // envelope is considered complete when all signers have 'Signed' === true
         benefit.EnvelopeComplete = true
         // when the envelope is completed, add a completed datetime stamp
