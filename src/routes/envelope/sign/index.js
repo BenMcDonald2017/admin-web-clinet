@@ -27,6 +27,6 @@ export const getApplicationSigningLink = ware(
 
 export const saveSignatureStatus = ware(
   before,
-  setDocuSignEnvelopeSigningStatus(),
+  setDocuSignEnvelopeSigningStatus,
   after,
 )

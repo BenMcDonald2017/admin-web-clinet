@@ -38,16 +38,17 @@ const getTemplateJSON = ({
   }
 }
 
-export const setDocuSignEnvelopeSigningStatus = () => async (event) => {
+export const setDocuSignEnvelopeSigningStatus = async (event) => {
   const {
-    params: {
-      employeePublicKey = ' ',
-      envelopeId        = ' ',
-      id: signerId      = ' ',
-      personPublicKey   = ' ',
-      returnUrl         = ' ',
-    } = {},
-  } = event
+    employeePublicKey = ' ',
+    envelopeId        = ' ',
+    id: signerId      = ' ',
+    personPublicKey   = ' ',
+    returnUrl         = ' ',
+  } = event.params
+
+  console.dir(`event:\n\n${event}`)
+  console.dir(`event.params:\n\n${event.params}`)
 
   const [{ Item: theCart }, theFamily] = await Promise.all([
     getCart(employeePublicKey),
@@ -59,11 +60,14 @@ export const setDocuSignEnvelopeSigningStatus = () => async (event) => {
 
   if (event.cart) {
     event.healthBundle = getHealthBundle(event.cart.Cart)
+
+    console.warn('*'.repeat(80))
+    console.dir(event.healthBundle)
   }
 
-  if (event.healthBundle) {
-    event.primary = getPrimarySigner(event.healthBundle, event.family)
-  }
+  // if (event.healthBundle) {
+  //   event.primary = getPrimarySigner(event.healthBundle, event.family)
+  // }
 
   const { id: parsedUserId } = QS.parse(decodeURIComponent(`${returnUrl}`), { delimiter: /[?&]/ })
 
