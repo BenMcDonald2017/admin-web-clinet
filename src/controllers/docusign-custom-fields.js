@@ -22,9 +22,9 @@ export const getDocuSignCustomFieldData = async (event) => {
   // let worker = get(event, 'worker', {})
 
   const { Persons: personsCoveredInThisBenefit = [] } = benefit
-  const isCovered = person => /included/i.test(person.BenefitStatus)
-  const isEmployee = person => /employee/i.test(person.Relationship)
-  const isSpouseOrPartner = person => /(?:spouse|domestic\s*partner)/i.test(person.Relationship)
+  const isCovered = person => /^included$/i.test(person.BenefitStatus)
+  const isEmployee = person => /^employee$/i.test(person.Relationship)
+  const isSpouseOrPartner = person => /^(?:spouse|domestic\s*partner)$/i.test(person.Relationship)
 
   const workerToUse = personsCoveredInThisBenefit.find(p => isEmployee(p) && isCovered(p)) || {}
   const spouseToUse = personsCoveredInThisBenefit.find(p => isSpouseOrPartner(p) && isCovered(p)) || {}
@@ -108,13 +108,12 @@ export const getDocuSignCustomFieldData = async (event) => {
     // if 'spouse' doesn't exist
     if (!Object.keys(spouse || {}).length) {
       // set 'worker' to the first member in 'family'
-      [worker] = family
-      // then remove one member from 'family'
-      family.shift()
+      // and then remove that family member [with shift()]
+      worker = family.shift()
     } else {
       // else, if 'spouse' DOES exists (and we still don't have a 'worker')
       // make the 'spouse' the 'worker' instead, and set spouse to empty
-      worker = spouse
+      worker = { ...spouse }
       spouse = {}
     }
   }
