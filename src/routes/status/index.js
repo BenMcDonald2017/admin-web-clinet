@@ -152,7 +152,7 @@ const createEnvelopes = async (healthIns, primary, family, event) => {
 
       // handle multiple signatures
       benefit.PdfSignatures = signers.map(signer => ({
-        Id: signer.clientUserId,
+        Id: signer.Id,
         Signed: false,
       }))
     }
