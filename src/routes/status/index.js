@@ -124,6 +124,7 @@ const createEnvelopes = async (healthIns, primary, family, event) => {
       // filter out signers that are under 18
       const under18Ids = family.filter(person => effectiveAge(`${person.DateOfBirth}`, `${EFFECTIVE_DATE}`) < 18).map(minorChild => minorChild.Id)
       signers = signers.filter(signer => !under18Ids.includes(signer.Id))
+
       if (benefit.Persons.every(person => /child/i.test(person.Relationship))) {
         // if benefit has only children deps then add primary to signers list
         signers = [primary, ...signers]
@@ -143,7 +144,7 @@ const createEnvelopes = async (healthIns, primary, family, event) => {
 
       benefit = {
         ...benefit,
-        DocuSignEnvelopeCompletedOn: ' ',
+        // DocuSignEnvelopeCompletedOn: ' ',
         DocuSignEnvelopeCreatedOn: currentDateTime,
         DocuSignEnvelopeId: envelopeId,
         EnvelopeComplete: false,

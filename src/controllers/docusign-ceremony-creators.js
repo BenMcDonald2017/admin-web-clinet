@@ -59,9 +59,9 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
     event.healthBundle = getHealthBundle(event.cart.Cart)
   }
 
-  // if (event.healthBundle) {
-  //   event.primary = getPrimarySigner(event.healthBundle, event.family)
-  // }
+  if (event.healthBundle) {
+    event.primary = getPrimarySigner(event.healthBundle, event.family)
+  }
 
   const { id: parsedUserId } = QS.parse(decodeURIComponent(`${returnUrl}`), { delimiter: /[?&]/ })
 
