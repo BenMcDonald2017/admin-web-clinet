@@ -4,7 +4,6 @@ import ware from 'warewolf'
 import {
   EFFECTIVE_DATE,
   effectiveAge,
-  getApplicationPersons,
   getCart,
   getFamily,
   getHealthBundle,
@@ -121,9 +120,18 @@ const createEnvelopes = async (healthIns, primary, family, event) => {
     // 2). We determine that the user should have new docs generated (above); or,
     // 3). If requestor sets `force` flag in the URL to `true`
     if (!benefit.DocuSignEnvelopeId || shouldGenerateNewDocuSignEnvelope || forceFlagIsSet) {
-      const coveredPeople = benefit.Persons.filter(b => /included/i.test(b.BenefitStatus))
-      const applicants = getApplicationPersons(coveredPeople, primary, family)
-      let signers = getSigners(applicants)
+      let signers = benefit.Persons.filter(person => /^included$/i.test(person.BenefitStatus))
+      // filter out signers that are under 18
+      const under18Ids = family.filter(person => effectiveAge(`${person.DateOfBirth}`, `${EFFECTIVE_DATE}`) < 18).map(minorChild => minorChild.Id)
+      signers = signers.filter(signer => !under18Ids.includes(signer.Id))
+      if (benefit.Persons.every(person => /child/i.test(person.Relationship))) {
+        // if benefit has only children deps then add primary to signers list
+        signers = [primary, ...signers]
+        if (benefit.Persons.every(person => !under18Ids.includes(person.Id))) {
+          // if benefit have only dependents, and none of those dependents are under 18, then remove the worker from the signatures list—they don't need to sign
+          signers = signers.filter(signer => signer.Id !== `${primary.Id}`)
+        }
+      }
 
       // this puppy kicks off all the docusign creation code
       await createDocuSignEnvelope(benefit, primary, family, signers, event)
@@ -140,15 +148,6 @@ const createEnvelopes = async (healthIns, primary, family, event) => {
         DocuSignEnvelopeId: envelopeId,
         EnvelopeComplete: false,
         UpdatedDate: currentDateTime,
-      }
-
-      // filter out signers that are under 18
-      const under18Ids = family.filter(person => effectiveAge(`${person.DateOfBirth}`, `${EFFECTIVE_DATE}`) < 18).map(mc => mc.Id)
-      signers = signers.filter(signer => !under18Ids.includes(signer.clientUserId))
-
-      // if benefit have only dependents, and none of those dependents are under 18, then remove the worker from the signatures list—they don't need to sign
-      if (benefit.Persons && benefit.Persons.every(person => /child/i.test(person.Relationship) && !under18Ids.includes(person.Id))) {
-        signers = signers.filter(signer => signer.clientUserId !== `${primary.Id}`)
       }
 
       // handle multiple signatures

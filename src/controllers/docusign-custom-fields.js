@@ -32,7 +32,7 @@ export const getDocuSignCustomFieldData = async (event) => {
 
   let spouse = family.find(_spouse => _spouse.Id === get(spouseToUse, 'Id')) || {}
   let worker = family.find(_worker => _worker.Id === get(workerToUse, 'Id')) || {}
-  family = family.filter(familyMember => familyMembersToUse.some(p => p && p.Id === get(familyMember, 'Id'))) || []
+  family = family.filter(familyMember => familyMembersToUse.some(p => p.Id && p.Id != null && p.Id === get(familyMember, 'Id'))) || []
   const HIOS = get(benefit, 'HealthPlanId')
   const previousCarrierPlanPolicyNumber = await getPreviousPlanAttribute(employeePublicKey, 'PlanPolicyNumber')
 
@@ -175,7 +175,7 @@ function fetchAndFillDataFor(person = {}, label = '') {
     [`${label}_phone_number_last_four`]:            get(person, 'PhoneNumber', '').slice(6, 10),
     [`${label}_phone_number_full`]:                 get(person, 'PhoneNumber'),
     [`${label}_preferred_language`]:                isPerson ? 'English' : '',
-    [`${label}_relationship_to_primary`]:           relation.match(/^employee/i) ? 'Self' : relation,
+    [`${label}_relationship_to_primary`]:           relation.match(/^employee$/i) ? 'Self' : relation,
     [`${label}_signature`]:                         ' ',
     [`${label}_signature_date_dd`]:                 (isPerson && isAtLeast18YearsOld) ? moment().format('DD') : ' ',
     [`${label}_signature_date_mm`]:                 (isPerson && isAtLeast18YearsOld) ? moment().format('MM') : ' ',
@@ -191,7 +191,7 @@ function fetchAndFillDataFor(person = {}, label = '') {
     [`${label}_checkbox_is_daughter`]:              isPerson && /^female$/i.test(gender) && /^(?:child|daughter)/i.test(relation),
     [`${label}_checkbox_is_son`]:                   isPerson && /^male$/i.test(gender) && /^(?:child|son)/i.test(relation),
     [`${label}_checkbox_is_domestic_partner`]:      isPerson && /^domestic\s*partner$/i.test(relation),
-    [`${label}_checkbox_is_child`]:                 isPerson && /^(?:child|son|daughter)$/i.test(relation),
+    [`${label}_checkbox_is_child`]:                 isPerson && /^(?:child|son|daughter)/i.test(relation),
     [`${label}_checkbox_is_married`]:               isPerson && /^married$/i.test(status),
     // check 'single' if person exists, and isn't ' married', in a 'domestic partner[ship]',
     // or otherwise has a status of 'single'

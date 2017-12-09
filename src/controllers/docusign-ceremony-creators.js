@@ -137,7 +137,7 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
   const { employeePublicKey, returnUrl } = request
   const clientUserId = `${employeePublicKey}`
   const email = `${worker.HixmeEmailAlias}`.toLowerCase()
-  const name = [worker.FirstName, worker.MiddleName, worker.LastName].filter(e => e && e != null).join(' ')
+  const name = worker.name ? worker.name : [worker.FirstName, worker.LastName].filter(n => n && n != null).join(' ')
   const recipientId = `${employeePublicKey}`
 
   const { HealthPlanId: HIOS = '' } = benefit
@@ -209,14 +209,6 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
   }
 
   await saveCart(event.cart)
-
-  const under18Ids = family.filter(person => effectiveAge(`${person.DateOfBirth}`, `${EFFECTIVE_DATE}`) < 18).map(mc => mc.Id)
-  signers = signers.filter(signer => !under18Ids.includes(signer.clientUserId))
-
-  // if benefit have only dependents, and none of those dependents are under 18, then remove the worker from the signatures list—they don't need to sign
-  if (benefit.Persons && benefit.Persons.every(person => /child/i.test(person.Relationship) && !under18Ids.includes(person.Id))) {
-    signers = signers.filter(signer => signer.clientUserId !== `${employeePublicKey}`)
-  }
 
   const formattedSignersArray = await generateSigners(signers, fields)
   const compositeTemplates = await generateComposedTemplates(
