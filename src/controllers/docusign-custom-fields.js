@@ -159,7 +159,7 @@ function fetchAndFillDataFor(person = {}, label = '') {
     [`${label}_birthdate_year`]:                    birthdate ? moment(birthdate).format('YYYY') : ' ',
     [`${label}_birthdate_yy`]:                      birthdate ? moment(birthdate).format('YY') : ' ',
     [`${label}_birthdate_yyyy`]:                    birthdate ? moment(birthdate).format('YYYY') : ' ',
-    [`${label}_email_address`]:                     get(person, 'HixmeEmailAlias'), // NOT 'EmailAddress'
+    [`${label}_email_address`]:                     get(person, 'HixmeEmailAlias').replace(/\s+/g, ''), // NOT 'EmailAddress'
     [`${label}_gender_full_word`]:                  `${gender}`.toUpperCase(),
     [`${label}_name_first_name`]:                   get(person, 'FirstName'),
     [`${label}_name_middle_name`]:                  get(person, 'MiddleName'),

@@ -8,7 +8,6 @@ import {
   getFamily,
   getHealthBundle,
   getPrimarySigner,
-  getSigners,
   saveCart,
 } from '../../resources'
 import { createDocuSignEnvelope } from '../../controllers'

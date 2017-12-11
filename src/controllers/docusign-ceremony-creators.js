@@ -136,7 +136,7 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
   }
   const { employeePublicKey, returnUrl } = request
   const clientUserId = `${employeePublicKey}`
-  const email = `${worker.HixmeEmailAlias}`.toLowerCase()
+  const email = `${worker.HixmeEmailAlias}`.replace(/\s+/g, '').toLowerCase()
   const name = worker.name ? worker.name : [worker.FirstName, worker.LastName].filter(n => n && n != null).join(' ')
   const recipientId = `${employeePublicKey}`
 
@@ -313,7 +313,7 @@ export const createDocuSignEmbeddedEnvelope = async (event) => {
       recipientId: id || undefined,
       returnUrl: returnUrl || undefined,
       // userId: parsedUserId || userId,
-      email: `${signer.HixmeEmailAlias}`.toLowerCase(),
+      email: `${signer.HixmeEmailAlias}`.replace(/\s+/g, '').toLowerCase(),
       // v— notice here, using 'userName'; not 'user' —v
       userName: `${signer.name ? signer.name : [signer.FirstName, signer.LastName].filter(e => e && e != null).join(' ')}`,
     }),

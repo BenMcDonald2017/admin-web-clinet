@@ -43,7 +43,7 @@ export const generateSigners = (signers = [], fields = {}) => signers.map((signe
   roleName: getRoleName(index),
   name: `${signer.name ? signer.name : [signer.FirstName, signer.LastName].filter(n => n && n != null).join(' ')}`,
   /* eslint-disable no-nested-ternary */
-  email: `${signer.email ? signer.email : signer.HixmeEmailAlias ? signer.HixmeEmailAlias : `${signer.FirstName}.${signer.LastName}@hixmeusers.com`}`.toLowerCase(),
+  email: `${signer.email ? signer.email : signer.HixmeEmailAlias ? signer.HixmeEmailAlias : `${signer.FirstName}.${signer.LastName}@hixmeusers.com`}`.replace(/\s+/g, '').toLowerCase(),
   clientUserId: `${signer.Id ? signer.Id : signer.clientUserId}`,
   userId: `${signer.Id ? signer.Id : signer.clientUserId}`,
   recipientId: `${signer.Id ? signer.Id : signer.clientUserId}`,
