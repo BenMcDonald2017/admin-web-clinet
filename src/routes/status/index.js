@@ -77,33 +77,36 @@ export const getCartWithApplicationStatus = ware(
     // data.healthBundle.Benefits           ... is an array of benefits
     // data.healthBundle.NotIncluded        ... is an array of people
 
-    data.healthBundle = await createEnvelopes(data.healthBundle, data.primary, data.family, event)
-    const { healthBundle: { Benefits = [] } = {} } = data
-
-    Benefits.map((benefit) => {
-      benefit.PdfApplicationAvailable = true
-      return benefit
-    })
-    data.healthBundle.AllApplicationsAvailable = true
-
-    data.cart.Cart = data.cart.Cart.map((product) => {
+    // save new 'healthBundle' to the cart!
+    data.cart.Cart = data.cart.Cart.map(async (product) => {
       if (product.BenefitType === 'HealthBundle') {
-        return data.healthBundle
+        await createEnvelopes(data.healthBundle, data.primary, data.family, event)
       }
       return product
     })
 
+    // save cart
     await saveCart(data.cart)
-    const { Cart: cart } = data.cart
-    event.result = cart
+
+    // return results
+    event.result = data.cart.Cart
   },
 
   after,
 )
 
-const createEnvelopes = async (healthIns, primary, family, event) => {
-  // iterate through health insurance benefits and create docusign envelopes for each
-  healthIns.Benefits = await Promise.all(healthIns.Benefits.map(async (benefit) => {
+const createEnvelopes = async (healthBundle, primary, family, event) => {
+  // 1. iterate through the non-covered people and get them taken care of first:
+  healthBundle.NotIncluded = await Promise.all(healthBundle.NotIncluded.map(async (person) => {
+    if (person.FirstName === 'John' && person.LastName === 'Smith') {
+      person.isJohnSmith = true
+    }
+
+    return person
+  }))
+
+  // 2. iterate through health insurance benefits and create docusign envelopes for each
+  healthBundle.Benefits = await Promise.all(healthBundle.Benefits.map(async (benefit) => {
     const { queryStringParameters: { force = false } = {} } = event
     const forceFlagIsSet = queryStringIsTrue(force)
 
@@ -136,27 +139,35 @@ const createEnvelopes = async (healthIns, primary, family, event) => {
       // this puppy kicks off all the docusign creation code
       await createDocuSignEnvelope(benefit, primary, family, signers, event)
 
-      // destructuring 'event.envelope.envelopeId' and setting defaults if none
-      const { envelope: { envelopeId = '' } = {} } = event
-
+      // destructure 'event.envelope.envelopeId' and setting defaults if none
+      const { envelope: { envelopeId = 'undefined' } = {} } = event
       const currentDateTime = new Date().toISOString()
 
       benefit = {
         ...benefit,
-        // DocuSignEnvelopeCompletedOn: ' ',
+        AllApplicationsAvailable: true,
+        // DocuSignEnvelopeCompletedOn: 'undefined',
         DocuSignEnvelopeCreatedOn: currentDateTime,
         DocuSignEnvelopeId: envelopeId,
         EnvelopeComplete: false,
+        PdfApplicationAvailable: true,
+        PdfSignatures: signers.map(signer => ({
+          // multiple signers
+          Id: signer.Id,
+          Signed: false,
+        })),
         UpdatedDate: currentDateTime,
       }
-
-      // handle multiple signatures
-      benefit.PdfSignatures = signers.map(signer => ({
-        Id: signer.Id,
-        Signed: false,
-      }))
     }
     return benefit
   }))
-  return healthIns
+
+  // 3. set results
+  event.result = healthBundle
+
+  // 4. return new healthBundle, w/ DocuSign docs created and the appropriate
+  // 'ID's inserted into the requisite healthBenefit records
+  return healthBundle
+
+  // 5. profit
 }

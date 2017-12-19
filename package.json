@@ -20,7 +20,7 @@
     "// NOTE": "SERVERLESS CONFIGURATION VALUES BELOW",
     "inspector_port": 9229,
     "log_fetch_refresh_interval": 5000,
-    "log_fetch_start_time": "30m",
+    "log_fetch_start_time": "2h",
     "region": "us-west-2",
     "runtime": "nodejs6.10",
     "stage": "int"
@@ -72,6 +72,7 @@
     "circular-json": "0.4.0",
     "delver": "1.1.2",
     "dynamoose": "0.8.6",
+    "jest": "21.2.1",
     "lodash": "4.17.4",
     "moment": "2.19.3",
     "node-fetch": "1.7.3",
@@ -101,8 +102,8 @@
     "eslint": "4.12.1",
     "eslint-config-airbnb-base": "12.1.0",
     "eslint-plugin-import": "2.8.0",
-    "jest-cli": "21.2.1",
     "merge-yaml-cli": "1.1.1",
+    "regenerator-runtime": "0.11.1",
     "rimraf": "2.6.2",
     "serverless": "1.24.1",
     "serverless-aws-documentation": "1.0.0",
@@ -121,6 +122,7 @@
       "/dist/",
       "/node_modules/"
     ],
+    "transform": {},
     "verbose": true
   },
   "eslintConfig": {

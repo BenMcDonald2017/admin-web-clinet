@@ -8,6 +8,9 @@
   path: "envelope/{envelopeId}/sign"
   description: "Create Signing Session Link [POST]"
 -
+  path: "envelope/{envelopeId}/ecipients"
+  description: "Get Envelope Recipients [GET]"
+-
   path: "status"
   description: "Get Cart With Application Status [GET]"
 -

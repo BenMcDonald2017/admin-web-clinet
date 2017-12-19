@@ -11,8 +11,6 @@ import {
   getEnvelopes,
 } from '../controllers'
 import {
-  EFFECTIVE_DATE,
-  effectiveAge,
   getCart,
   getChangeOrCancelationForms,
   getDocuSignApplicationTemplate,
@@ -27,7 +25,6 @@ const getTemplateJSON = ({
   compositeTemplates,
   fields,
   signers,
-  userData,
 }) => {
   const templateRoles = []
   templateRoles.push(...generateSigners(signers, fields))
@@ -216,11 +213,10 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
     formattedSignersArray,
   )
 
-  const documentData = await getTemplateJSON({
+  const documentData = getTemplateJSON({
     fields,
     signers,
     compositeTemplates,
-    userData,
   })
 
   const payload = {
@@ -302,20 +298,19 @@ export const createDocuSignEmbeddedEnvelope = async (event) => {
   // NOTE: there are many other unhandled states of error ...should fix.
   if (!signer || signer == null) throw new Error('could not parse out a valid, necessary param. try again.')
 
-  const { Id: id } = signer // || parsedUserId || employeePublicKey || userId
+  const { Id: id } = signer // parsedUserId || employeePublicKey || userId
   const payload = {
     params: {
       envelopeId,
     },
     body: JSON.stringify({
       authenticationMethod: 'password',
-      clientUserId: id || undefined,
-      recipientId: id || undefined,
-      returnUrl: returnUrl || undefined,
-      // userId: parsedUserId || userId,
+      clientUserId: `${id}`,
       email: `${signer.HixmeEmailAlias}`.replace(/\s+/g, '').toLowerCase(),
-      // v— notice here, using 'userName'; not 'user' —v
+      recipientId: `${id}`,
+      returnUrl: `${returnUrl}`,
       userName: `${signer.name ? signer.name : [signer.FirstName, signer.LastName].filter(e => e && e != null).join(' ')}`,
+      userId: parsedUserId || undefined,
     }),
   }
 

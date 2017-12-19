@@ -228,6 +228,31 @@ functions:
                   application/json: ErrorResponse
             requestModels:
               application/json: CreateEnvelope
+  getEnvelopeRecipients:
+    description: '${self:custom.documentation.summary} | Get Envelope Recipients [GET]'
+    handler: build/routes/envelope/recipients/index.doGetEnvelopeRecipients
+    events:
+      - http:
+          path: 'envelope/{envelopeId}/recipients'
+          method: get
+          parameters:
+            paths:
+              envelopeId: true
+          cors: true
+          documentation:
+            summary: Get Envelope Recipients
+            description: 'Get Envelope Recipients [GET]'
+            requestBody:
+              description: Request body description
+            methodResponses:
+              - statusCode: '200'
+                responseBody:
+                  description: Response body description
+              - statusCode: '400'
+                responseModels:
+                  application/json: ErrorResponse
+            requestModels:
+              application/json: GetEnvelopeRecipients
   getEnvelope:
     description: '${self:custom.documentation.summary} | Get Envelope [GET]'
     handler: build/routes/envelope/index.getEnvelope
@@ -241,8 +266,8 @@ functions:
                 envelopeId: true
           cors: true
           documentation:
-            summary: Get Envelope (from DocuSign)
-            description: 'Get Envelope (from DocuSign) [GET]'
+            summary: Get Envelope
+            description: 'Get Envelope [GET]'
             requestBody:
               description: Request body description
             methodResponses:
@@ -267,8 +292,8 @@ functions:
                 envelopeId: true
           cors: true
           documentation:
-            summary: Create Signing Session (from DocuSign)
-            description: 'Create Signing Session (from DocuSign) [GET]'
+            summary: Create Signing Session
+            description: 'Create Signing Session [GET]'
             requestBody:
               description: Request body description
             methodResponses:
@@ -344,9 +369,7 @@ functions:
                 responseModels:
                   application/json: ErrorResponse
   saveSignatureStatus:
-    description: >-
-      ${self:custom.documentation.summary} | Save Signature Status (After
-      Signing is Complete) [POST]
+    description: '${self:custom.documentation.summary} | Save Signature Status [POST]'
     handler: build/routes/envelope/sign/index.saveSignatureStatus
     events:
       - http:
@@ -354,8 +377,8 @@ functions:
           method: post
           cors: true
           documentation:
-            summary: 'Save Signature Status (After Signing is Complete) [POST]'
-            description: 'Save Signature Status (After Signing is Complete) [POST]'
+            summary: 'Save Signature Status [POST]'
+            description: 'Save Signature Status [POST]'
             requestBody:
               description: Request body description
             methodResponses:

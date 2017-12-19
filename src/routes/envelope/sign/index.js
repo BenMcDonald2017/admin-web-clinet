@@ -3,28 +3,21 @@ import ware from 'warewolf'
 import { before, after } from '../../../utils'
 import { createDocuSignEmbeddedEnvelope, setDocuSignEnvelopeSigningStatus } from '../../../controllers'
 
-// POST create signing session
+// POST
 export const createSigningSession = ware(
   before,
-
-  async (event) => {
-    await createDocuSignEmbeddedEnvelope(event)
-  },
-
+  createDocuSignEmbeddedEnvelope,
   after,
 )
 
-// GET create signing session
+// GET (added to support the existing frontend routes and http-methods)
 export const getApplicationSigningLink = ware(
   before,
-
-  async (event) => {
-    await createDocuSignEmbeddedEnvelope(event)
-  },
-
+  createDocuSignEmbeddedEnvelope,
   after,
 )
 
+// GET
 export const saveSignatureStatus = ware(
   before,
   setDocuSignEnvelopeSigningStatus,

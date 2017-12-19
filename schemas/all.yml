@@ -19,6 +19,11 @@
   contentType: "application/json"
   schema: ${file(schemas/GetEnvelope.json)}
 -
+  name: "GetEnvelopeRecipients"
+  description: "Get Envelope Recipients"
+  contentType: "application/json"
+  schema: ${file(schemas/GetEnvelopeRecipients.json)}
+-
   name: "SaveSignatureStatus"
   description: "Save DocuSign Signature Status"
   contentType: "application/json"

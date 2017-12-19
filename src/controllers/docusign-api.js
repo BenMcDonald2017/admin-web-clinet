@@ -19,14 +19,14 @@ export const getRootUrl = () => (
     : 'https://demo.docusign.net/restapi/v2/accounts/1840519'
 )
 
-const getDocusignUrl = path => `${getRootUrl()}${path}`
+const getDocuSignURL = path => `${getRootUrl()}${path}`
 
 const COMMON_DOCUSIGN_HEADERS = {
   Accept: 'application/json',
   'Content-Type': 'application/json',
 }
 
-const getDocusignAuthHeaders = () => (
+const getDocuSignAuthHeaders = () => (
   STAGE === 'prod'
     ? ({
       Username: DOCUSIGN_USER_PROD,
@@ -40,10 +40,10 @@ const getDocusignAuthHeaders = () => (
     })
 )
 
-const getDocusignHeaders = () =>
+const getDocuSignHeaders = () =>
   ({
     ...COMMON_DOCUSIGN_HEADERS,
-    'X-DocuSign-Authentication': JSON.stringify(getDocusignAuthHeaders()),
+    'X-DocuSign-Authentication': JSON.stringify(getDocuSignAuthHeaders()),
   })
 
 const formatPath = (path, params) =>
@@ -59,7 +59,7 @@ const fetchDocuSign = (path, defaults = {}) =>
       query: defaultQuery = {},
       ...defaultOptions
     } = defaults
-    const fullUrl = getDocusignUrl(formatPath(path, {
+    const fullUrl = getDocuSignURL(formatPath(path, {
       ...defaultParams,
       ...params,
     }))
@@ -73,7 +73,7 @@ const fetchDocuSign = (path, defaults = {}) =>
       parsedUrl.toString(),
       {
         headers: {
-          ...getDocusignHeaders(),
+          ...getDocuSignHeaders(),
           ...defaultHeaders,
           ...headers,
         },
@@ -106,7 +106,7 @@ const fetchDocuSign = (path, defaults = {}) =>
 export const getDocusignAuth = async () => {
   const fetchParams = {
     headers: {
-      ...getDocusignHeaders(),
+      ...getDocuSignHeaders(),
     },
   }
   const res = await fetch(
@@ -157,6 +157,12 @@ export const getAllTemplates = fetchDocuSign(
 
 export const getEnvelope = fetchDocuSign(
   '/envelopes/{envelopeId}',
+  { method: 'GET' },
+)
+
+export const getEnvelopeRecipients = fetchDocuSign(
+  '/envelopes/{envelopeId}/recipients',
+  { query: { include_tabs: true } },
   { method: 'GET' },
 )
 
