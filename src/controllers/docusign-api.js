@@ -82,6 +82,7 @@ const fetchDocuSign = (path, defaults = {}) =>
       },
     ]
 
+    // If `body` is not a string, then JSON.stringify it
     if (fetchParams[1].body && !isString(fetchParams[1].body)) {
       fetchParams[1].body = JSON.stringify(fetchParams[1].body)
     }

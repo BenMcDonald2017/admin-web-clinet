@@ -38,7 +38,7 @@ functions:
 
   getEnvelopeRecipients:
     description: ${self:custom.documentation.summary} | Get Envelope Recipients [GET]
-    handler: build/routes/envelope/recipients/index.doGetEnvelopeRecipients
+    handler: build/routes/envelope/recipients/index.onGetEnvelopeRecipients
     events:
       - http:
           path: envelope/{envelopeId}/recipients

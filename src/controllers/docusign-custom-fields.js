@@ -34,7 +34,7 @@ export const getDocuSignCustomFieldData = async (event) => {
   let worker = family.find(_worker => _worker.Id === get(workerToUse, 'Id')) || {}
   family = family.filter(familyMember => familyMembersToUse.some(p => p.Id && p.Id != null && p.Id === get(familyMember, 'Id'))) || []
   const HIOS = get(benefit, 'HealthPlanId')
-  const previousCarrierPlanPolicyNumber = await getPreviousPlanAttribute(employeePublicKey, 'PlanPolicyNumber')
+  const previousCarrierPlanPolicyNumber = await getPreviousPlanAttribute({ employeePublicKey, attribute: 'PlanPolicyNumber' })
 
   // sort the family by youngest to oldest (for use later on)
   if (family) {

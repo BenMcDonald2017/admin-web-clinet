@@ -11,15 +11,18 @@ const kaiserChangeForm = isProd ? 'cbeeae49-56de-4065-95b8-97b6fafb2189' : '5a45
 const genericCancelation = isProd ? 'b59a56bd-4990-488e-a43f-bf37ad00a63b' : '79a9dad3-011c-4094-9c01-7244b9303338'
 
 export async function getChangeOrCancelationForms({ employeePublicKey = ' ', HIOS = ' ' }) {
-  const currentPlans = await getPreviousPlanAttribute(employeePublicKey, true)
+  const currentPlans = await getPreviousYearPlan(employeePublicKey)
   return getNecessaryForms({ currentPlans, HIOS })
 }
 
-// NOTE: we're calling the functions below the worker's "previous" plan. In reality though,
-// anyone coming through this code block would necessarily be looking for a new plan, and
-// at the point whereby they need documents generated.  So, at this moment, the worker's
-// current plan is really their "previous" plan. Make sense?
-export async function getPreviousPlanAttribute(employeePublicKey = ' ', attribute = ' ', returnNakedBenefits = false) {
+const startOfYear = YYYY => (/\d{4}/igm.test(YYYY) ? moment(`${YYYY}-01-01`).startOf('year') : moment().startOf('year'))
+
+export const getPlanAttribute = async ({
+  attribute,
+  employeePublicKey = ' ',
+  fromYear = year => startOfYear(year),
+  returnNakedBenefits = false,
+}) => {
   const { Items: benefits = [] } = await docClient.query({
     TableName: `${process.env.STAGE}-benefits`,
     IndexName: 'EmployeePublicKey-index',
@@ -32,15 +35,14 @@ export async function getPreviousPlanAttribute(employeePublicKey = ' ', attribut
     },
   }).promise()
 
-  // check if today `moment()` is between benefit's `BenefitEffectiveDate`
-  // and its `BenefitEndDate`.
-  const currentPlans = benefits.filter(health => moment().isBetween(
+  // Ensure `moment()` (aka, today) is  between `Effective` and `End` dates.
+  const currentPlans = benefits.filter(health => moment(fromYear).isBetween(
     moment(health.BenefitEffectiveDate),
     moment(health.BenefitEndDate), 'days', '[]',
   ))
 
   // if one elects to receive the naked (untouched) benefit
-  if (attribute === true || returnNakedBenefits === true) {
+  if (returnNakedBenefits === true || (typeof attribute === 'undefined' || attribute == null || !attribute)) {
     return currentPlans
   }
 
@@ -48,13 +50,25 @@ export async function getPreviousPlanAttribute(employeePublicKey = ' ', attribut
   return get({ currentPlans }, `currentPlans[0].${attribute}`, '')
 }
 
-export async function workerPreviousHadAHealthPlan(employeePublicKey = ' ') {
-  return Boolean(getPreviousPlanAttribute(employeePublicKey, 'HealthPlanId'))
-}
+export const getPreviousPlanAttribute = async (args = {}) => getPlanAttribute({
+  ...args, // pass all incoming args to `getPlanAttribute()`
+  fromYear: moment().subtract(1, 'year').format('YYYY'),
+})
 
-export async function workerCurrentlyHasAHealthPlan(employeePublicKey = ' ') {
-  return Boolean(getPreviousPlanAttribute(employeePublicKey, 'HealthPlanId'))
-}
+export const getNextPlanAttribute = async (args = {}) => getPlanAttribute({
+  ...args, // pass all incoming args to `getPlanAttribute()`
+  fromYear: moment().add(1, 'year').format('YYYY'),
+})
+
+// easy getters
+export const getCurrentYearPlan = async (employeePublicKey = ' ') => getPlanAttribute({ employeePublicKey, returnNakedBenefits: true })
+export const getNextYearPlan = async (employeePublicKey = ' ') => getNextPlanAttribute({ employeePublicKey, returnNakedBenefits: true })
+export const getPreviousYearPlan = async (employeePublicKey = ' ') => getPreviousPlanAttribute({ employeePublicKey, returnNakedBenefits: true })
+
+// booleans:
+export const workerCurrentlyHasAHealthPlan = async (employeePublicKey = ' ') => Boolean(getPlanAttribute({ employeePublicKey, attribute: 'HealthPlanId' }))
+export const workerWillNextYearHaveAHealthPlan = async (employeePublicKey = ' ') => Boolean(getNextPlanAttribute({ employeePublicKey, attribute: 'HealthPlanId' }))
+export const workerPreviouslyHadAHealthPlan = async (employeePublicKey = ' ') => Boolean(getPreviousPlanAttribute({ employeePublicKey, attribute: 'HealthPlanId' }))
 
 const getNecessaryForms = ({ currentPlans = [], HIOS = '' }) => {
   const forms = []

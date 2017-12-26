@@ -14,19 +14,12 @@ export const createEnvelope = ware(
     }
   },
 
-  async (event) => {
-    await createDocuSignEnvelope(event)
-  },
-
+  createDocuSignEnvelope,
   after,
 )
 
 export const getEnvelope = ware(
   before,
-
-  async (event) => {
-    await getDocuSignEnvelope(event)
-  },
-
+  getDocuSignEnvelope,
   after,
 )

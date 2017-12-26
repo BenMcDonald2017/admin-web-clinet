@@ -27,7 +27,8 @@ function responseController(
       case 'object':
         return Array.isArray(result) ? [...result] : { ...result }
       case 'undefined':
-        return { message: 'something went wrong; please try again.' }
+        // not sure how we should be handling this
+        return { result }
       default:
         return { ...result }
     }

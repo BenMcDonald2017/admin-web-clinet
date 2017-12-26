@@ -184,7 +184,7 @@ export const createDocuSignEnvelope = async (benefit, worker, family, signers, e
   }
 
   const currentYearPlanHIOS = get(benefit, 'HealthPlanId')
-  const previousYearPlanHIOS = await getPreviousPlanAttribute(employeePublicKey, 'HealthPlanId')
+  const previousYearPlanHIOS = await getPreviousPlanAttribute({ employeePublicKey, attribute: 'HealthPlanId' })
   const hasElectedSamePlanFromLastYear = currentYearPlanHIOS === previousYearPlanHIOS
 
   if (hasElectedSamePlanFromLastYear) {
