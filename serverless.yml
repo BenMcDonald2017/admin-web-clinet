@@ -1,202 +1,45 @@
-Warning_001: 'this file is auto-generated ... instead, edit the files in `src/config/`'
-Warning_002: ''
-Warning_003: 'this file is auto-generated ... instead, edit the files in `src/config/`'
-Warning_004: ''
-Warning_005: 'this file is auto-generated ... instead, edit the files in `src/config/`'
-Warning_006: ''
-Warning_007: 'this file is auto-generated ... instead, edit the files in `src/config/`'
-Warning_008: ''
-Warning_009: 'this file is auto-generated ... instead, edit the files in `src/config/`'
-Warning_010: ''
-Warning_011: 'this file is auto-generated ... instead, edit the files in `src/config/`'
-Warning_012: ''
-Warning_013: 'this file is auto-generated ... instead, edit the files in `src/config/`'
-Warning_014: ''
-Warning_015: 'this file is auto-generated ... instead, edit the files in `src/config/`'
-Warning_016: ''
-Warning_017: 'this file is auto-generated ... instead, edit the files in `src/config/`'
-Warning_018: ''
-Warning_019: 'this file is auto-generated ... instead, edit the files in `src/config/`'
-Warning_020: ''
-Warning_021: 'this file is auto-generated ... instead, edit the files in `src/config/`'
-Warning_022: ''
-Warning_023: 'this file is auto-generated ... instead, edit the files in `src/config/`'
-Warning_024: ''
-Warning_025: 'this file is auto-generated ... instead, edit the files in `src/config/`'
-Warning_026: ''
-Warning_027: 'this file is auto-generated ... instead, edit the files in `src/config/`'
-Warning_028: ''
-Warning_029: 'this file is auto-generated ... instead, edit the files in `src/config/`'
-Warning_030: ''
-Warning_031: 'this file is auto-generated ... instead, edit the files in `src/config/`'
-Warning_032: ''
-Warning_033: 'this file is auto-generated ... instead, edit the files in `src/config/`'
-Warning_034: ''
-Warning_035: 'this file is auto-generated ... instead, edit the files in `src/config/`'
-Warning_036: ''
-Warning_037: 'this file is auto-generated ... instead, edit the files in `src/config/`'
-Warning_038: ''
-Warning_039: 'this file is auto-generated ... instead, edit the files in `src/config/`'
-Warning_040: ''
-Warning_041: ''
-Warning_042: ''
-Warning_044: 'NOTE: the warning messages above will be removed in a future release'
-Warning_045: 'NOTE: the warning messages above will be removed in a future release'
-Warning_046: 'NOTE: the warning messages above will be removed in a future release'
-Warning_047: 'NOTE: the warning messages above will be removed in a future release'
-Warning_048: 'NOTE: the warning messages above will be removed in a future release'
-Warning_049: ''
-Warning_050: ''
-Warning_051: ''
-service: '${self:custom.service.NAME}'
-frameworkVersion: '>=1.23.0 <2.0.0'
+service:          ${self:custom.service.NAME}
+
+frameworkVersion: ">=1.25.0 <2.0.0"
+
 plugins:
   - serverless-plugin-webpack
   - serverless-aws-documentation
   - serverless-domain-manager
   - serverless-offline
+
 package:
-  individually: true
-  excludeDevDependencies: false
-  exclude:
-    - node_modules/**/aws-sdk/**
-custom:
-  service:
-    NAME: '${file(package.json):name}'
-    STAGE: '${opt:stage, env:NODE_ENV, file(package.json):config.stage}'
-    REGION: '${opt:region, file(package.json):config.region}'
-    RUNTIME: '${file(package.json):config.runtime}'
-    VERSION: '${file(package.json):version}'
-    DESCRIPTION: '${file(package.json):description}'
-    GW_URL:
-      'Fn::Join':
-        - ''
-        - - 'https://'
-          - Ref: ApiGatewayRestApi
-          - >-
-            .execute-api.${self:custom.service.REGION}.amazonaws.com/${self:custom.service.STAGE}
-  documentation:
-    description: 'Hixme API | ${self:custom.service.DESCRIPTION}'
-    summary: '${self:custom.service.DESCRIPTION}'
-    version: '${self:custom.service.VERSION}'
-    models: '${file(schemas/all.yml)}'
-    resources: '${file(schemas/resources.yml)}'
-  dotENV: '${file(./env.js):getAndSetVarsFromEnvFile}'
-  stackTags:
-    BASE_PATH: '${self:custom.customDomain.basePath}'
-    DOMAIN_NAME: '${self:custom.customDomain.domainName}'
-    REGION: '${self:custom.service.REGION}'
-    SERVICE: '${self:custom.service.NAME}'
-    STAGE: '${self:custom.service.STAGE}'
-    VERSION: '${self:custom.service.VERSION}'
-  environmentVariables:
-    BASE_PATH: '${self:custom.customDomain.basePath}'
-    DOMAIN_NAME: '${self:custom.customDomain.domainName}'
-    REGION: '${self:custom.service.REGION}'
-    SERVICE: '${self:custom.service.NAME}'
-    STAGE: '${self:custom.service.STAGE}'
-    VERSION: '${self:custom.service.VERSION}'
-    DOCUSIGN_ACCOUNT_ID_PROD: '${self:custom.dotENV.DOCUSIGN_ACCOUNT_ID_PROD}'
-    DOCUSIGN_ACCOUNT_ID: '${self:custom.dotENV.DOCUSIGN_ACCOUNT_ID}'
-    DOCUSIGN_BASE_URL_PROD: '${self:custom.dotENV.DOCUSIGN_BASE_URL_PROD}'
-    DOCUSIGN_BASE_URL: '${self:custom.dotENV.DOCUSIGN_BASE_URL}'
-    DOCUSIGN_IKEY_PROD: '${self:custom.dotENV.DOCUSIGN_IKEY_PROD}'
-    DOCUSIGN_IKEY: '${self:custom.dotENV.DOCUSIGN_IKEY}'
-    DOCUSIGN_PASSWORD_PROD: '${self:custom.dotENV.DOCUSIGN_PASSWORD_PROD}'
-    DOCUSIGN_PASSWORD: '${self:custom.dotENV.DOCUSIGN_PASSWORD}'
-    DOCUSIGN_USER_PROD: '${self:custom.dotENV.DOCUSIGN_USER_PROD}'
-    DOCUSIGN_USER: '${self:custom.dotENV.DOCUSIGN_USER}'
-    EFFECTIVE_DATE: '${self:custom.dotENV.EFFECTIVE_DATE}'
-    HEALTH_BUNDLE: '${self:custom.dotENV.HEALTH_BUNDLE}'
-    cartTable: '${self:custom.dotENV.cartTable}'
-    personsTable: '${self:custom.dotENV.personsTable}'
-    applicationTable: '${self:custom.dotENV.applicationTable}'
-    applicationOutputBucket: '${self:custom.dotENV.applicationOutputBucket}'
-    applicationSourceBucket: '${self:custom.dotENV.applicationSourceBucket}'
-  customDomain:
-    basePath: '${file(./env.js):getAPIBasePath}'
-    certificateName: '*.hixme.com'
-    createRoute53Record: false
-    domainName: '${file(./env.js):getDomainName}'
-    stage: '${file(./env.js):getDesiredStageFromPackageJSON}'
-  serverless-offline:
-    prefix: '${self:custom.customDomain.basePath}'
-  iamRoleStatements:
-    - Effect: Allow
-      Action:
-        - 'dynamodb:DescribeTable'
-        - 'dynamodb:GetItem'
-        - 'dynamodb:PutItem'
-        - 'dynamodb:Query'
-        - 'dynamodb:Scan'
-        - 'dynamodb:UpdateItem'
-      Resource:
-        - >-
-          arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-benefits*
-        - >-
-          arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-carrier-application*
-        - >-
-          arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-cart*
-        - >-
-          arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-employee-documents*
-        - >-
-          arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-persons*
-        - >-
-          arn:aws:dynamodb:us-west-2:409076796536:table/prod-carrier-application*
-    - Effect: Allow
-      Action:
-        - 'lambda:InvokeFunction'
-      Resource:
-        - >-
-          arn:aws:lambda:us-west-2:409076796536:function:get-filled-pdf-application:${self:custom.service.STAGE}
-        - >-
-          arn:aws:lambda:us-west-2:409076796536:function:get-ssn:${self:custom.service.STAGE}
+  individually:           true # package each lambda function individually
+  excludeDevDependencies: false # we lean on webpack do the tree-shaking
+  exclude:                ['node_modules/**/aws-sdk/**']
+
+custom: ${file(src/config/custom.yml)}
+
 provider:
-  name: aws
+  name:       aws
   memorySize: 1024
-  timeout: 30
+  timeout:    30
   deploymentBucket:
+    # Deployment bucket name. Default is generated by the framework
+    # name: com.serverless.${self:provider.region}.deploys
+    # using server-side encryption
     serverSideEncryption: AES256
-  runtime: '${self:custom.service.RUNTIME}'
-  stage: '${self:custom.service.STAGE}'
-  region: '${self:custom.service.REGION}'
-  stackTags:
-    BASE_PATH: '${self:custom.customDomain.basePath}'
-    DOMAIN_NAME: '${self:custom.customDomain.domainName}'
-    REGION: '${self:custom.service.REGION}'
-    SERVICE: '${self:custom.service.NAME}'
-    STAGE: '${self:custom.service.STAGE}'
-    VERSION: '${self:custom.service.VERSION}'
+  runtime:    ${self:custom.service.RUNTIME}
+  stage:      ${self:custom.service.STAGE}
+  region:     ${self:custom.service.REGION}
+  stackTags:  ${file(src/config/custom.yml):stackTags}
   environment:
-    BASE_PATH: '${self:custom.customDomain.basePath}'
-    DOMAIN_NAME: '${self:custom.customDomain.domainName}'
-    REGION: '${self:custom.service.REGION}'
-    SERVICE: '${self:custom.service.NAME}'
-    STAGE: '${self:custom.service.STAGE}'
-    VERSION: '${self:custom.service.VERSION}'
-    DOCUSIGN_ACCOUNT_ID_PROD: '${self:custom.dotENV.DOCUSIGN_ACCOUNT_ID_PROD}'
-    DOCUSIGN_ACCOUNT_ID: '${self:custom.dotENV.DOCUSIGN_ACCOUNT_ID}'
-    DOCUSIGN_BASE_URL_PROD: '${self:custom.dotENV.DOCUSIGN_BASE_URL_PROD}'
-    DOCUSIGN_BASE_URL: '${self:custom.dotENV.DOCUSIGN_BASE_URL}'
-    DOCUSIGN_IKEY_PROD: '${self:custom.dotENV.DOCUSIGN_IKEY_PROD}'
-    DOCUSIGN_IKEY: '${self:custom.dotENV.DOCUSIGN_IKEY}'
-    DOCUSIGN_PASSWORD_PROD: '${self:custom.dotENV.DOCUSIGN_PASSWORD_PROD}'
-    DOCUSIGN_PASSWORD: '${self:custom.dotENV.DOCUSIGN_PASSWORD}'
-    DOCUSIGN_USER_PROD: '${self:custom.dotENV.DOCUSIGN_USER_PROD}'
-    DOCUSIGN_USER: '${self:custom.dotENV.DOCUSIGN_USER}'
-    EFFECTIVE_DATE: '${self:custom.dotENV.EFFECTIVE_DATE}'
-    HEALTH_BUNDLE: '${self:custom.dotENV.HEALTH_BUNDLE}'
-    cartTable: '${self:custom.dotENV.cartTable}'
-    personsTable: '${self:custom.dotENV.personsTable}'
-    applicationTable: '${self:custom.dotENV.applicationTable}'
-    applicationOutputBucket: '${self:custom.dotENV.applicationOutputBucket}'
-    applicationSourceBucket: '${self:custom.dotENV.applicationSourceBucket}'
-    GW_URL: '${self:custom.service.GW_URL}'
-    NODE_ENV: '${self:custom.service.STAGE}'
-  iamRoleStatements: '${self:custom.iamRoleStatements}'
-functions:
-  ping:
-    description: '${self:custom.documentation.summary} | Ping / Pong'
+    # <<:               ${file(src/config/custom.yml):environmentVariables}
+    GW_URL:           ${self:custom.service.GW_URL}
+    NODE_ENV:         ${self:custom.service.STAGE}
+  iamRoleStatements:  ${file(src/config/iam_role_statements.yml)}
+
+functions: # ${file(src/config/functions.yml)}
+  # <<:   ${file(src/config/functions.yml)}
+  # ping: ${file(src/config/functions.yml):ping}
+
+  hello:
+    description: HELLO WORLD
     handler: build/routes/ping/index.ping
     events:
       - http:
@@ -204,192 +47,7 @@ functions:
           method: get
           cors: true
           documentation:
-            summary: Ping The Service
-            description: Service Up? Check w/ Ping / Pong!
-  createEnvelope:
-    description: '${self:custom.documentation.summary} | Create Envelope [POST]'
-    handler: build/routes/envelope/index.createEnvelope
-    events:
-      - http:
-          path: envelope
-          method: post
-          cors: true
-          documentation:
-            summary: Create Envelope (on DocuSign)
-            description: 'Create Envelope (on DocuSign) [POST]'
-            requestBody:
-              description: Request body description
-            methodResponses:
-              - statusCode: '200'
-                responseBody:
-                  description: Response body description
-              - statusCode: '400'
-                responseModels:
-                  application/json: ErrorResponse
-            requestModels:
-              application/json: CreateEnvelope
-  getEnvelopeRecipients:
-    description: '${self:custom.documentation.summary} | Get Envelope Recipients [GET]'
-    handler: build/routes/envelope/recipients/index.onGetEnvelopeRecipients
-    events:
-      - http:
-          path: 'envelope/{envelopeId}/recipients'
-          method: get
-          parameters:
-            paths:
-              envelopeId: true
-          cors: true
-          documentation:
-            summary: Get Envelope Recipients
-            description: 'Get Envelope Recipients [GET]'
-            requestBody:
-              description: Request body description
-            methodResponses:
-              - statusCode: '200'
-                responseBody:
-                  description: Response body description
-              - statusCode: '400'
-                responseModels:
-                  application/json: ErrorResponse
-            requestModels:
-              application/json: GetEnvelopeRecipients
-  getEnvelope:
-    description: '${self:custom.documentation.summary} | Get Envelope [GET]'
-    handler: build/routes/envelope/index.getEnvelope
-    events:
-      - http:
-          path: 'envelope/{envelopeId}'
-          method: get
-          request:
-            parameters:
-              paths:
-                envelopeId: true
-          cors: true
-          documentation:
-            summary: Get Envelope
-            description: 'Get Envelope [GET]'
-            requestBody:
-              description: Request body description
-            methodResponses:
-              - statusCode: '200'
-                responseBody:
-                  description: Response body description
-              - statusCode: '400'
-                responseModels:
-                  application/json: ErrorResponse
-            requestModels:
-              application/json: GetEnvelope
-  createSigningSession:
-    description: '${self:custom.documentation.summary} | Create Signing Session [POST]'
-    handler: build/routes/envelope/sign/index.createSigningSession
-    events:
-      - http:
-          path: 'envelope/{envelopeId}/sign'
-          method: post
-          request:
-            parameters:
-              paths:
-                envelopeId: true
-          cors: true
-          documentation:
-            summary: Create Signing Session
-            description: 'Create Signing Session [GET]'
-            requestBody:
-              description: Request body description
-            methodResponses:
-              - statusCode: '200'
-                responseBody:
-                  description: Response body description
-              - statusCode: '400'
-                responseModels:
-                  application/json: ErrorResponse
-            requestModels:
-              application/json: CreateSigningSession
-  getCartWithApplicationStatus:
-    description: >-
-      ${self:custom.documentation.summary} | Get Cart With Application Status
-      [GET]
-    handler: build/routes/status/index.getCartWithApplicationStatus
-    events:
-      - http:
-          path: status
-          method: get
-          cors: true
-          request:
-            parameters:
-              querystrings:
-                employeePublicKey: true
-                returnUrl: true
-          documentation:
-            summary: Get Cart With Application Status
-            description: 'Get Cart With Application Status [GET]'
-            queryParams:
-              - name: employeePublicKey
-                description: The Employee Public Key
-              - name: returnUrl
-                description: The URL That DocuSign Should Return to After Signing
-            methodResponses:
-              - statusCode: '200'
-                responseBody:
-                  description: Response body description
-              - statusCode: '400'
-                responseModels:
-                  application/json: ErrorResponse
-  getApplicationSigningLink:
-    description: >-
-      ${self:custom.documentation.summary} | Get an Application Signing Link
-      [GET]
-    handler: build/routes/envelope/sign/index.getApplicationSigningLink
-    events:
-      - http:
-          path: sign
-          method: get
-          cors: true
-          request:
-            parameters:
-              querystrings:
-                employeePublicKey: true
-                envelopeId: true
-                returnUrl: true
-          documentation:
-            summary: Get an Application Signing Link
-            description: 'Get an Application Signing Link [GET]'
-            queryParams:
-              - name: employeePublicKey
-                description: The Employee Public Key
-              - name: envelopeId
-                description: The Envelope Id
-              - name: returnUrl
-                description: The URL That DocuSign Should Return to After Signing
-            methodResponses:
-              - statusCode: '200'
-                responseBody:
-                  description: Response body description
-              - statusCode: '400'
-                responseModels:
-                  application/json: ErrorResponse
-  saveSignatureStatus:
-    description: '${self:custom.documentation.summary} | Save Signature Status [POST]'
-    handler: build/routes/envelope/sign/index.saveSignatureStatus
-    events:
-      - http:
-          path: sign
-          method: post
-          cors: true
-          documentation:
-            summary: 'Save Signature Status [POST]'
-            description: 'Save Signature Status [POST]'
-            requestBody:
-              description: Request body description
-            methodResponses:
-              - statusCode: '200'
-                responseBody:
-                  description: Response body description
-              - statusCode: '400'
-                responseModels:
-                  application/json: ErrorResponse
-            requestModels:
-              application/json: SaveSignatureStatus
-resources:
-  Resources: null
-  Outputs: null
+            summary: HELLO WORLD
+            description: HELLO WORLD!
+
+resources: ${file(src/config/resources.yml)}

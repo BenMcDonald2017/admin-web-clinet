@@ -3,74 +3,81 @@
 
 /* eslint-disable import/no-extraneous-dependencies */
 const { argv } = require('yargs')
+const { get } = require('delver')
 const dotenv = require('dotenv')
 const fs = require('fs')
 const PATH = require('path')
 const pkg = require('./package.json')
 
-const stageNameAsSetInPackageJSON = (pkg && pkg.config && pkg.config.stage) || 'int'
-
-let { stage = stageNameAsSetInPackageJSON } = argv
+const stageNameAsSetInPackageJSON = get(pkg, 'config.stage', 'int') // default: int
+const { STAGE = stageNameAsSetInPackageJSON } = argv
 
 const getDesiredStageFromPackageJSON = () => new Promise((resolve, reject) => {
-  console.warn('')
+  console.warn('') // newline
   console.warn('*'.repeat(22))
-  console.warn(`***   Stage: ${stage}   ***`)
+  console.warn(`***   STAGE: ${STAGE}   ***`)
   console.warn('*'.repeat(22))
-  console.warn('')
-  return stage ? resolve(stage) : reject(new Error('stage name isn\'t set in package.json'))
+  console.warn('') // newline
+  return STAGE ? resolve(STAGE) : reject(new Error('STAGE Name is NOT set in "package.json"'))
 })
 
 const getAndSetVarsFromEnvFile = () => new Promise((resolve, reject) => {
+  console.warn('') // newline
+  console.info('Searching for ".env" file(s) containing variables to export...')
   fs.readFile(PATH.join(__dirname, '.env'), (error, data) => {
     if (error) {
       if (error.code === 'ENOENT') {
+        console.info(' ... NONE FOUND!')
+        console.info('Moving forward to next step.')
         // don't error if no '.env' file found
-        return resolve(Object.assign({}, {
-          STAGE: stage,
-        }))
+        resolve({ STAGE })
       }
-      return reject(error)
+      reject(error)
     }
+
     const envVars = dotenv.parse(data)
-    return resolve(Object.assign({}, envVars, {
-      STAGE: stage,
-    }))
+    const envVarKeys = typeof envVars === 'object' ? Object.keys(envVars) : {}
+    const envVarCount = envVarKeys.length
+
+    resolve({ ...envVars, STAGE })
+
+    console.info(` ... Success!  FOUND ${envVarCount} variables; SET ${envVarCount} variables.`)
+    console.info('Moving forward to next step.')
+    console.warn('') // newline
   })
 })
 
-const getDomainName = () => new Promise((resolve, reject) => {
-  stage = `${stage}`.toLowerCase()
-
-  if (!stage || stage == null || stage === 'dev') {
-    return resolve('dev-api.hixme.com')
+const getHostname = () => new Promise((resolve) => {
+  const getSubdomain = () => {
+    switch (`${STAGE}`.toLowerCase()) {
+      case 'prod':
+        return ''
+      case 'int':
+        return 'int-api'
+      case 'dev':
+      default:
+        return 'dev-api'
+    }
   }
+  const fullHostname = `${getSubdomain()}.hixme.com`
 
-  if (stage === 'int') {
-    return resolve('int-api.hixme.com')
-  }
-
-  if (stage === 'prod') {
-    return resolve('api.hixme.com')
-  }
-
-  return reject()
+  console.info(`Setting API Hostname to "${fullHostname}".`)
+  console.info('') // newline
+  resolve(fullHostname)
 })
 
-const getAPIBasePath = () => new Promise((resolve, reject) => {
-  const existingServiceName = require('./package.json').name
-  const apiServiceName = existingServiceName.replace(/-service/, '').trim()
+const getAPIBasePath = () => new Promise((resolve) => {
+  const serviceName = get(pkg, 'name', 'untitled-project')
+  const apiServiceName = serviceName.replace(/-service/, '').trim()
 
-  if (!apiServiceName || apiServiceName == null) {
-    return reject()
-  }
-
-  return resolve(apiServiceName)
+  console.info(`Setting API Base Path to "${apiServiceName}".`)
+  console.info('') // newline
+  resolve(apiServiceName)
 })
 
 module.exports = {
   getAndSetVarsFromEnvFile,
   getAPIBasePath,
   getDesiredStageFromPackageJSON,
-  getDomainName,
+  getHostname,
 }

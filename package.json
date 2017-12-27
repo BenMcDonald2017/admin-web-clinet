@@ -18,6 +18,7 @@
   },
   "config": {
     "// NOTE": "SERVERLESS CONFIGURATION VALUES BELOW",
+    "build_directory": "build",
     "inspector_port": 9229,
     "log_fetch_refresh_interval": 5000,
     "log_fetch_start_time": "2h",
@@ -26,10 +27,9 @@
     "stage": "int"
   },
   "scripts": {
-    "build:merge": "npm run clean && npm run merge:yaml && cross-env BABEL_ENV=commonjs babel src --ignore '**/*/*.test.js' --out-dir build --source-maps --copy-files --no-comments",
     "build:min": "npm run build -- --compact --minified --source-maps false",
-    "build:watch": "cross-env BABEL_ENV=commonjs babel src --ignore '**/*/*.test.js' --out-dir build --source-maps --copy-files --no-comments --watch",
-    "build": "npm run clean && npm run merge:yaml && cross-env BABEL_ENV=commonjs babel src --ignore '**/*/*.test.js' --out-dir build --source-maps --copy-files --no-comments",
+    "build:watch": "cross-env BABEL_ENV=commonjs babel src --ignore '**/*/*.test.js' --out-dir $npm_package_config_build_directory --source-maps --copy-files --no-comments --watch",
+    "build": "npm run clean && cross-env BABEL_ENV=commonjs babel src --ignore '**/*/*.test.js' --out-dir $npm_package_config_build_directory --source-maps --copy-files --no-comments",
     "clean": "rimraf build coverage .webpack .serverless",
     "coverage": "npm run test -- --coverage",
     "deploy:custom": "npm run build && cross-env SLS_DEBUG=* sls deploy --aws-s3-accelerate -v -r $npm_package_config_region --stage",
@@ -41,6 +41,8 @@
     "deploy:int": "npm run build:min && sls deploy --aws-s3-accelerate --stage int -r $npm_package_config_region",
     "deploy:prod": "npm run build:min && sls deploy --aws-s3-accelerate --stage prod -r $npm_package_config_region",
     "deploy": "npm run deploy:$npm_package_config_stage",
+    "fullstart:80": "npm run package && npm run start:80",
+    "fullstart": "npm run package && npm start",
     "info:stage": "sls info -v -r $npm_package_config_region --stage",
     "info": "sls info -v -r $npm_package_config_region",
     "invoke:local": "sls invoke local -f",
@@ -51,17 +53,15 @@
     "logs:int": "sls logs -t -i $npm_package_config_log_fetch_refresh_interval --stage int -r $npm_package_config_region --startTime $npm_package_config_log_fetch_start_time -f",
     "logs:prod": "sls logs -t -i $npm_package_config_log_fetch_refresh_interval --stage prod -r $npm_package_config_region --startTime $npm_package_config_log_fetch_start_time -f",
     "logs": "npm run logs:$npm_package_config_stage",
-    "merge:yaml": "merge-yaml -i ./src/config/**/*.yml -o serverless.yml",
     "offline:80": "sudo node --require source-map-support/register --inspect --inspect-port=localhost:$npm_package_config_inspector_port ./node_modules/.bin/serverless offline start --port $AP_PORT --noTimeout",
     "offline": "cross-env SLS_DEBUG=* node --require source-map-support/register --inspect --inspect-port=localhost:$npm_package_config_inspector_port ./node_modules/.bin/serverless offline start --port $AP_PORT --noTimeout",
     "package": "npm run build && sls package --stage $npm_package_config_stage -r $npm_package_config_region",
     "precommit": "npm run lint:fix && npm run coverage",
+    "print": "cross-env SLS_DEBUG=* sls print -v --region $npm_package_config_region --stage $npm_package_config_stage",
     "start:80": "cross-env AP_PORT=\"80\" npm run start:run:80",
     "start:run:80": "npm run build && concurrently --kill-others --prefix='{name} {time}' --names='worker,web   ' --timestamp-format='HH:mm:ss' -c bgBlue,bgMagenta 'npm run build:watch -- --skip-initial-build' 'npm run offline:80'",
     "start:run": "npm run build && concurrently --kill-others --prefix='{name} {time}' --names='worker,web   ' --timestamp-format='HH:mm:ss' -c bgBlue,bgMagenta 'npm run build:watch -- --skip-initial-build' 'npm run offline'",
     "start": "cross-env AP_PORT=\"8000\" npm run start:run",
-    "fullstart": "npm run package && npm start",
-    "fullstart:80": "npm run package && npm run start:80",
     "tag": "git tag -am $npm_package_version $npm_package_version && git push --tags",
     "test:wip": "jest -t wip",
     "test": "jest"
@@ -102,7 +102,6 @@
     "eslint": "4.14.0",
     "eslint-config-airbnb-base": "12.1.0",
     "eslint-plugin-import": "2.8.0",
-    "merge-yaml-cli": "1.1.1",
     "regenerator-runtime": "0.11.1",
     "rimraf": "2.6.2",
     "serverless": "1.25.0",
@@ -159,6 +158,7 @@
           "allow": [
             "dir",
             "error",
+            "info",
             "warn"
           ]
         }

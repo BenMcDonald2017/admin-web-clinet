@@ -1,0 +1,33 @@
+- Effect: Allow
+  Action:
+    # - dynamodb:DeleteItem
+    - dynamodb:DescribeTable
+    - dynamodb:GetItem
+    - dynamodb:PutItem
+    - dynamodb:Query
+    - dynamodb:Scan
+    - dynamodb:UpdateItem
+  Resource:
+    - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-benefits*
+    - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-carrier-application*
+    - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-cart*
+    - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-employee-documents*
+    - arn:aws:dynamodb:us-west-2:409076796536:table/${self:custom.service.STAGE}-persons*
+    - arn:aws:dynamodb:us-west-2:409076796536:table/prod-carrier-application*
+
+- Effect: Allow
+  Action:
+    - lambda:InvokeFunction
+  Resource:
+    - arn:aws:lambda:us-west-2:409076796536:function:get-filled-pdf-application:${self:custom.service.STAGE}
+    - arn:aws:lambda:us-west-2:409076796536:function:get-ssn:${self:custom.service.STAGE}
+
+#### An Example:
+# - Effect: <allow_or_disallow_here>
+#   Action:
+#     - <insert_action_name_here_for_relevant_resources_below>
+#     - <insert_action_name_here_for_relevant_resources_below>
+#     - <insert_action_name_here_for_relevant_resources_below>
+#   Resource:
+#     - arn:aws:<aws_service_name>:<aws_location_name>:<aws_account_id>:function:<function_name>:${self:custom.service.STAGE}
+#     - arn:aws:lambda:us-west-2:409076796536:function:get-ssn:${self:custom.service.STAGE}
