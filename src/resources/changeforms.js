@@ -10,13 +10,6 @@ const healthNetCarriers = ['99110CA', '67138CA']
 const kaiserChangeForm = isProd ? 'cbeeae49-56de-4065-95b8-97b6fafb2189' : '5a450cb3-da73-44d9-8eba-e0902073fc00'
 const genericCancelation = isProd ? 'b59a56bd-4990-488e-a43f-bf37ad00a63b' : '79a9dad3-011c-4094-9c01-7244b9303338'
 
-export async function getChangeOrCancelationForms({ employeePublicKey = ' ', HIOS = ' ' }) {
-  const currentPlans = await getPreviousYearPlan(employeePublicKey)
-  return getNecessaryForms({ currentPlans, HIOS })
-}
-
-const startOfYear = YYYY => (/\d{4}/igm.test(YYYY) ? moment(`${YYYY}-01-01`).startOf('year') : moment().startOf('year'))
-
 export const getPlanAttribute = async ({
   attribute,
   employeePublicKey = ' ',
@@ -50,6 +43,23 @@ export const getPlanAttribute = async ({
   return get({ currentPlans }, `currentPlans[0].${attribute}`, '')
 }
 
+// some easy plan-getting functions
+export const getCurrentYearPlan = async (employeePublicKey = ' ') => getPlanAttribute({ employeePublicKey, returnNakedBenefits: true })
+export const getNextYearPlan = async (employeePublicKey = ' ') => getNextPlanAttribute({ employeePublicKey, returnNakedBenefits: true })
+export const getPreviousYearPlan = async (employeePublicKey = ' ') => getPreviousPlanAttribute({ employeePublicKey, returnNakedBenefits: true })
+
+// booleans:
+export const workerCurrentlyHasAHealthPlan = async (employeePublicKey = ' ') => Boolean(getPlanAttribute({ employeePublicKey, attribute: 'HealthPlanId' }))
+export const workerWillNextYearHaveAHealthPlan = async (employeePublicKey = ' ') => Boolean(getNextPlanAttribute({ employeePublicKey, attribute: 'HealthPlanId' }))
+export const workerPreviouslyHadAHealthPlan = async (employeePublicKey = ' ') => Boolean(getPreviousPlanAttribute({ employeePublicKey, attribute: 'HealthPlanId' }))
+
+const startOfYear = YYYY => (/\d{4}/igm.test(YYYY) ? moment(`${YYYY}-01-01`).startOf('year') : moment().startOf('year'))
+
+export async function getChangeOrCancelationForms({ employeePublicKey = ' ', HIOS = ' ' }) {
+  const currentPlans = await getPreviousYearPlan(employeePublicKey)
+  return getNecessaryForms({ currentPlans, HIOS })
+}
+
 export const getPreviousPlanAttribute = async (args = {}) => getPlanAttribute({
   ...args, // pass all incoming args to `getPlanAttribute()`
   fromYear: moment().subtract(1, 'year').format('YYYY'),
@@ -59,16 +69,6 @@ export const getNextPlanAttribute = async (args = {}) => getPlanAttribute({
   ...args, // pass all incoming args to `getPlanAttribute()`
   fromYear: moment().add(1, 'year').format('YYYY'),
 })
-
-// easy getters
-export const getCurrentYearPlan = async (employeePublicKey = ' ') => getPlanAttribute({ employeePublicKey, returnNakedBenefits: true })
-export const getNextYearPlan = async (employeePublicKey = ' ') => getNextPlanAttribute({ employeePublicKey, returnNakedBenefits: true })
-export const getPreviousYearPlan = async (employeePublicKey = ' ') => getPreviousPlanAttribute({ employeePublicKey, returnNakedBenefits: true })
-
-// booleans:
-export const workerCurrentlyHasAHealthPlan = async (employeePublicKey = ' ') => Boolean(getPlanAttribute({ employeePublicKey, attribute: 'HealthPlanId' }))
-export const workerWillNextYearHaveAHealthPlan = async (employeePublicKey = ' ') => Boolean(getNextPlanAttribute({ employeePublicKey, attribute: 'HealthPlanId' }))
-export const workerPreviouslyHadAHealthPlan = async (employeePublicKey = ' ') => Boolean(getPreviousPlanAttribute({ employeePublicKey, attribute: 'HealthPlanId' }))
 
 const getNecessaryForms = ({ currentPlans = [], HIOS = '' }) => {
   const forms = []

@@ -20,11 +20,10 @@ const pkg = require('./package.json')
 // then I default "STAGE" to "int":
 const { STAGE = get(pkg, 'config.stage', 'int') } = argv
 const myEnv = dotenv.config()
-const period = reset('.')
 
 function success(description = '', information = '') {
   drawInitialNewline()
-  centerText(`${description}: ${information}${period}`)
+  centerText(`${description}: ${information}${reset('.')}`)
   horizontalRule()
   return true
 }
@@ -33,12 +32,6 @@ function pluralize(count = 0) {
   if (count > 1 || count === 0) return 's'
   return ''
 }
-
-module.exports.testFunction = () => ({
-  foo: 'bar',
-  number: 40 + 2,
-  date: +new Date(),
-})
 
 module.exports.getAndSetVarsFromEnvFile = () => new Promise((resolve) => {
   const taskDescription = 'Locating ".env" Config File'

@@ -29,7 +29,7 @@
   "scripts": {
     "build:min": "npm run build -- --compact --minified --source-maps false",
     "build:watch": "cross-env BABEL_ENV=commonjs babel src --ignore '**/*/*.test.js' --out-dir $npm_package_config_build_directory --source-maps --copy-files --no-comments --watch",
-    "build": "npm run clean && cross-env BABEL_ENV=commonjs babel src --ignore '**/*/*.test.js' --out-dir $npm_package_config_build_directory --source-maps --copy-files --no-comments",
+    "build": "npm run clean && mkdir -p .webpack/.serverless && cross-env BABEL_ENV=commonjs babel src --ignore '**/*/*.test.js' --out-dir $npm_package_config_build_directory --source-maps --copy-files --no-comments",
     "clean": "rimraf build coverage .webpack .serverless",
     "coverage": "npm run test -- --coverage",
     "deploy:custom": "npm run build && cross-env SLS_DEBUG=* sls deploy --aws-s3-accelerate -v -r $npm_package_config_region --stage",
