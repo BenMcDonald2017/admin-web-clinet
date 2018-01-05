@@ -96,16 +96,7 @@ export const getCartWithApplicationStatus = ware(
 )
 
 const createEnvelopes = async (healthBundle, primary, family, event) => {
-  // 1. iterate through the non-covered people and get them taken care of first:
-  healthBundle.NotIncluded = await Promise.all(healthBundle.NotIncluded.map(async (person) => {
-    if (person.FirstName === 'John' && person.LastName === 'Smith') {
-      person.isJohnSmith = true
-    }
-
-    return person
-  }))
-
-  // 2. iterate through health insurance benefits and create docusign envelopes for each
+  // 1. iterate through health insurance benefits and create docusign envelopes for each
   healthBundle.Benefits = await Promise.all(healthBundle.Benefits.map(async (benefit) => {
     const { queryStringParameters: { force = false } = {} } = event
     const forceFlagIsSet = queryStringIsTrue(force)
@@ -162,12 +153,12 @@ const createEnvelopes = async (healthBundle, primary, family, event) => {
     return benefit
   }))
 
-  // 3. set results
+  // 2. set results
   event.result = healthBundle
 
-  // 4. return new healthBundle, w/ DocuSign docs created and the appropriate
+  // 3. return new healthBundle, w/ DocuSign docs created and the appropriate
   // 'ID's inserted into the requisite healthBenefit records
   return healthBundle
 
-  // 5. profit
+  // 4. profit
 }
