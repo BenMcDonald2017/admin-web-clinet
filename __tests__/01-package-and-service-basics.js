@@ -1,6 +1,6 @@
 import pkg from '../package.json'
 
-expect('Project Package and Service Basics', () => {
+describe('Project Package and Service Basics', () => {
   it('\'package.json\' file exists', () => {
     expect(pkg).toBeDefined()
   })
