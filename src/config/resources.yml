@@ -34,7 +34,7 @@ resources:
     # CognitoUserPoolHixmeAuth:
     #   Type: AWS::Cognito::UserPool
     #   Properties:
-    #     UserPoolName: ${self:custom.service.STAGE}-auth-user-pool
+    #     UserPoolName: ${file(src/config/custom.yml):service.STAGE}-auth-user-pool
     #     Policies:
     #       PasswordPolicy:
     #         MinimumLength: 8
@@ -57,12 +57,12 @@ resources:
     #     #   SourceArn: ""
     #     #   ReplyToEmailAddress: ""
     #     SmsConfiguration:
-    #       ExternalId: ${self:custom.service.STAGE}-auth-user-pool-external
+    #       ExternalId: ${file(src/config/custom.yml):service.STAGE}-auth-user-pool-external
     #       SnsCallerArn:
     #         Fn::GetAtt: [ SNSRole, Arn ]
-    #       # SnsCallerArn: arn:aws:iam::409076796536:role/service-role/${self:custom.service.STAGE}-platform-user-pool-sms-role
+    #       # SnsCallerArn: arn:aws:iam::409076796536:role/service-role/${file(src/config/custom.yml):service.STAGE}-platform-user-pool-sms-role
     #       # ExternalId: e891644b-0d09-427f-b4e3-49355b04ce5b
-    #     UserPoolTags: ${self:custom.environment}
+    #     UserPoolTags: ${file(src/config/custom.yml):environment}
     #     AdminCreateUserConfig:
     #       AllowAdminCreateUserOnly: false
     #       UnusedAccountValidityDays: 7
@@ -87,7 +87,7 @@ resources:
     # UserPoolClient:
     #   Type: AWS::Cognito::UserPoolClient
     #   Properties:
-    #     ClientName: "${self:custom.service.STAGE} auth user pool client"
+    #     ClientName: "${file(src/config/custom.yml):service.STAGE} auth user pool client"
     #     GenerateSecret: false
     #     UserPoolId:
     #       Ref: CognitoUserPoolHixmeAuth
@@ -96,7 +96,7 @@ resources:
     # IdentityPool:
     #   Type: AWS::Cognito::IdentityPool
     #   Properties:
-    #     IdentityPoolName: "${self:custom.service.STAGE} auth identity pool"
+    #     IdentityPoolName: "${file(src/config/custom.yml):service.STAGE} auth identity pool"
     #     AllowUnauthenticatedIdentities: true
     #     CognitoIdentityProviders:
     #       - ClientId:
@@ -185,7 +185,7 @@ resources:
     #   Type: AWS::DynamoDB::Table
     #   DeletionPolicy: Retain
     #   Properties:
-    #     TableName: ${self:custom.environment.service.dynamo_table}
+    #     TableName: ${file(src/config/custom.yml):environment.service.dynamo_table}
     #     AttributeDefinitions:
     #       - AttributeName: email
     #         AttributeType: S

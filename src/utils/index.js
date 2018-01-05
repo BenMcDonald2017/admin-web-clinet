@@ -1,6 +1,7 @@
 import { isError, isString } from 'lodash'
 import circular from 'circular-json'
 import http from 'http'
+import stripAnsiColors from 'strip-ansi'
 import ware from 'warewolf'
 
 export const isProd = /^prod$/i.test(process.env && (process.env.STAGE || process.env.stage))
@@ -126,3 +127,46 @@ export const isTrue = value =>
 export const stripNonAlphaNumericChars = value => `${value}`.replace(/[^\w\s]*/gi, '')
 
 export const queryStringIsTrue = queryString => isTrue(stripNonAlphaNumericChars(queryString))
+
+const logLevel = 'info'
+
+/* eslint-disable no-console */
+export function horizontalRule(width = 78, character = '—', shouldConsoleLog = false) {
+  if (shouldConsoleLog) {
+    return character.repeat(width)
+  }
+  return console[logLevel](`|${character.repeat(width)}|`)
+}
+export function newline() { console[logLevel](horizontalRule(1, '', true)) }
+
+export const centerText = centerContent
+export function centerContent(content = '', maxWidth = 78, spacing = Math.floor((maxWidth - stripAnsiColors(content).length) / 2)) {
+  const repeatAmount = (maxWidth - (`${horizontalRule(spacing, ' ', true)}${stripAnsiColors(content)}${horizontalRule(spacing, ' ', true)}`).length) < 0 ? 0 : (maxWidth - (`${horizontalRule(spacing, ' ', true)}${stripAnsiColors(content)}${horizontalRule(spacing, ' ', true)}`).length)
+  console[logLevel](`|${horizontalRule(spacing, ' ', true)}${content}${horizontalRule(spacing, ' ', true)}${' '.repeat(repeatAmount)}|`)
+}
+
+let initialLineHasBeenDrawn = false
+export const drawInitialNewline = () => {
+  if (initialLineHasBeenDrawn) {
+    return false
+  }
+
+  initialLineHasBeenDrawn = true
+  newline()
+  horizontalRule()
+  return true
+}
+
+export function getSubdomainPrefix(apiRootName = 'api') {
+  // destructuring "stage" from "process.env"
+  const { env: { stage: stageLowerCase = '' } = {} } = process
+  const { env: { STAGE: stageUpperCase = '' } = {} } = process
+  // catching both cases, whether env varible is set to "STAGE" or "stage"
+  const stage = (stageUpperCase || stageLowerCase).toLowerCase()
+  // As for below: instead of a SWITCH statement, this seems more readable
+  if (stage === 'prod') return `${apiRootName}`
+  if (stage === 'int')  return `int-${apiRootName}`
+  if (stage === 'dev')  return `dev-${apiRootName}`
+  // if none of the above trigger, then return a default of dev"
+  return `dev-${apiRootName}`
+}

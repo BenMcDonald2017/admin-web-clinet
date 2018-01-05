@@ -1,217 +1,219 @@
-ping:
-  description: ${self:custom.documentation.summary} | Ping / Pong
-  handler: build/routes/ping/index.ping
-  events:
-    - http:
-        path: ping
-        method: get
-        cors: true
-        documentation:
-          summary: 'Ping The Service'
-          description: Service Up? Check w/ Ping / Pong!
+functions:
 
-createEnvelope:
-  description: ${self:custom.documentation.summary} | Create Envelope [POST]
-  handler: build/routes/envelope/index.createEnvelope
-  events:
-    - http:
-        path: envelope
-        method: post
-        cors: true
-        documentation:
-          summary: Create Envelope (on DocuSign)
-          description: Create Envelope (on DocuSign) [POST]
-          requestBody:
-            description: "Request body description"
-          methodResponses:
-            -
-              statusCode: "200"
-              responseBody:
-                description: "Response body description"
-            -
-              statusCode: "400"
-              responseModels:
-                "application/json": "ErrorResponse"
-          requestModels:
-            "application/json": "CreateEnvelope"
+  ping:
+    description: ${self:custom.documentation.summary} | Ping / Pong
+    handler: build/routes/ping/index.ping
+    events:
+      - http:
+          path: ping
+          method: get
+          cors: true
+          documentation:
+            summary: 'Ping The Service'
+            description: Service Up? Check w/ Ping / Pong!
 
-getEnvelopeRecipients:
-  description: ${self:custom.documentation.summary} | Get Envelope Recipients [GET]
-  handler: build/routes/envelope/recipients/index.onGetEnvelopeRecipients
-  events:
-    - http:
-        path: envelope/{envelopeId}/recipients
-        method: get
-        parameters:
-          paths:
-            envelopeId: true
-        cors: true
-        documentation:
-          summary: Get Envelope Recipients
-          description: Get Envelope Recipients [GET]
-          requestBody:
-            description: "Request body description"
-          methodResponses:
-            -
-              statusCode: "200"
-              responseBody:
-                description: "Response body description"
-            -
-              statusCode: "400"
-              responseModels:
-                "application/json": "ErrorResponse"
-          requestModels:
-            "application/json": "GetEnvelopeRecipients"
+  createEnvelope:
+    description: ${self:custom.documentation.summary} | Create Envelope [POST]
+    handler: build/routes/envelope/index.createEnvelope
+    events:
+      - http:
+          path: envelope
+          method: post
+          cors: true
+          documentation:
+            summary: Create Envelope (on DocuSign)
+            description: Create Envelope (on DocuSign) [POST]
+            requestBody:
+              description: "Request body description"
+            methodResponses:
+              -
+                statusCode: "200"
+                responseBody:
+                  description: "Response body description"
+              -
+                statusCode: "400"
+                responseModels:
+                  "application/json": "ErrorResponse"
+            requestModels:
+              "application/json": "CreateEnvelope"
 
-getEnvelope:
-  description: ${self:custom.documentation.summary} | Get Envelope [GET]
-  handler: build/routes/envelope/index.getEnvelope
-  events:
-    - http:
-        path: envelope/{envelopeId}
-        method: get
-        request:
+  getEnvelopeRecipients:
+    description: ${self:custom.documentation.summary} | Get Envelope Recipients [GET]
+    handler: build/routes/envelope/recipients/index.onGetEnvelopeRecipients
+    events:
+      - http:
+          path: envelope/{envelopeId}/recipients
+          method: get
           parameters:
             paths:
               envelopeId: true
-        cors: true
-        documentation:
-          summary: Get Envelope
-          description: Get Envelope [GET]
-          requestBody:
-            description: "Request body description"
-          methodResponses:
-            -
-              statusCode: "200"
-              responseBody:
-                description: "Response body description"
-            -
-              statusCode: "400"
-              responseModels:
-                "application/json": "ErrorResponse"
-          requestModels:
-            "application/json": "GetEnvelope"
+          cors: true
+          documentation:
+            summary: Get Envelope Recipients
+            description: Get Envelope Recipients [GET]
+            requestBody:
+              description: "Request body description"
+            methodResponses:
+              -
+                statusCode: "200"
+                responseBody:
+                  description: "Response body description"
+              -
+                statusCode: "400"
+                responseModels:
+                  "application/json": "ErrorResponse"
+            requestModels:
+              "application/json": "GetEnvelopeRecipients"
 
-createSigningSession:
-  description: ${self:custom.documentation.summary} | Create Signing Session [POST]
-  handler: build/routes/envelope/sign/index.createSigningSession
-  events:
-    - http:
-        path: envelope/{envelopeId}/sign
-        method: post
-        request:
-          parameters:
-            paths:
-              envelopeId: true
-        cors: true
-        documentation:
-          summary: Create Signing Session
-          description: Create Signing Session [GET]
-          requestBody:
-            description: "Request body description"
-          methodResponses:
-            -
-              statusCode: "200"
-              responseBody:
-                description: "Response body description"
-            -
-              statusCode: "400"
-              responseModels:
-                "application/json": "ErrorResponse"
-          requestModels:
-            "application/json": "CreateSigningSession"
+  getEnvelope:
+    description: ${self:custom.documentation.summary} | Get Envelope [GET]
+    handler: build/routes/envelope/index.getEnvelope
+    events:
+      - http:
+          path: envelope/{envelopeId}
+          method: get
+          request:
+            parameters:
+              paths:
+                envelopeId: true
+          cors: true
+          documentation:
+            summary: Get Envelope
+            description: Get Envelope [GET]
+            requestBody:
+              description: "Request body description"
+            methodResponses:
+              -
+                statusCode: "200"
+                responseBody:
+                  description: "Response body description"
+              -
+                statusCode: "400"
+                responseModels:
+                  "application/json": "ErrorResponse"
+            requestModels:
+              "application/json": "GetEnvelope"
 
-getCartWithApplicationStatus:
-  description: ${self:custom.documentation.summary} | Get Cart With Application Status [GET]
-  handler: build/routes/status/index.getCartWithApplicationStatus
-  events:
-    - http:
-        path: status
-        method: get
-        cors: true
-        request:
-          parameters:
-            querystrings:
-              employeePublicKey: true
-              returnUrl: true
-        documentation:
-          summary: Get Cart With Application Status
-          description: Get Cart With Application Status [GET]
-          queryParams:
-            -
-              name: "employeePublicKey"
-              description: "The Employee Public Key"
-            -
-              name: "returnUrl"
-              description: "The URL That DocuSign Should Return to After Signing"
-          methodResponses:
-            -
-              statusCode: "200"
-              responseBody:
-                description: "Response body description"
-            -
-              statusCode: "400"
-              responseModels:
-                "application/json": "ErrorResponse"
+  createSigningSession:
+    description: ${self:custom.documentation.summary} | Create Signing Session [POST]
+    handler: build/routes/envelope/sign/index.createSigningSession
+    events:
+      - http:
+          path: envelope/{envelopeId}/sign
+          method: post
+          request:
+            parameters:
+              paths:
+                envelopeId: true
+          cors: true
+          documentation:
+            summary: Create Signing Session
+            description: Create Signing Session [GET]
+            requestBody:
+              description: "Request body description"
+            methodResponses:
+              -
+                statusCode: "200"
+                responseBody:
+                  description: "Response body description"
+              -
+                statusCode: "400"
+                responseModels:
+                  "application/json": "ErrorResponse"
+            requestModels:
+              "application/json": "CreateSigningSession"
 
-getApplicationSigningLink:
-  description: ${self:custom.documentation.summary} | Get an Application Signing Link [GET]
-  handler: build/routes/envelope/sign/index.getApplicationSigningLink
-  events:
-    - http:
-        path: sign
-        method: get
-        cors: true
-        request:
-          parameters:
-            querystrings:
-              employeePublicKey: true
-              envelopeId: true
-              returnUrl: true
-        documentation:
-          summary: Get an Application Signing Link
-          description: Get an Application Signing Link [GET]
-          queryParams:
-            -
-              name: "employeePublicKey"
-              description: "The Employee Public Key"
-            -
-              name: "envelopeId"
-              description: "The Envelope Id"
-            -
-              name: "returnUrl"
-              description: "The URL That DocuSign Should Return to After Signing"
-          methodResponses:
-            -
-              statusCode: "200"
-              responseBody:
-                description: "Response body description"
-            -
-              statusCode: "400"
-              responseModels:
-                "application/json": "ErrorResponse"
+  getCartWithApplicationStatus:
+    description: ${self:custom.documentation.summary} | Get Cart With Application Status [GET]
+    handler: build/routes/status/index.getCartWithApplicationStatus
+    events:
+      - http:
+          path: status
+          method: get
+          cors: true
+          request:
+            parameters:
+              querystrings:
+                employeePublicKey: true
+                returnUrl: true
+          documentation:
+            summary: Get Cart With Application Status
+            description: Get Cart With Application Status [GET]
+            queryParams:
+              -
+                name: "employeePublicKey"
+                description: "The Employee Public Key"
+              -
+                name: "returnUrl"
+                description: "The URL That DocuSign Should Return to After Signing"
+            methodResponses:
+              -
+                statusCode: "200"
+                responseBody:
+                  description: "Response body description"
+              -
+                statusCode: "400"
+                responseModels:
+                  "application/json": "ErrorResponse"
 
-saveSignatureStatus:
-  description: ${self:custom.documentation.summary} | Save Signature Status [POST]
-  handler: build/routes/envelope/sign/index.saveSignatureStatus
-  events:
-    - http:
-        path: sign
-        method: post
-        cors: true
-        documentation:
-          summary: Save Signature Status [POST]
-          description: Save Signature Status [POST]
-          requestBody:
-            description: "Request body description"
-          methodResponses:
-            -
-              statusCode: "200"
-              responseBody:
-                description: "Response body description"
-            -
-              statusCode: "400"
-              responseModels:
-                "application/json": "ErrorResponse"
-          requestModels:
-            "application/json": "SaveSignatureStatus"
+  getApplicationSigningLink:
+    description: ${self:custom.documentation.summary} | Get an Application Signing Link [GET]
+    handler: build/routes/envelope/sign/index.getApplicationSigningLink
+    events:
+      - http:
+          path: sign
+          method: get
+          cors: true
+          request:
+            parameters:
+              querystrings:
+                employeePublicKey: true
+                envelopeId: true
+                returnUrl: true
+          documentation:
+            summary: Get an Application Signing Link
+            description: Get an Application Signing Link [GET]
+            queryParams:
+              -
+                name: "employeePublicKey"
+                description: "The Employee Public Key"
+              -
+                name: "envelopeId"
+                description: "The Envelope Id"
+              -
+                name: "returnUrl"
+                description: "The URL That DocuSign Should Return to After Signing"
+            methodResponses:
+              -
+                statusCode: "200"
+                responseBody:
+                  description: "Response body description"
+              -
+                statusCode: "400"
+                responseModels:
+                  "application/json": "ErrorResponse"
+
+  saveSignatureStatus:
+    description: ${self:custom.documentation.summary} | Save Signature Status [POST]
+    handler: build/routes/envelope/sign/index.saveSignatureStatus
+    events:
+      - http:
+          path: sign
+          method: post
+          cors: true
+          documentation:
+            summary: Save Signature Status [POST]
+            description: Save Signature Status [POST]
+            requestBody:
+              description: "Request body description"
+            methodResponses:
+              -
+                statusCode: "200"
+                responseBody:
+                  description: "Response body description"
+              -
+                statusCode: "400"
+                responseModels:
+                  "application/json": "ErrorResponse"
+            requestModels:
+              "application/json": "SaveSignatureStatus"
