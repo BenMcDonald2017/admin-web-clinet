@@ -129,8 +129,7 @@ const createEnvelopes = async (healthBundle, primary, family, event) => {
 
       // this puppy kicks off all the docusign creation code
       await createDocuSignEnvelope(benefit, primary, family, signers, event)
-
-      // destructure 'event.envelope.envelopeId' and setting defaults if none
+      // destructures 'event.envelope.envelopeId' and sets defaults, if empty
       const { envelope: { envelopeId = 'undefined' } = {} } = event
       const currentDateTime = new Date().toISOString()
 
@@ -157,7 +156,7 @@ const createEnvelopes = async (healthBundle, primary, family, event) => {
   event.result = healthBundle
 
   // 3. return new healthBundle, w/ DocuSign docs created and the appropriate
-  // 'ID's inserted into the requisite healthBenefit records
+  // 'ID's inserted into the requisite "healthBenefit" record(s)
   return healthBundle
 
   // 4. profit

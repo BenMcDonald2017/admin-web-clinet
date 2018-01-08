@@ -114,6 +114,7 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
 }
 
 export const getDocuSignEnvelope = async (event) => {
+  /* eslint-disable camelcase */
   const { envelopeId: envelope_ids } = event.params
 
   const { envelopes } = await getEnvelopes({ query: { envelope_ids } })

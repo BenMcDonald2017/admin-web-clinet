@@ -13,7 +13,7 @@ const genericCancelation = isProd ? 'b59a56bd-4990-488e-a43f-bf37ad00a63b' : '79
 export const getPlanAttribute = async ({
   attribute,
   employeePublicKey = ' ',
-  fromYear = year => startOfYear(year),
+  fromYear = '',
   returnNakedBenefits = false,
 }) => {
   const { Items: benefits = [] } = await docClient.query({
@@ -28,32 +28,39 @@ export const getPlanAttribute = async ({
     },
   }).promise()
 
-  // Ensure `moment()` (aka, today) is  between `Effective` and `End` dates.
-  const currentPlans = benefits.filter(health => moment(fromYear).isBetween(
-    moment(health.BenefitEffectiveDate),
-    moment(health.BenefitEndDate), 'days', '[]',
-  ))
+  fromYear = startOfYear(fromYear || undefined)
+
+  // Ensure healthPlans are .
+  const currentPlans = benefits.filter(health => moment(fromYear).isSame(moment(health.BenefitEffectiveDate), 'year'))
 
   // if one elects to receive the naked (untouched) benefit
   if (returnNakedBenefits === true || (typeof attribute === 'undefined' || attribute == null || !attribute)) {
     return currentPlans
   }
 
-  // `currentPlans` can contain multiple entries; we are currently choosing the first
+  // otherwise, at this point, the function caller must desire an attribute from
+  // said plan.  ALSO: `currentPlans` can contain multiple entries; this currently
+  // chooses only the first plan!
   return get({ currentPlans }, `currentPlans[0].${attribute}`, '')
 }
 
 // some easy plan-getting functions
-export const getCurrentYearPlan = async (employeePublicKey = ' ') => getPlanAttribute({ employeePublicKey, returnNakedBenefits: true })
-export const getNextYearPlan = async (employeePublicKey = ' ') => getNextPlanAttribute({ employeePublicKey, returnNakedBenefits: true })
-export const getPreviousYearPlan = async (employeePublicKey = ' ') => getPreviousPlanAttribute({ employeePublicKey, returnNakedBenefits: true })
+export const getCurrentYearPlan = (employeePublicKey = ' ') => getPlanAttribute({ employeePublicKey, returnNakedBenefits: true })
+export const getNextYearPlan = (employeePublicKey = ' ') => getNextPlanAttribute({ employeePublicKey, returnNakedBenefits: true })
+export const getPreviousYearPlan = (employeePublicKey = ' ') => getPreviousPlanAttribute({ employeePublicKey, returnNakedBenefits: true })
 
 // booleans:
-export const workerCurrentlyHasAHealthPlan = async (employeePublicKey = ' ') => Boolean(getPlanAttribute({ employeePublicKey, attribute: 'HealthPlanId' }))
-export const workerWillNextYearHaveAHealthPlan = async (employeePublicKey = ' ') => Boolean(getNextPlanAttribute({ employeePublicKey, attribute: 'HealthPlanId' }))
-export const workerPreviouslyHadAHealthPlan = async (employeePublicKey = ' ') => Boolean(getPreviousPlanAttribute({ employeePublicKey, attribute: 'HealthPlanId' }))
+export const workerCurrentlyHasAHealthPlan = async (employeePublicKey = ' ') => (Boolean(getPlanAttribute({ employeePublicKey, attribute: 'HealthPlanId' })))
+export const workerWillNextYearHaveAHealthPlan = async (employeePublicKey = ' ') => (Boolean(getNextPlanAttribute({ employeePublicKey, attribute: 'HealthPlanId' })))
+export const workerPreviouslyHadAHealthPlan = async (employeePublicKey = ' ') => (Boolean(getPreviousPlanAttribute({ employeePublicKey, attribute: 'HealthPlanId' })))
 
-const startOfYear = YYYY => (/\d{4}/igm.test(YYYY) ? moment(`${YYYY}-01-01`).startOf('year') : moment().startOf('year'))
+export function startOfYear(YYYY = '') {
+  if (/^\d{4}$/i.test(YYYY)) {
+    return moment(`${YYYY}-01-01T00:00:00.000`).startOf('year')
+  }
+  // else, return the start of _this_ year
+  return moment().startOf('year')
+}
 
 export async function getChangeOrCancelationForms({ employeePublicKey = ' ', HIOS = ' ' }) {
   const currentPlans = await getPreviousYearPlan(employeePublicKey)
@@ -96,7 +103,8 @@ const getNecessaryForms = ({ currentPlans = [], HIOS = '' }) => {
   }
 
   // if person _doesn't_ have a plan with an identical HIOS carrier ID (meaning,
-  // person chose same plan again)—AND—they don't already have `genericCancelation` form
+  // the worker DIDN'T end up chosing the same plan again)—AND—they don't already
+  // have the `genericCancelation` form, give it to them
   if (issuers.length && !issuers.includes(HIOS.slice(0, 7)) && !forms.includes(genericCancelation)) {
     forms.push(genericCancelation)
   }

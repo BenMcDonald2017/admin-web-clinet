@@ -11,7 +11,6 @@ const {
 const { get } = require('delver')
 const { green, reset } = require('chalk')
 const dotenv = require('dotenv')
-const dotenvExpand = require('dotenv-expand')
 const pkg = require('./package.json')
 
 // if this microservice is initiated with an argument named, "STAGE", then that
@@ -19,7 +18,6 @@ const pkg = require('./package.json')
 // since that's the value in "package.json:config.stage". If that's not found,
 // then I default "STAGE" to "int":
 const { STAGE = get(pkg, 'config.stage', 'int') } = argv
-const myEnv = dotenv.config()
 
 function success(description = '', information = '') {
   drawInitialNewline()
@@ -35,7 +33,7 @@ function pluralize(count = 0) {
 
 module.exports.getAndSetVarsFromEnvFile = () => new Promise((resolve) => {
   const taskDescription = 'Locating ".env" Config File'
-  const { parsed: environmentVariables = {} } = dotenvExpand(myEnv)
+  const { parsed: environmentVariables = {} } = dotenv.config()
   const envVariableCount = Object.keys(environmentVariables).length
   // in this case, if we don't have any env variables, we don't want to reject;
   // instead, we want to resolve with a single environment variable: "STAGE"

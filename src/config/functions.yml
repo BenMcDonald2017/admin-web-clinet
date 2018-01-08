@@ -10,6 +10,18 @@ ping:
           summary: 'Ping The Service'
           description: Service Up? Check w/ Ping / Pong!
 
+cancelPreviousHealthBenefits:
+  description: ${self:custom.documentation.summary} | Cancel Previous Health Benefits [POST]
+  handler: build/routes/cancel/index.cancelPreviousHealthBenefits
+  events:
+    - http:
+        path: cancel/{employeePublicKey}
+        method: post
+        parameters:
+          path:
+            employeePublicKey: true
+        cors: true
+
 createEnvelope:
   description: ${self:custom.documentation.summary} | Create Envelope [POST]
   handler: build/routes/envelope/index.createEnvelope

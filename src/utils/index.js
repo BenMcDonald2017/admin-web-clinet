@@ -29,7 +29,7 @@ function responseController(
         return Array.isArray(result) ? [...result] : { ...result }
       case 'undefined':
         // not sure how we should be handling this
-        return { result }
+        return {}
       default:
         return { ...result }
     }
@@ -126,7 +126,10 @@ export const isTrue = value =>
 
 export const stripNonAlphaNumericChars = value => `${value}`.replace(/[^\w\s]*/gi, '')
 
-export const queryStringIsTrue = queryString => isTrue(stripNonAlphaNumericChars(queryString))
+export const isSetToTrue = queryStringIsTrue
+export function queryStringIsTrue(queryString) {
+  return isTrue(stripNonAlphaNumericChars(queryString))
+}
 
 const logLevel = 'info'
 
