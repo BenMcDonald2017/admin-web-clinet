@@ -160,16 +160,12 @@ export const drawInitialNewline = () => {
   return true
 }
 
-export function getSubdomainPrefix(apiRootName = 'api') {
-  // destructuring "stage" from "process.env"
-  const { env: { stage: stageLowerCase = '' } = {} } = process
-  const { env: { STAGE: stageUpperCase = '' } = {} } = process
-  // catching both cases, whether env varible is set to "STAGE" or "stage"
-  const stage = (stageUpperCase || stageLowerCase).toLowerCase()
-  // As for below: instead of a SWITCH statement, this seems more readable
-  if (stage === 'prod') return `${apiRootName}`
-  if (stage === 'int')  return `int-${apiRootName}`
-  if (stage === 'dev')  return `dev-${apiRootName}`
+export function getSubdomainPrefix(apiRootName = 'api', STAGE) {
+  if (STAGE === 'prod') return `${apiRootName}`
+  if (STAGE === 'int')  return `int-${apiRootName}`
+  if (STAGE === 'dev')  return `dev-${apiRootName}`
+
   // if none of the above trigger, then return a default of dev"
+  centerText('WARNING: Couldn\'t detect STAGE')
   return `dev-${apiRootName}`
 }

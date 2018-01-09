@@ -5,7 +5,10 @@
 
 const { argv } = require('yargs')
 const {
-  drawInitialNewline, horizontalRule, centerText, getSubdomainPrefix, /* newline, */
+  centerText,
+  drawInitialNewline,
+  getSubdomainPrefix,
+  horizontalRule,
 } = require('./build/utils')
 
 const { get } = require('delver')
@@ -31,43 +34,43 @@ function pluralize(count = 0) {
   return ''
 }
 
-module.exports.getAndSetVarsFromEnvFile = () => new Promise((resolve) => {
+module.exports.getAndSetVarsFromEnvFile = (shouldPrint = true) => new Promise((resolve) => {
   const taskDescription = 'Locating ".env" Config File'
   const { parsed: environmentVariables = {} } = dotenv.config()
   const envVariableCount = Object.keys(environmentVariables).length
   // in this case, if we don't have any env variables, we don't want to reject;
   // instead, we want to resolve with a single environment variable: "STAGE"
   const taskSuccessInfo = `Exported ${green(envVariableCount)} Variable${pluralize(envVariableCount)}`
-  success(taskDescription, taskSuccessInfo)
+  if (shouldPrint) success(taskDescription, taskSuccessInfo)
   resolve({ ...environmentVariables, STAGE })
 })
 
-module.exports.getDesiredStageFromPackageJSON = () => new Promise((resolve, reject) => {
+module.exports.getDesiredStageFromPackageJSON = (shouldPrint = true) => new Promise((resolve, reject) => {
   const taskDescription = 'Setting API / Service Stage'
   // check for "STAGE" having been set; rejects if not
   if (typeof STAGE === 'undefined' || STAGE == null) reject(new (Error(taskDescription))())
   // print success message(s) and resolve value to caller
   const taskSuccessInfo = `${green(STAGE)}`
-  success(taskDescription, taskSuccessInfo)
+  if (shouldPrint) success(taskDescription, taskSuccessInfo)
   resolve(STAGE)
 })
 
-module.exports.getAPIBasePath = () => new Promise((resolve) => {
+module.exports.getAPIBasePath = (shouldPrint = true) => new Promise((resolve) => {
   const taskDescription = 'Setting API Path'
   const serviceNameFromPackageJSONFile = get(pkg, 'name', 'untitled-project')
   // removes the "service" text at the end, if any!
   const apiBasePath = serviceNameFromPackageJSONFile.replace(/-service/igm, '').trim()
   const taskSuccessInfo = `Path: "${green(`/${apiBasePath}`)}"`
-  success(taskDescription, taskSuccessInfo)
+  if (shouldPrint) success(taskDescription, taskSuccessInfo)
   resolve(apiBasePath)
 })
 
-module.exports.getHostname = () => new Promise((resolve) => {
+module.exports.getHostname = (shouldPrint = true) => new Promise((resolve) => {
   const taskDescription = 'Setting API Hostname'
-  const hostname = `${getSubdomainPrefix('api')}.hixme.com`
+  const hostname = `${getSubdomainPrefix('api', STAGE)}.hixme.com`
   // the function "getSubdomainPrefix()" will ALWAYS return a value;
   // as such, we only ever need to resolve
   const taskSuccessInfo = `${green(hostname)}`
-  success(taskDescription, taskSuccessInfo)
+  if (shouldPrint) success(taskDescription, taskSuccessInfo)
   resolve(hostname)
 })
