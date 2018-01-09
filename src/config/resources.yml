@@ -8,7 +8,7 @@ resources:
   # Below, are all of the "Resources" your "Functions" use.
   # Raw AWS CloudFormation is expected in this file below
 
-  Resources:
+  Resources: {}
 
     # SNSRole:
     #     Type: AWS::IAM::Role
@@ -210,7 +210,7 @@ resources:
     #           Action:
     #             - "sts:AssumeRole"
 
-  Outputs:
+  Outputs: {}
 
     # an example of the "Outputs" that your AWS CloudFormation Stack should produce
     # it allows references between services during instantiation
