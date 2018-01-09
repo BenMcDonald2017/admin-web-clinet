@@ -34,6 +34,7 @@ export const cancelPreviousHealthBenefits = ware(
     event.currentPlan = await getCurrentYearPlan(event.employeePublicKey)
     event.previousPlan = await getPreviousYearPlan(event.employeePublicKey)
 
+    // Selecting only the first plan here, fyi...
     event.currentPlan = (event.currentPlan && event.currentPlan.length) ? event.currentPlan[0] : event.currentPlan
     event.previousPlan = (event.previousPlan && event.previousPlan.length) ? event.previousPlan[0] : event.previousPlan
   },
