@@ -1,4 +1,5 @@
 export * from './cancel'
+export * from './cancel/sign'
 export * from './envelope'
 export * from './envelope/recipients'
 export * from './envelope/sign'

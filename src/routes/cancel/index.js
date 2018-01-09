@@ -110,16 +110,6 @@ const createDocuSignEnvelopeForCancelationOfPreviousPlan = async (benefit, worke
     returnUrl: event.returnUrl,
   }
 
-  // const [{ Item: theCart }] = await Promise.all([
-  //   getCart(employeePublicKey),
-  // ])
-
-  // event.cart = theCart
-
-  // if (event.cart) {
-  //   event.healthBundle = getHealthBundle(event.cart.Cart)
-  // }
-
   const formattedSignersArray = await generateSigners(event.signers, fields)
   const compositeTemplates = await generateComposedTemplates(
     [genericCancelation], // an Array of 1+ docusign template IDs
@@ -134,11 +124,11 @@ const createDocuSignEnvelopeForCancelationOfPreviousPlan = async (benefit, worke
 
   const payload = {
     ...documentData,
-    EmailBlurb:   `Signature Request: ${name}`,
-    emailSubject: `Signature Request: ${name}`,
+    EmailBlurb:   `Plan Cancelation: ${name}`,
+    emailSubject: `Plan Cancelation: ${name}`,
     fromDate:     new Date(),
     status:       'sent', // indicates it's _NOT_ a draft
-    Subject:      `Signature Request: ${name}`,
+    Subject:      `Plan Cancelation: ${name}`,
     notification: {
       useAccountDefaults:  false,
       reminders: {

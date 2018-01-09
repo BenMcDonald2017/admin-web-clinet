@@ -166,6 +166,21 @@ getCartWithApplicationStatus:
               responseModels:
                 "application/json": "ErrorResponse"
 
+getCancelationSigningLink:
+  description: ${self:custom.documentation.summary} | Get an Cancelation Signing Link [GET]
+  handler: build/routes/cancel/sign/index.getCancelationSigningLink
+  events:
+    - http:
+        path: cancel/sign
+        method: get
+        cors: true
+        request:
+          parameters:
+            querystrings:
+              employeePublicKey: true
+              envelopeId: true
+              returnUrl: true
+
 getApplicationSigningLink:
   description: ${self:custom.documentation.summary} | Get an Application Signing Link [GET]
   handler: build/routes/envelope/sign/index.getApplicationSigningLink

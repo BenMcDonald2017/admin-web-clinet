@@ -64,7 +64,7 @@ export const setDocuSignEnvelopeSigningStatus = async (event) => {
 
   if (!event.healthBundle) {
     event.result = {
-      success: 'false',
+      success: false,
       message: 'Could not find an associated \'HealthBundle\'!',
     }
     return
@@ -307,7 +307,8 @@ export const createDocuSignEmbeddedEnvelope = async (event) => {
     body: JSON.stringify({
       authenticationMethod: 'password',
       clientUserId: `${id}`,
-      email: `${signer.HixmeEmailAlias}`.replace(/\s+/g, '').toLowerCase(),
+      /* eslint-disable no-nested-ternary */
+      email: `${signer.email ? signer.email : signer.HixmeEmailAlias ? signer.HixmeEmailAlias : `${(signer.FirstName).replace(/\./g, '')}.${(signer.LastName).replace(/\./g, '')}@hixmeusers.com`}`.replace(/\s+/g, '').toLowerCase(),
       recipientId: `${id}`,
       returnUrl: `${returnUrl}`,
       userName: `${signer.name ? signer.name : [signer.FirstName, signer.LastName].filter(e => e && e != null).join(' ')}`,

@@ -24,7 +24,7 @@
     "log_fetch_start_time": "2h",
     "region": "us-west-2",
     "runtime": "nodejs6.10",
-    "stage": "int"
+    "stage": "prod"
   },
   "scripts": {
     "build:min": "npm run build -- --compact --minified --source-maps false",

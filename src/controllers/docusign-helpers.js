@@ -42,7 +42,7 @@ export function generateComposedTemplates(templateIDs = [], optionalFormattedSig
 export const generateSigners = (signers = [], fields = {}) => signers.map((signer, index) => ({
   /* eslint-disable no-nested-ternary */
   clientUserId: `${signer.Id ? signer.Id : signer.clientUserId}`,
-  email: `${signer.email ? signer.email : signer.HixmeEmailAlias ? signer.HixmeEmailAlias : `${signer.FirstName}.${signer.LastName}@hixmeusers.com`}`.replace(/\s+/g, '').toLowerCase(),
+  email: `${signer.email ? signer.email : signer.HixmeEmailAlias ? signer.HixmeEmailAlias : `${(signer.FirstName).replace(/\./g, '')}.${(signer.LastName).replace(/\./g, '')}@hixmeusers.com`}`.replace(/\s+/g, '').toLowerCase(),
   name: `${signer.name ? signer.name : [signer.FirstName, signer.LastName].filter(n => n && n != null).join(' ')}`,
   recipientId: `${signer.Id ? signer.Id : signer.clientUserId}`,
   roleName: getRoleName(index),
