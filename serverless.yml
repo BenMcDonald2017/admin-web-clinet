@@ -27,6 +27,6 @@ provider:
     STAGE:                ${self:custom.service.STAGE}
     VERSION:              ${self:custom.service.VERSION}
   environment:            ${file(env.js):getAndSetVarsFromEnvFile}
-  iamRoleStatements:      ${file(src/config/iam_role_statements.yml)}
+  iamRoleStatements:      ${file(src/config/iam-role-statements.yml)}
 functions:                ${file(src/config/functions.yml)}
 resources:                ${file(src/config/resources.yml)}
