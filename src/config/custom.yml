@@ -17,7 +17,7 @@ documentation:
 customDomain:
   basePath:             ${file(env.js):getAPIBasePath}
   certificateName:      '*.hixme.com'
-  createRoute53Record:  true
+  createRoute53Record:  false # leave as-is, unless you know what you're doing
   domainName:           ${file(env.js):getHostname}
   stage:                ${file(env.js):getDesiredStageFromPackageJSON}
 
