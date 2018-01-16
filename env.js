@@ -4,23 +4,23 @@
 /* eslint-disable import/no-extraneous-dependencies, no-console */
 
 const { argv } = require('yargs')
+const { get } = require('delver')
+const { green, reset } = require('chalk')
+const dotenv = require('dotenv')
+
 const {
   centerText,
   drawInitialNewline,
   getSubdomainPrefix,
   horizontalRule,
 } = require('./build/utils')
-
-const { get } = require('delver')
-const { green, reset } = require('chalk')
-const dotenv = require('dotenv')
 const pkg = require('./package.json')
 
 // if this microservice is initiated with an argument named, "STAGE", then that
 // value will overwrite the "STAGE" of the app. If no args, it defaults to "int",
 // since that's the value in "package.json:config.stage". If that's not found,
 // then I default "STAGE" to "int":
-const { STAGE = get(pkg, 'config.stage', 'int') } = argv
+const { stage: STAGE = get(pkg, 'config.stage', 'int') } = argv
 
 function success(description = '', information = '') {
   drawInitialNewline()
@@ -45,7 +45,7 @@ module.exports.getAndSetVarsFromEnvFile = (shouldPrint = true) => new Promise((r
   resolve({ ...environmentVariables, STAGE })
 })
 
-module.exports.getDesiredStageFromPackageJSON = (shouldPrint = true) => new Promise((resolve, reject) => {
+module.exports.getStage = (shouldPrint = true) => new Promise((resolve, reject) => {
   const taskDescription = 'Setting API / Service Stage'
   // check for "STAGE" having been set; rejects if not
   if (typeof STAGE === 'undefined' || STAGE == null) reject(new (Error(taskDescription))())

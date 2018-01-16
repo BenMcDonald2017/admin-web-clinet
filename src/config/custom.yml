@@ -7,19 +7,19 @@ service:
   DESCRIPTION:  ${file(package.json):description}
 
 documentation:
+  # authorizers:  ${file(schemas/authorizers.yml)}
   description:  Hixme API | ${file(package.json):description}
+  models:       ${file(schemas/all.yml)}
+  resources:    ${file(schemas/resources.yml)}
   summary:      ${file(package.json):description}
   version:      ${file(package.json):version}
-  models:       ${file(schemas/all.yml)}
-  # authorizers:  ${file(schemas/authorizers.yml)}
-  resources:    ${file(schemas/resources.yml)}
 
 customDomain:
   basePath:             ${file(env.js):getAPIBasePath}
   certificateName:      '*.hixme.com'
   createRoute53Record:  false # leave as-is, unless you know what you're doing
   domainName:           ${file(env.js):getHostname}
-  stage:                ${file(env.js):getDesiredStageFromPackageJSON}
+  stage:                ${file(env.js):getStage}
 
 serverless-offline:
   prefix: ${file(env.js):getAPIBasePath}
