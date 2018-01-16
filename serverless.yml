@@ -1,7 +1,8 @@
-########################################################################
-##   FYI: Usually, nothing needs to be changed in this config file.   ##
-##   Most everything you need to configure is in 'src/config/*'       ##
-########################################################################
+###################################################################
+##   FYI  ————————————————————————————————————————————————————   ##
+##   Usually, nothing needs to be changed in this config file.   ##
+##   Most everything you need to configure is in 'src/config/'   ##
+###################################################################
 service:                  ${file(package.json):name}
 frameworkVersion:         ">=1.25.0 <2.0.0"
 plugins:                  [ 'serverless-plugin-webpack',
