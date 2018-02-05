@@ -1,6 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies, no-console */
 module.exports = {
-  // devtool: 'source-map',
+  devtool: 'source-map',
   externals: [/aws-sdk/, /electron/],
   module: {
     rules: [{
