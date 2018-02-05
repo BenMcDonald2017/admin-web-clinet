@@ -11,7 +11,7 @@ export const isComplete = getStatus('completed')
 
 const defaultResponseConfig = {
   headers: {
-    'Access-Control-Allow-Credentials': '*',
+    'Access-Control-Allow-Credentials': true,
     'Access-Control-Allow-Origin': '*',
     'Content-Type': 'application/json',
   },
