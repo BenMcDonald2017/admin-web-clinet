@@ -30,6 +30,7 @@ provider:
     SERVICE:              ${self:custom.service.NAME}
     STAGE:                ${self:custom.service.STAGE}
     VERSION:              ${self:custom.service.VERSION}
+  # need to fix 'environment' func below, so that it exports the above stackTags!
   environment:            ${file(env.js):getAndSetVarsFromEnvFile}
   iamRoleStatements:      ${file(src/config/iam-role-statements.yml)}
 functions:                ${file(src/config/functions.yml)}
