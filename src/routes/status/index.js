@@ -78,12 +78,13 @@ export const getCartWithApplicationStatus = ware(
     // data.healthBundle.NotIncluded        ... is an array of people
 
     // save new 'healthBundle' to the cart!
-    data.cart.Cart = data.cart.Cart.map(async (product) => {
+    data.cart.Cart = await Promise.all(data.cart.Cart.map(async (product) => {
       if (product.BenefitType === 'HealthBundle') {
-        await createEnvelopes(data.healthBundle, data.primary, data.family, event)
+        return createEnvelopes(data.healthBundle, data.primary, data.family, event)
       }
+
       return product
-    })
+    }))
 
     // save cart
     await saveCart(data.cart)
