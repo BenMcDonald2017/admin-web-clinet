@@ -1,37 +1,22 @@
-// eslint-disable-next-line
-const webpack = require('webpack');
-
+/* eslint-disable import/no-extraneous-dependencies, no-console */
 module.exports = {
   devtool: 'source-map',
-  externals: [
-    /aws-sdk/,
-    /electron/,
-  ],
-  target: 'node',
+  externals: [/aws-sdk/, /electron/],
   module: {
-    loaders: [{
-      test: /\.js$/i,
-      loader: 'babel-loader',
-      exclude: /node_modules/,
-      query: {
-        cacheDirectory: true,
-        presets: [
-          'es2017',
-          'es2016',
-          'es2015-node6',
-        ],
-        plugins: [
-          'add-module-exports',
-          'transform-class-properties',
-          'transform-export-extensions',
-          'transform-object-rest-spread',
-        ],
+    rules: [{
+      test: /\.js$/,
+      exclude: /(node_modules|bower_components)/,
+      use: {
+        loader: 'babel-loader?cacheDirectory=true',
+        options: {
+          presets: ['@babel/preset-env'],
+          plugins: [
+            require('@babel/plugin-proposal-object-rest-spread'),
+            require('@babel/plugin-proposal-optional-chaining'),
+            require('@babel/plugin-transform-runtime'),
+          ],
+        },
       },
-      rules: [{
-        test: /\.js$/i,
-        use: 'source-map-loader',
-        enforce: 'pre',
-      }],
     }],
   },
 }
