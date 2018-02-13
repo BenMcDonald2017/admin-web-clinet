@@ -18,9 +18,8 @@ const pkg = require('./package.json')
 
 // if this microservice is initiated with an argument named, "STAGE", then that
 // value will overwrite the "STAGE" of the app. If no args, it defaults to "int",
-// since that's the value in "package.json:config.stage". If that's not found,
-// then I default "STAGE" to "int":
-const { stage: STAGE = get(pkg, 'config.stage', 'int') } = argv
+// since that's the value in "package.json:config.stage".
+const { stage: STAGE = get(pkg, 'config.stage') } = argv
 
 function success(description = '', information = '') {
   drawInitialNewline()
