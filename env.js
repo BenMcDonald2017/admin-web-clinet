@@ -41,7 +41,7 @@ module.exports.getAndSetVarsFromEnvFile = (shouldPrint = true) => new Promise((r
   // instead, we want to resolve with a single environment variable: "STAGE"
   const taskSuccessInfo = `Exported ${green(envVariableCount)} Variable${pluralize(envVariableCount)}`
   if (shouldPrint) success(taskDescription, taskSuccessInfo)
-  resolve({ ...environmentVariables, STAGE })
+  resolve(Object.assign({}, environmentVariables, { STAGE }))
 })
 
 module.exports.getStage = (shouldPrint = true) => new Promise((resolve, reject) => {

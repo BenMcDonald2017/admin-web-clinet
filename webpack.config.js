@@ -27,11 +27,6 @@ module.exports = {
           'transform-object-rest-spread',
         ],
       },
-      rules: [{
-        test: /\.js$/i,
-        use: 'source-map-loader',
-        enforce: 'pre',
-      }],
     }],
   },
 }

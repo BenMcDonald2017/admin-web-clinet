@@ -8,8 +8,9 @@
     "add-module-exports",
     "transform-class-properties",
     "transform-export-extensions",
-    "transform-object-rest-spread",
-    [ "transform-runtime", { "polyfill": false } ]
+    "transform-object-rest-spread", ["transform-runtime", {
+      "polyfill": false
+    }]
   ],
   "ignore": [
     "node_modules"
