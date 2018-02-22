@@ -10,10 +10,10 @@ module.exports = {
   target: 'node',
   module: {
     loaders: [{
-      test: /\.js$/i,
-      loader: 'babel-loader',
+      test:    /\.js$/i,
+      loader:  'babel-loader',
       exclude: /node_modules/,
-      query: {
+      query:   {
         cacheDirectory: true,
         presets: [
           'es2017',

@@ -1,30 +1,30 @@
 -
-  name: "CreateEnvelope"
-  description: "Create Envelope"
-  contentType: "application/json"
-  schema: ${file(schemas/CreateEnvelope.json)}
--
-  name: "CreateSigningSession"
-  description: "Create Signing Session"
-  contentType: "application/json"
-  schema: ${file(schemas/CreateSigningSession.json)}
--
-  name: ErrorResponse
-  description: Standard Error Response
   contentType: application/json
-  schema: ${file(schemas/ErrorResponse.json)}
+  description: Create Envelope
+  name:        CreateEnvelope
+  schema:      ${file(schemas/CreateEnvelope.json)}
 -
-  name: "GetEnvelope"
-  description: "Get Envelope"
-  contentType: "application/json"
-  schema: ${file(schemas/GetEnvelope.json)}
+  contentType: application/json
+  description: Create Signing Session
+  name:        CreateSigningSession
+  schema:      ${file(schemas/CreateSigningSession.json)}
 -
-  name: "GetEnvelopeRecipients"
-  description: "Get Envelope Recipients"
-  contentType: "application/json"
-  schema: ${file(schemas/GetEnvelopeRecipients.json)}
+  contentType: application/json
+  description: Get Envelope
+  name:        GetEnvelope
+  schema:      ${file(schemas/GetEnvelope.json)}
 -
-  name: "SaveSignatureStatus"
-  description: "Save DocuSign Signature Status"
-  contentType: "application/json"
-  schema: ${file(schemas/SaveSignatureStatus.json)}
+  contentType: application/json
+  description: Get Envelope Recipients
+  name:        GetEnvelopeRecipients
+  schema:      ${file(schemas/GetEnvelopeRecipients.json)}
+-
+  contentType: application/json
+  description: Save DocuSign Signature Status
+  name:        SaveSignatureStatus
+  schema:      ${file(schemas/SaveSignatureStatus.json)}
+-
+  contentType: application/json
+  description: Standard Error Response
+  name:        ErrorResponse
+  schema:      ${file(schemas/ErrorResponse.json)}
