@@ -17,10 +17,10 @@ cancelPreviousHealthBenefits:
     - http:
         path: cancel/{employeePublicKey}
         method: post
+        cors: true
         parameters:
           path:
             employeePublicKey: true
-        cors: true
 
 createEnvelope:
   description: ${self:custom.documentation.summary} | Create Envelope [POST]
@@ -54,10 +54,10 @@ getEnvelopeRecipients:
     - http:
         path: envelope/{envelopeId}/recipients
         method: get
+        cors: true
         parameters:
           paths:
             envelopeId: true
-        cors: true
         documentation:
           summary: Get Envelope Recipients
           description: Get Envelope Recipients [GET]
@@ -82,11 +82,11 @@ getEnvelope:
     - http:
         path: envelope/{envelopeId}
         method: get
+        cors: true
         request:
           parameters:
             paths:
               envelopeId: true
-        cors: true
         documentation:
           summary: Get Envelope
           description: Get Envelope [GET]
@@ -111,11 +111,11 @@ createSigningSession:
     - http:
         path: envelope/{envelopeId}/sign
         method: post
+        cors: true
         request:
           parameters:
             paths:
               envelopeId: true
-        cors: true
         documentation:
           summary: Create Signing Session
           description: Create Signing Session [GET]
