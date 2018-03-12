@@ -47,20 +47,20 @@ createEnvelope:
           requestModels:
             "application/json": "CreateEnvelope"
 
-getEnvelopeRecipients:
-  description: ${self:custom.documentation.summary} | Get Envelope Recipients [GET]
-  handler: build/routes/envelope/recipients/index.onGetEnvelopeRecipients
+getEnvelopeSigners:
+  description: ${self:custom.documentation.summary} | Get Envelope Signers [GET]
+  handler: build/routes/envelope/recipients/index.onGetEnvelopeSigners
   events:
     - http:
-        path: envelope/{envelopeId}/recipients
+        path: envelope/{envelopeId}/signers
         method: get
         cors: true
         parameters:
           paths:
             envelopeId: true
         documentation:
-          summary: Get Envelope Recipients
-          description: Get Envelope Recipients [GET]
+          summary: Get Envelope Signers
+          description: Get Envelope Signers [GET]
           requestBody:
             description: "Request body description"
           methodResponses:
@@ -73,7 +73,7 @@ getEnvelopeRecipients:
               responseModels:
                 "application/json": "ErrorResponse"
           requestModels:
-            "application/json": "GetEnvelopeRecipients"
+            "application/json": "GetEnvelopeSigners"
 
 getEnvelope:
   description: ${self:custom.documentation.summary} | Get Envelope [GET]
