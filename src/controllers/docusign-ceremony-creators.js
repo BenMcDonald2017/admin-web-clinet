@@ -309,10 +309,10 @@ export const createDocuSignEmbeddedEnvelope = async (event) => {
       clientUserId: `${id}`,
       /* eslint-disable no-nested-ternary */
       email: `${signer.email ? signer.email : signer.HixmeEmailAlias ? signer.HixmeEmailAlias : `${(signer.FirstName).replace(/\./g, '')}.${(signer.LastName).replace(/\./g, '')}@hixmeusers.com`}`.replace(/\s+/g, '').toLowerCase(),
-      recipientId: `${id}`,
+      // recipientId: `${id}`,
       returnUrl: `${returnUrl}`,
       userName: `${signer.name ? signer.name : [signer.FirstName, signer.LastName].filter(e => e && e != null).join(' ')}`,
-      userId: parsedUserId || undefined,
+      //userId: parsedUserId || undefined,
     }),
   }
 
