@@ -13,17 +13,17 @@ import {
 import { createDocuSignEnvelope } from '../../controllers'
 import { before, after, queryStringIsTrue } from '../../utils'
 
-const data = {
-  cart: null,
-  family: null,
-  healthBundle: null,
-  primary: null,
-}
-
 export const getCartWithApplicationStatus = ware(
   before,
 
   async (event) => {
+    const result = {
+      cart: null,
+      family: null,
+      healthBundle: null,
+      primary: null,
+    }
+
     const { employeePublicKey } = event.params
 
     // TODO: validate incoming `employeePublicKey`
@@ -36,61 +36,60 @@ export const getCartWithApplicationStatus = ware(
       getCart(employeePublicKey),
     ])
 
-    data.family = theFamily
-    data.cart = theCart
-    if (data.cart) {
-      data.healthBundle = getHealthBundle(data.cart.Cart)
+    result.family = theFamily
+    result.cart = theCart
+    if (result.cart) {
+      result.healthBundle = getHealthBundle(result.cart.Cart)
     }
-  },
 
-  async (event) => {
     // check if worker has `healthBundle`
-    if (!data.healthBundle) {
+    if (!result.healthBundle) {
       console.warn(`${'*'.repeat(10)}  Health Bundle: NOT FOUND`)
 
       // set result to cart
-      const { Cart: cart = {} } = data.cart || {}
+      const { Cart: cart = {} } = result.cart || {}
       event.result = cart
       event.workerHasNoHealthBundle = true
       return
     }
 
     // check if missing `cart` or `family`
-    if (!data.cart || !data.family) {
+    if (!result.cart || !result.family) {
       console.warn(`${'*'.repeat(10)}  Missing Cart and/or Family!`)
     }
-  },
 
-  async (event) => {
     if (event.workerHasNoHealthBundle) {
       return
     }
     // now that we have everything, let's get the primary signer/applicant
-    data.primary = getPrimarySigner(data.healthBundle, data.family)
-  },
+    result.primary = getPrimarySigner(result.healthBundle, result.family)
 
-  async (event) => {
     if (event.workerHasNoHealthBundle) {
       return
     }
 
-    // data.healthBundle.Benefits           ... is an array of benefits
-    // data.healthBundle.NotIncluded        ... is an array of people
+    // result.healthBundle.Benefits           ... is an array of benefits
+    // result.healthBundle.NotIncluded        ... is an array of people
 
     // save new 'healthBundle' to the cart!
-    data.cart.Cart = await Promise.all(data.cart.Cart.map(async (product) => {
+    result.cart.Cart = await Promise.all(result.cart.Cart.map(async (product) => {
       if (product.BenefitType === 'HealthBundle') {
-        return createEnvelopes(data.healthBundle, data.primary, data.family, event)
+        return createEnvelopes(
+          result.healthBundle,
+          result.primary,
+          result.family,
+          event,
+        )
       }
 
       return product
     }))
 
     // save cart
-    await saveCart(data.cart)
+    await saveCart(result.cart)
 
     // return results
-    event.result = data.cart.Cart
+    event.result = result.cart.Cart
   },
 
   after,
