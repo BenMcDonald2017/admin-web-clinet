@@ -113,8 +113,7 @@ const createEnvelopes = async (healthBundle, primary, family, event) => {
     // 2). We determine that the user should have new docs generated (above); or,
     // 3). If requestor sets `force` flag in the URL to `true`
     if (!benefit.DocuSignEnvelopeId || shouldGenerateNewDocuSignEnvelope || forceFlagIsSet) {
-      let signers = benefit.Persons.filter(person =>
-        /^included$/i.test(person.BenefitStatus))
+      let signers = benefit.Persons.filter(person => /^included$/i.test(person.BenefitStatus))
       // filter out signers that are under 18
       const under18Ids = family.filter(person => effectiveAge(`${person.DateOfBirth}`, `${EFFECTIVE_DATE}`) < 18).map(minorChild => minorChild.Id)
       signers = signers.filter(signer => !under18Ids.includes(signer.Id))
