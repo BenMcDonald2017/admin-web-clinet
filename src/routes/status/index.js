@@ -102,43 +102,27 @@ const createEnvelopes = async (healthBundle, primary, family, event) => {
     const forceFlagIsSet = queryStringIsTrue(force)
 
     // here, we're figuring out whether or not we should regenerate DocuSign envelopes
-    const mostRelevantDateToConsider = benefit.DocuSignEnvelopeCreatedOn
-      ? benefit.DocuSignEnvelopeCreatedOn
-      : benefit.UpdatedDate
+    const mostRelevantDateToConsider = benefit.DocuSignEnvelopeCreatedOn ? benefit.DocuSignEnvelopeCreatedOn : benefit.UpdatedDate
     const docsCreatedDuringDocuSignIssues = moment(mostRelevantDateToConsider).isBefore('2017-12-05T17')
     const docsAreAlreadySigned = benefit.EnvelopeComplete === true
     const allSignersHaveSigned = (benefit.PdfSignatures || []).every(sig => sig.Signed === true)
-    const shouldGenerateNewDocuSignEnvelope =
-        docsCreatedDuringDocuSignIssues &&
-        !docsAreAlreadySigned &&
-        !allSignersHaveSigned
+    const shouldGenerateNewDocuSignEnvelope = (docsCreatedDuringDocuSignIssues && !docsAreAlreadySigned && !allSignersHaveSigned)
 
     // GENERATE NEW DOCS WHEN:
     // 1). The Cart's HealthBundle item has no `DocuSignEnvelopeId`;
     // 2). We determine that the user should have new docs generated (above); or,
     // 3). If requestor sets `force` flag in the URL to `true`
-    if (
-      !benefit.DocuSignEnvelopeId ||
-        shouldGenerateNewDocuSignEnvelope ||
-        forceFlagIsSet
-    ) {
+    if (!benefit.DocuSignEnvelopeId || shouldGenerateNewDocuSignEnvelope || forceFlagIsSet) {
       let signers = benefit.Persons.filter(person =>
         /^included$/i.test(person.BenefitStatus))
       // filter out signers that are under 18
-      const under18Ids = family
-        .filter(person =>
-          effectiveAge(`${person.DateOfBirth}`, `${EFFECTIVE_DATE}`) < 18)
-        .map(minorChild => minorChild.Id)
+      const under18Ids = family.filter(person => effectiveAge(`${person.DateOfBirth}`, `${EFFECTIVE_DATE}`) < 18).map(minorChild => minorChild.Id)
       signers = signers.filter(signer => !under18Ids.includes(signer.Id))
 
-      if (
-        benefit.Persons.every(person => /child/i.test(person.Relationship))
-      ) {
+      if (benefit.Persons.every(person => /child/i.test(person.Relationship))) {
         // if benefit has only children deps then add primary to signers list
         signers = [primary, ...signers]
-        if (
-          benefit.Persons.every(person => !under18Ids.includes(person.Id))
-        ) {
+        if (benefit.Persons.every(person => !under18Ids.includes(person.Id))) {
           // if benefit have only dependents, and none of those dependents are under 18, then remove the worker from the signatures list—they don't need to sign
           signers = signers.filter(signer => signer.Id !== `${primary.Id}`)
         }
