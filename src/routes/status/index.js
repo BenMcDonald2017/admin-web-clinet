@@ -130,7 +130,7 @@ const createEnvelopes = async (healthBundle, primary, family, event) => {
       // append emails to signer
       family.forEach((member) => {
         signers.forEach((signer) => {
-          if (signer.Id == member.EmployeePublicKey) {
+          if (signer.Id === member.EmployeePublicKey) {
             signer.EmailAddress = member.EmailAddress
             signer.HixmeEmailAlias = member.HixmeEmailAlias
           }
