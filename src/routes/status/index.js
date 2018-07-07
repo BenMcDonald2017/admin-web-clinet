@@ -127,6 +127,16 @@ const createEnvelopes = async (healthBundle, primary, family, event) => {
         }
       }
 
+      // append emails to signer
+      family.forEach((member) => {
+        signers.forEach((signer) => {
+          if (signer.Id == member.EmployeePublicKey) {
+            signer.EmailAddress = member.EmailAddress
+            signer.HixmeEmailAlias = member.HixmeEmailAlias
+          }
+        })
+      })
+
       // this puppy kicks off all the docusign creation code
       await createDocuSignEnvelope(benefit, primary, family, signers, event)
       // destructures 'event.envelope.envelopeId' and sets defaults, if empty
