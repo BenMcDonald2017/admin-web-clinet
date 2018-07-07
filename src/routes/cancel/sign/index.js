@@ -38,13 +38,15 @@ export const getCancelationSigningLink = ware(
     const id = userId || employeePublicKey
 
     // append emails to signer
-    const findSigner = event.family.forEach((member) => {
-      if(signer.Id == member.EmployeePublicKey) {
-        signer.email = member.HixmeEmailAlias
+    event.family.forEach((member) => {
+      if(signer.Id === member.EmployeePublicKey) {
+        signer.HixmeEmailAlias = member.HixmeEmailAlias
       }
     })
 
-    if (!signer.email) {
+    const signerEmail = signer.email || signer.HixmeEmailAlias
+
+    if (!signerEmail) {
       throw new Error('Signer email not found.')
     }
 
@@ -56,7 +58,7 @@ export const getCancelationSigningLink = ware(
         authenticationMethod: 'password',
         clientUserId: `${id}`,
         /* eslint-disable no-nested-ternary */
-        email: `${signer.email }`.replace(/\s+/g, '').toLowerCase(),
+        email: `${signerEmail}`.replace(/\s+/g, '').toLowerCase(),
         // recipientId: '1', // number?
         returnUrl: `${returnUrl}`,
         userName: `${signer.name ? signer.name : [signer.FirstName, signer.LastName].filter(e => e && e != null).join(' ')}`,
