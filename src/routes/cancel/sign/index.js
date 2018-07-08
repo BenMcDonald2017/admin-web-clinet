@@ -39,7 +39,7 @@ export const getCancelationSigningLink = ware(
 
     // append emails to signer
     event.family.forEach((member) => {
-      if(signer.Id === member.EmployeePublicKey) {
+      if(signer.Id === member.Id) {
         signer.HixmeEmailAlias = member.HixmeEmailAlias
       }
     })
