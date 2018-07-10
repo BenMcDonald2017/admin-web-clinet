@@ -39,16 +39,24 @@ export function generateComposedTemplates(templateIDs = [], optionalFormattedSig
   return composedTemplates
 }
 
-export const generateSigners = (signers = [], fields = {}) => signers.map((signer, index) => ({
-  /* eslint-disable no-nested-ternary */
-  clientUserId: `${signer.Id ? signer.Id : signer.clientUserId}`,
-  email: `${signer.email ? signer.email : signer.HixmeEmailAlias ? signer.HixmeEmailAlias : `${(signer.FirstName).replace(/\./g, '')}.${(signer.LastName).replace(/\./g, '')}@hixmeusers.com`}`.replace(/\s+/g, '').toLowerCase(),
-  name: `${signer.name ? signer.name : [signer.FirstName, signer.LastName].filter(n => n && n != null).join(' ')}`,
-  recipientId: `${signer.Id ? signer.Id : signer.clientUserId}`,
-  roleName: getRoleName(index),
-  tabs: generateAllTabData(fields),
-  userId: `${signer.Id ? signer.Id : signer.clientUserId}`,
-}))
+export const generateSigners = (signers = [], fields = {}) => signers.map((signer, index) => {
+  const signerEmail = signer.email || signer.HixmeEmailAlias
+  if (!signerEmail) {
+    console.log('signer', signer)
+    throw new Error('generateSigners: Email required for signer')
+  }
+
+  return ({
+    /* eslint-disable no-nested-ternary */
+    clientUserId: `${signer.Id ? signer.Id : signer.clientUserId}`,
+    email: `${signerEmail}`.replace(/\s+/g, '').toLowerCase(),
+    name: `${signer.name ? signer.name : [signer.FirstName, signer.LastName].filter(n => n && n != null).join(' ')}`,
+    recipientId: `${signer.Id ? signer.Id : signer.clientUserId}`,
+    roleName: getRoleName(index),
+    tabs: generateAllTabData(fields),
+    userId: `${signer.Id ? signer.Id : signer.clientUserId}`,
+  })
+})
 
 const addTabToCollection = (tabCollection = {}, type = 'text', data = {}) => {
   const existing = tabCollection[tabName(type)] || []

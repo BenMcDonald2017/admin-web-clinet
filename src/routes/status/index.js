@@ -122,10 +122,22 @@ const createEnvelopes = async (healthBundle, primary, family, event) => {
         // if benefit has only children deps then add primary to signers list
         signers = [primary, ...signers]
         if (benefit.Persons.every(person => !under18Ids.includes(person.Id))) {
-          // if benefit have only dependents, and none of those dependents are under 18, then remove the worker from the signatures listâ€”they don't need to sign
+          // if benefit have only dependents, and none of those dependents are under 18, then remove the worker from the signatures list—they don't need to sign
           signers = signers.filter(signer => signer.Id !== `${primary.Id}`)
         }
       }
+
+      // append emails to signer
+      family.forEach((member) => {
+        signers.forEach((signer) => {
+          if (signer.Id === member.Id) {
+            signer.EmailAddress = member.EmailAddress
+            signer.HixmeEmailAlias = member.HixmeEmailAlias
+            signer.FirstName = member.FirstName
+            signer.LastName = member.LastName
+          }
+        })
+      })
 
       // this puppy kicks off all the docusign creation code
       await createDocuSignEnvelope(benefit, primary, family, signers, event)

@@ -300,6 +300,12 @@ export const createDocuSignEmbeddedEnvelope = async (event) => {
   if (!signer || signer == null) throw new Error('could not parse out a valid, necessary param. try again.')
 
   const { Id: id } = signer // parsedUserId || employeePublicKey || userId
+  const signerEmail = signer.email || signer.HixmeEmailAlias
+
+  if (!signerEmail) {
+    console.log('signer - ', signer)
+    throw new Error ('Signer email could not be found')
+  }
   const payload = {
     params: {
       envelopeId,
@@ -308,7 +314,7 @@ export const createDocuSignEmbeddedEnvelope = async (event) => {
       authenticationMethod: 'password',
       clientUserId: `${id}`,
       /* eslint-disable no-nested-ternary */
-      email: `${signer.email ? signer.email : signer.HixmeEmailAlias ? signer.HixmeEmailAlias : `${(signer.FirstName).replace(/\./g, '')}.${(signer.LastName).replace(/\./g, '')}@hixmeusers.com`}`.replace(/\s+/g, '').toLowerCase(),
+      email: `${signerEmail}`.replace(/\s+/g, '').toLowerCase(),
       // recipientId: `${id}`,
       returnUrl: `${returnUrl}`,
       userName: `${signer.name ? signer.name : [signer.FirstName, signer.LastName].filter(e => e && e != null).join(' ')}`,
